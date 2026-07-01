@@ -5,31 +5,43 @@ Format: [Semantic Versioning](https://semver.org/) — `MAJOR.MINOR.PATCH`
 
 ---
 
-## [1.2.0] — 2026-07-01 — "Mwangaza" (Light)
+## [1.3.1] — 2026-07-02 — "Mwitikio" (Responsive)
 
 ### ✨ Added
-- **PDF monthly report generation** — SUMATRA-ready reports with KPIs, severity breakdown, top junctions, time-of-day analysis
-- **Progressive Web App (PWA)** — Installable on Android/iOS, offline-capable, custom service worker
-- **Telegram bot integration** — Instant fatal cluster alerts, daily digest, command interface (`/start`, `/stats`, `/hotspots`)
-- **Real-time dashboard** — 30-second auto-refresh, notification on new reports
-- **PostGIS migration script** — Drop-in spatial queries (500m radius, polygons, etc.)
-- **Bulk CSV import** — TPF legacy data ingestion with validation + deduplication
+- **Full responsive design** — Hero, nav, forms, action bar, map, KPIs, charts all scale across mobile/tablet/desktop
+- **Polished PDF monthly report** — Executive summary, severity breakdown, vehicle types, peak hours, top junctions — all styled in Skylearn palette
 
 ### 🔧 Changed
-- Dashboard template restructured for block inheritance
-- Manifest.json moved to root scope for proper PWA
-- Service worker uses network-first with 3s timeout for APIs
+- Responsive breakpoints: 900px (tablet charts), 720px (tablet layout), 480px (phone), 400px (small phone)
+- Hero column-stacks on tablet; hero-actions hidden on mobile
+- Buttons go full-width in action bar on tablet; font-size shrinks on phone
+- Map height reduces (520px → 380px → 300px)
+- Featured stat cards: `auto-fit` grid → single column on phone; smaller values/labels
+- Topbar brand shrinks on phone; nav gaps tighten
+- PDF now shows: severity breakdown table, vehicle type distribution, hourly peak hours, top 10 junctions table
+- All root-level old icon PNGs added to `.gitignore`
 
 ### 🐛 Fixed
-- Telegram webhook decorator (`@require_http_methods` instead of `@require_GET`)
-- Dashboard template had double `{% endblock %}` (now correct)
-- Manifest `start_url` set to `/dashboard/` for PWA scope
-
-### 📦 Dependencies
-- Added: `reportlab==5.0.0` (PDF generation)
-- Added: `python-telegram-bot==21.7` (bot integration)
+- `vehicle_types` is JSON array (not CharField) — PDF now handles correctly
+- Duplicate `@media` rules consolidated into single breakpoints
 
 ---
+
+## [1.3.0] — 2026-07-01 — "Chombo" (Container)
+
+### ✨ Added
+- **Docker multi-stage build** — `python:3.11-slim` base, GDAL for PostGIS, health check
+- **Docker Compose** — One-command local dev with Django + PostGIS + Redis
+- **Makefile Docker commands** — `docker-build`, `docker-up`, `docker-test`, etc.
+- **`.dockerignore`** — Excludes caches, virtualenvs, SQLite from image
+
+### 🔧 Changed
+- `render.yaml` and `railway.json` kept for backward compatibility (non-Docker deploys)
+- Version bumped to 1.3.0 "Chombo"
+
+---
+
+## [1.2.0] — 2026-07-01 — "Mwangaza" (Light)
 
 ## [1.1.0] — 2026-06-30 — "Taa" (Lamp)
 
@@ -101,6 +113,6 @@ Format: [Semantic Versioning](https://semver.org/) — `MAJOR.MINOR.PATCH`
 - **PATCH** bump for bug fixes, performance, docs
 
 **Roadmap (next versions):**
-- `1.3.0` (Q3 2026): PostGIS spatial queries in production, weather API integration
-- `1.4.0` (Q4 2026): Mobile app wrapper, push notifications, offline sync
+- `1.4.0` (Q3 2026): PostGIS spatial queries in production, weather API integration
+- `1.5.0` (Q4 2026): Mobile app wrapper, push notifications, offline sync
 - `2.0.0` (2027): Multi-city (Dodoma, Mwanza, Arusha), national dashboard

@@ -1,86 +1,84 @@
 {% extends "accidents/base.html" %}
+{% load static %}
 {% block title %}Report an Accident — Road Safety Dar{% endblock %}
 {% block content %}
 <section class="form-wrap">
-  <h2>📝 Report a Road Accident</h2>
-  <p class="muted">Help us build a safer Dar es Salaam. All fields except <em>description</em> are required.</p>
+  <div class="form-header">
+    <div>
+      <h2>Report a Road Accident</h2>
+      <p class="muted">Help us build a safer Dar es Salaam. All fields except <em>description</em> are required.</p>
+    </div>
+    <img src="{% static 'img/accident-icon.png' %}" alt="" class="form-header-img" />
+  </div>
 
-  {% if error %}<div class="alert error">⚠ {{ error }}</div>{% endif %}
+  {% if form.errors %}
+    <div class="alert error">
+      <strong>⚠ Please fix the errors below:</strong>
+      <ul>
+        {% for field, errors in form.errors.items %}
+          {% for err in errors %}
+            <li>{{ err }}</li>
+          {% endfor %}
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
 
-  <form method="post" id="accidentForm" class="grid">
+  <form method="post" id="accidentForm" class="grid" novalidate>
     {% csrf_token %}
 
     <label>Reporter type
-      <select name="reported_by" required>
-        <option value="community">Community member</option>
-        <option value="police">Tanzania Police Force</option>
-        <option value="hospital">Hospital / EMS</option>
-        <option value="tanroads">TANROADS</option>
-        <option value="media">Media</option>
-      </select>
+      {{ form.reporter_type }}
     </label>
 
     <label>Severity
-      <select name="severity" required>
-        <option value="minor">Minor (no casualties)</option>
-        <option value="serious">Serious (injury, no fatality)</option>
-        <option value="fatal">Fatal (1+ deaths)</option>
-        <option value="critical">Critical (multiple casualties)</option>
-      </select>
+      {{ form.severity }}
     </label>
 
     <label>Vehicle type
-      <select name="vehicle_type" required>
-        <option value="motorcycle">Motorcycle / Bodaboda</option>
-        <option value="car">Car</option>
-        <option value="bus">Bus / Daladala</option>
-        <option value="truck">Truck / Lorry</option>
-        <option value="bicycle">Bicycle</option>
-        <option value="pedestrian">Pedestrian only</option>
-        <option value="mixed">Mixed / Multiple</option>
-      </select>
+      {{ form.vehicle_types }}
     </label>
 
     <label>Date & time
-      <input type="datetime-local" name="occurred_at" required>
+      {{ form.occurred_at }}
     </label>
 
     <label>GPS Latitude
-      <input type="number" step="any" name="lat" id="lat" required>
+      {{ form.lat }}
     </label>
     <label>GPS Longitude
-      <input type="number" step="any" name="lng" id="lng" required>
+      {{ form.lng }}
     </label>
 
     <button type="button" id="gpsBtn" class="btn-secondary">📍 Use my current location</button>
 
     <label>Address / landmark
-      <input type="text" name="address" placeholder="e.g. Near Ubungo Interchange, Bagamoyo Road">
+      {{ form.junction_name }}
     </label>
 
     <label>Casualties
-      <input type="number" name="casualties" min="0" value="0">
+      {{ form.casualties }}
     </label>
     <label>Fatalities
-      <input type="number" name="fatalities" min="0" value="0">
+      {{ form.fatalities }}
     </label>
     <label>Injuries
-      <input type="number" name="injuries" min="0" value="0">
+      {{ form.injuries }}
     </label>
 
     <label>Weather
-      <input type="text" name="weather" placeholder="clear / rainy / drizzle">
+      {{ form.weather }}
     </label>
     <label>Road condition
-      <input type="text" name="road_condition" placeholder="good / wet / potholed">
+      {{ form.road_condition }}
     </label>
 
     <label class="full">Description
-      <textarea name="description" rows="3" placeholder="What happened? (English or Swahili)"></textarea>
+      {{ form.description }}
     </label>
 
     <label class="full">Your contact (optional)
-      <input type="text" name="contact" placeholder="phone or email for follow-up">
+      {{ form.contact }}
     </label>
 
     <button type="submit" class="btn-primary full">Submit Report</button>

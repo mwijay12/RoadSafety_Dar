@@ -1,0 +1,15 @@
+{% extends "accidents/base.html" %}
+{% block title %}Logout — Road Safety Dar{% endblock %}
+{% block content %}
+<section class="form-wrap" style="max-width:480px;text-align:center;">
+  <h2>Logout</h2>
+  <p class="muted">Are you sure you want to sign out?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn-primary full">Sign Out</button>
+    <p style="margin-top:var(--space-3);">
+      <a href="/dashboard/" style="color:var(--indigo-deep);font-weight:600;">Cancel</a>
+    </p>
+  </form>
+</section>
+{% endblock %}

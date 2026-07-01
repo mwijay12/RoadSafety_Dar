@@ -1,32 +1,110 @@
+# ============================================================================
+# RoadSafety_Dar — gitignore
+# Covers both the Django backend (root) and the Vite/React landing page
+# under ./landing/.
+# ============================================================================
+
+# ---------------------------------------------------------------------------
 # Python
+# ---------------------------------------------------------------------------
 __pycache__/
 *.py[cod]
+*$py.class
 *.so
 *.egg-info/
+.eggs/
+build/
+dist/
+pip-wheel-metadata/
+
+# Virtual environments
 .venv/
 venv/
 env/
+ENV/
 
+# ---------------------------------------------------------------------------
 # Django
+# ---------------------------------------------------------------------------
 *.sqlite3
-*.log
-local_settings.py
+*.sqlite3-journal
 db.sqlite3
 db.sqlite3-journal
+local_settings.py
 media/
 staticfiles/
+.coverage
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
 
-# Environment
+# ---------------------------------------------------------------------------
+# Environment + secrets
+# ---------------------------------------------------------------------------
 .env
+.env.local
+.env.*.local
+!.env.example
 
-# IDE
+# ---------------------------------------------------------------------------
+# IDE + editors
+# ---------------------------------------------------------------------------
 .vscode/
 .idea/
 *.swp
-
-# OS
+*.swo
+*~
 .DS_Store
-Thumbs.db
 
-# Seed
+# OS junk
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# ---------------------------------------------------------------------------
+# Node / Vite / React (landing/ folder)
+# ---------------------------------------------------------------------------
+landing/node_modules/
+landing/dist/
+landing/build/
+landing/.vite/
+landing/.next/
+landing/.nuxt/
+landing/.cache/
+landing/.parcel-cache/
+landing/coverage/
+landing/.env
+landing/.env.local
+landing/npm-debug.log*
+landing/yarn-debug.log*
+landing/yarn-error.log*
+landing/pnpm-debug.log*
+
+# ---------------------------------------------------------------------------
+# Seed + data exports
+# ---------------------------------------------------------------------------
 /data/exports/
+*.log
+logs/
+
+# ---------------------------------------------------------------------------
+# Sentry / profiling
+# ---------------------------------------------------------------------------
+.sentryclirc
+
+# ---------------------------------------------------------------------------
+# Docker (when added)
+# ---------------------------------------------------------------------------
+.docker/
+
+# ---------------------------------------------------------------------------
+# Root detritus (old icon PNGs, illustration dirs)
+# ---------------------------------------------------------------------------
+/accident-3d-icon-png-download-*.png
+/add-report-3d-icon-png-download-*.png
+/auto-accident-protection-3d-icon-png-download-*.png
+/map-3d-icon-png-download-*.png
+/sign-in-3d-icon-png-download-*.png
+/stone-on-the-road-3d-icon-png-download-*.png
+/road accident illustartion

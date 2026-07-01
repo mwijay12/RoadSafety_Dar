@@ -1,0 +1,20 @@
+{% extends "emails/base_email.html" %}
+{% block email_body %}
+<h2>⚠ {{ severity }} Accident Reported</h2>
+<table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
+  <tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:600;color:#1a3a52;width:120px">Location</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee">{{ accident.junction_name|default:"Unknown" }}</td></tr>
+  <tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:600;color:#1a3a52">Date</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee">{{ accident.occurred_at|date:"Y-m-d H:i" }}</td></tr>
+  <tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:600;color:#1a3a52">Casualties</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee">{{ accident.casualties }}</td></tr>
+  <tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:600;color:#1a3a52">Fatalities</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee">{{ accident.fatalities }}</td></tr>
+  <tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:600;color:#1a3a52">Vehicles</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee">{{ accident.vehicle_types|join:", "|default:"N/A" }}</td></tr>
+</table>
+<p>
+  <a href="{{ authority_url }}" class="btn">View on Authority Dashboard</a>
+</p>
+<p class="muted">This is an automated alert. Do not reply to this email.</p>
+{% endblock %}

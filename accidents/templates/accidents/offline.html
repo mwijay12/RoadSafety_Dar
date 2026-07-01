@@ -1,11 +1,18 @@
 {% extends "accidents/base.html" %}
-{% load i18n %}
 {% block title %}Offline — Road Safety Dar{% endblock %}
 {% block content %}
-<section class="offline-page">
-  <h1>📡 {% trans "You're offline" %}</h1>
-  <p>{% trans "RoadSafety Dar is offline. Your report will be saved and submitted when you reconnect." %}</p>
-  <p><a href="/report/" class="btn btn-primary">{% trans "Submit a report (will save offline)" %}</a></p>
-  <p><a href="/dashboard/" class="btn btn-secondary">{% trans "Try the dashboard again" %}</a></p>
+<section style="text-align:center;padding:var(--space-8) var(--space-5);max-width:480px;margin:0 auto;">
+  <div style="font-size:4rem;margin-bottom:var(--space-4);">📡</div>
+  <h2 style="color:var(--indigo-deep);margin:0 0 var(--space-3);">You're Offline</h2>
+  <p class="muted" style="margin:0 0 var(--space-6);">
+    Road Safety Dar needs an internet connection to load real-time accident data.
+    Check your connection and try again.
+  </p>
+  <button onclick="window.location.reload()" class="btn-primary full" style="max-width:240px;margin:0 auto;">
+    Try Again
+  </button>
+  <p style="margin-top:var(--space-5);">
+    <a href="/dashboard/" style="color:var(--indigo-deep);font-weight:600;">Back to Dashboard</a>
+  </p>
 </section>
 {% endblock %}

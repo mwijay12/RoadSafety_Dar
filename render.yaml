@@ -1,5 +1,8 @@
 # Render deployment configuration
 # See: https://render.com/docs/deploy-django
+#
+# Settings module: roadsafety.settings.prod  (auto-selected by wsgi.py when
+# DJANGO_ENV is not explicitly set, but we set it here for clarity).
 
 services:
   - type: web
@@ -7,8 +10,10 @@ services:
     runtime: python
     plan: free
     buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput"
-    startCommand: "python manage.py migrate && gunicorn roadsafety.wsgi"
+    startCommand: "python manage.py migrate && DJANGO_ENV=prod gunicorn roadsafety.wsgi"
     envVars:
+      - key: DJANGO_ENV
+        value: "prod"
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DEBUG
@@ -17,5 +22,7 @@ services:
         value: ".onrender.com"
       - key: PYTHON_VERSION
         value: 3.11.10
-    healthCheckPath: /dashboard/
+      # Optional: add API keys for AI / media / notifications here, or in
+      # the Render dashboard. See .env.example for the full list.
+    healthCheckPath: /healthz
     autoDeploy: true

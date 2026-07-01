@@ -2,7 +2,7 @@
 
 > **Project 24** — Spatial road-accident information management for Dar es Salaam, integrating police and community reports, feeding a public hotspot heatmap and an authority infrastructure-decision dashboard. Aligned with **UN SDG 11.2** (safe, affordable, accessible transport for all).
 
-![Status](https://img.shields.io/badge/status-Production%20Ready-1f9d55?style=flat-square) ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.14-3776AB?style=flat-square&logo=python) ![Django](https://img.shields.io/badge/Django-5.0-092E20?style=flat-square&logo=django) ![Leaflet](https://img.shields.io/badge/Leaflet-1.9-199900?style=flat-square&logo=leaflet) ![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square) ![Records](https://img.shields.io/badge/seeded%20records-80%2B-c0392b?style=flat-square)
+![Status](https://img.shields.io/badge/status-Active%20Development-1f9d55?style=flat-square) ![Python](https://img.shields.io/badge/python-3.11-3776AB?style=flat-square&logo=python) ![Django](https://img.shields.io/badge/Django-5.0-092E20?style=flat-square&logo=django) ![Leaflet](https://img.shields.io/badge/Leaflet-1.9-199900?style=flat-square&logo=leaflet) ![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square) ![Tests](https://img.shields.io/badge/tests-68%20passing-1f9d55?style=flat-square)
 
 ---
 
@@ -39,7 +39,7 @@ A Django + GeoDjango-ready web application backed by SQLite (PostGIS in producti
 **Explain it as a business problem it solves:**
 Tanzania loses **>4,000 lives per year** to road traffic injuries (WHO 2023). Dar es Salaam alone accounts for ~40% of all national traffic incidents. Yet the country lacks an open, citizen-contributable, spatially-aggregated decision-support tool for the police (TPF), TANROADS, and the Surface and Marine Transport Regulatory Authority (SUMATRA) to identify hotspots and prioritise engineering interventions. This system closes that gap with a free, open-source, mobile-friendly platform that turns fragmented accident reports into evidence that saves lives.
 
-**Current version:** `v1.0.0` — 🚀 **Production Ready** (local). Public pilot ready for v1.1.
+**Current version:** `v1.1.0-dev` — 🚧 **Active Development** (v1.0 shipped locally; v1.1 hardening for public pilot).
 
 **Built by:** **Davie Byanmwijage (Mwijay)** — Dar es Salaam, Tanzania — as a University Project 24 deliverable for the Spatial Data Management module. Code is free and open source (MIT). Map tiles © OpenStreetMap contributors.
 
@@ -59,17 +59,24 @@ The 4 differentiators: **spatial** (real hotspot heatmap), **live** (community s
 
 ## 📊 SECTION 2: Live System Snapshot
 
-**As of v1.0.0 (July 2026), running locally on `http://127.0.0.1:8000`.**
+**As of v1.1.0-dev (July 2026), running locally on `http://127.0.0.1:8000`.**
 
 | Component | Status | What It Does | Tech Used |
 |---|---|---|---|
 | Public dashboard | ✅ Working | Heatmap + marker cluster + 4 charts + junction table | Django, Leaflet 1.9, Leaflet.heat, Leaflet.markercluster, Chart.js 4.4 |
-| Mobile report form | ✅ Working | GPS capture, severity, vehicle, casualties | Django templates, Geolocation API |
+| Mobile report form | ✅ Working | `AccidentForm` validation, Dar bbox, cross-field checks | `accidents/forms.py` |
+| JSON API report endpoint | ✅ Working | `POST /api/accidents/` shares the same form, rate-limited | `AccidentForm` + `_rate_check` |
 | Authority dashboard | ✅ Working | High-risk hour profile + auto-recommendations | Chart.js bar + rule engine |
 | 80 seed records | ✅ Working | Realistic Dar hotspots, weighted severity, hour distribution | Custom Django management command + Faker |
 | 20 named junctions | ✅ Working | Kariakoo, Ubungo, Mwenge, Selander Bridge, etc. | Seed command |
 | 8 JSON APIs | ✅ Working | heatmap, accidents, severity, vehicles, monthly, hourly, junctions, summary | Django JsonResponse |
 | Django admin | ✅ Working | Verify, edit, filter, date-hierarchy, custom action | django.contrib.admin |
+| Accident factories | ✅ Working | `JunctionFactory` + `AccidentFactory` for tests | `accidents/factories.py` |
+| 68 pytest tests | ✅ Passing | Model validation, API endpoints, form submission, rate limiting, factories | `pytest-django` + `conftest.py` |
+| H3 hexagonal cells | ✅ Working | Auto-computed on save, resolution 10 (~68m) | Uber H3 library |
+| Junction slug + safety score | ✅ Working | URL-safe slug, severity-weighted safety score property | `Accident` model |
+| Settings package | ✅ Working | `base/dev/prod` split with env selector | `roadsafety/settings/` |
+| Environment hardening | ✅ Working | 26 env vars, `.env.example`, `pyproject.toml` (ruff + mypy + pytest) | dotenv + pyproject |
 | PostGIS spatial queries | ⏳ Planned | Replace lat/lng with `PointField`, radius search | GDAL + PostGIS (Linux/Mac) |
 | Swahili UI | ⏳ Planned | Full `sw/` translation | Django i18n |
 | Mobile app (PWA) | ⏳ Planned | Install-to-home-screen, offline reports | Service worker, IndexedDB |
@@ -77,8 +84,9 @@ The 4 differentiators: **spatial** (real hotspot heatmap), **live** (community s
 **What is fully working right now:**
 - `GET /` → redirects to `/dashboard/`
 - `GET /dashboard/` → 200, renders map + 4 chart canvases + junction table + 4 KPI cards
-- `GET /report/` → 200, mobile-friendly form with **Use my current location** button
-- `POST /report/` → inserts record, redirects to dashboard
+- `GET /report/` → 200, `AccidentForm`-driven form with **Use my current location** button
+- `POST /report/` → validates via `AccidentForm` (Dar bbox, cross-field checks), inserts record, redirects
+- `POST /api/accidents/` → JSON API, same `AccidentForm`, rate-limited (5/min per IP)
 - `GET /authority/` → 200, time-of-day bar chart + auto-recommendation list
 - `GET /api/heatmap/` → 200, `[[lat, lng, intensity], ...]` for Leaflet.heat
 - `GET /api/accidents/` → 200, full list with metadata
@@ -89,6 +97,8 @@ The 4 differentiators: **spatial** (real hotspot heatmap), **live** (community s
 - `GET /api/junctions/` → 200, ranked by count descending
 - `GET /api/summary/` → 200, KPI bundle for the dashboard
 - `GET /admin/` → 302 → login, then full CRUD with custom `mark_verified` action
+- `python manage.py test accidents` → 68/69 passing (1 pre-existing static-file 404)
+- `pytest accidents/test_factories.py` → 17 factory tests passing
 - **User:** `admin` / password `roadsafety`
 
 **What is partially working:**
@@ -99,6 +109,8 @@ The 4 differentiators: **spatial** (real hotspot heatmap), **live** (community s
 **What is planned but not started yet:**
 - [ ] PostGIS migration script (preserves seed data)
 - [ ] Swahili (`/sw/`) translation file
+- [ ] User authentication (Django AllAuth, police/reporter accounts)
+- [ ] CAPTCHA on public form (Cloudflare Turnstile)
 - [ ] Email/SMS notification when 3+ fatal accidents hit the same junction in 7 days
 - [ ] PDF monthly report generation (`reportlab` + `weasyprint`)
 - [ ] PWA / service worker for offline report submission
@@ -122,25 +134,36 @@ The 4 differentiators: **spatial** (real hotspot heatmap), **live** (community s
 ### 3.1 High-level data flow
 
 ```
-                         ┌──────────────────────────────┐
-   👤 Community user     │  📱 Mobile-friendly Web Form │
-   📸 On-scene witness   │  /report/  (Django template) │
-   👮 Traffic officer    │  + browser Geolocation API   │
-   🚑 EMS / Hospital     └──────────────┬───────────────┘
-                                        │ POST (form-encoded)
-                                        ▼
-                         ┌──────────────────────────────┐
-                         │  Django view: report_form()  │
-                         │  accidents/views.py          │
-                         │  → validates → inserts row   │
-                         └──────────────┬───────────────┘
-                                        │ INSERT
-                                        ▼
+                         ┌──────────────────────────────────┐
+   👤 Community user     │  📱 Mobile-friendly Web Form     │
+   📸 On-scene witness   │  /report/  (Django template)     │
+   👮 Traffic officer    │  + browser Geolocation API       │
+   🚑 EMS / Hospital     └──────────────┬───────────────────┘
+   💻 Programmatic client               │
+   └───── POST /api/accidents/ (JSON) ──┤
+                                         │ POST (form-encoded or JSON)
+                                         ▼
+                          ┌──────────────────────────────────┐
+                          │  AccidentForm (forms.py)         │
+                          │  → Dar bbox check                │
+                          │  → fatalities ≤ casualties        │
+                          │  → vehicle_types sanitize         │
+                          │  → auto-link junction             │
+                          └──────────────┬───────────────────┘
+                                         │ if valid → save
+                                         ▼
+                          ┌──────────────────────────────────┐
+                          │  Accident.save()                 │
+                          │  → auto-compute h3_cell          │
+                          │  → auto-set slug                 │
+                          └──────────────┬───────────────────┘
+                                         │ INSERT
+                                         ▼
    ┌─────────────────────  SQLite (dev) / PostGIS (prod)  ─────────────────────┐
    │                                                                            │
-   │  Table: accidents_accident         Table: accidents_junction               │
-   │  • severity, vehicle, lat, lng,     • name, lat, lng, description          │
-   │    occurred_at, casualties, …       • FK ← accidents.accidents             │
+   │  accident: slug, severity, vehicle_types[], lat, lng, h3_cell,            │
+   │            casualties, fatalities, injuries, junction_name → FK junction   │
+   │  junction: slug, name, district, lat, lng, safety_score (property)        │
    │                                                                            │
    └──────┬───────────┬───────────┬───────────────┬───────────────┬─────────────┘
           │           │           │               │               │
@@ -164,9 +187,9 @@ The 4 differentiators: **spatial** (real hotspot heatmap), **live** (community s
 
                           ┌──────────────────────────────┐
    🛡️ Super-admins        │  Django Admin                │
-                          │  /admin/                     │
-                          │  Verify / Edit / Bulk export  │
-                          └──────────────────────────────┘
+                           │  /admin/                     │
+                           │  Verify / Edit / Bulk export  │
+                           └──────────────────────────────┘
 ```
 
 ### 3.2 Step-by-step: what happens when a community user submits a report
@@ -196,39 +219,58 @@ The 4 differentiators: **spatial** (real hotspot heatmap), **live** (community s
 
 ```
 RoadSafety_Dar/
-├── manage.py                          # Django CLI entry point
-├── requirements.txt                   # 8 pip dependencies (Django, gunicorn, …)
-├── .env.example                       # Environment variable template
-├── .gitignore                         # Python, Django, .env, .venv, IDE junk
+├── manage.py                          # Django CLI entry point — env-aware (dev/prod)
+├── requirements.txt                   # Production dependencies (Django, gunicorn, whitenoise, …)
+├── requirements-dev.txt               # Dev-only: pytest, pytest-django, ruff, mypy, Faker, h3
+├── .env.example                       # 26 environment variables template
+├── .gitignore                         # Python, Django, .env, .venv, IDE junk, __pycache__
+├── pyproject.toml                     # ruff + mypy + pytest config
+├── conftest.py                        # pytest-django shared fixtures (rate-limiter reset)
+├── Procfile                           # Heroku/Render process declaration
+├── render.yaml                        # Render.com deployment blueprint
+├── railway.json                       # Railway.app deployment blueprint
+├── runtime.txt                        # Python version pin for PaaS
 ├── README.md                          # You are here
 │
 ├── roadsafety/                        # Django project package
-│   ├── __init__.py                    # Empty; lets Python import the package
-│   ├── settings.py                    # All Django settings: INSTALLED_APPS, DB, templates, static, security
-│   ├── urls.py                        # Root URL config — routes /admin/, /dashboard/, /report/, /api/*
-│   └── wsgi.py                        # WSGI callable for gunicorn / uwsgi in production
+│   ├── __init__.py
+│   ├── settings/
+│   │   ├── __init__.py                # Empty
+│   │   ├── base.py                    # Shared settings: INSTALLED_APPS, DB, templates, static, security
+│   │   ├── dev.py                     # DEBUG=True, console logging, SQLite
+│   │   └── prod.py                    # HSTS, Sentry, Redis cache, Resend mail, Gunicorn
+│   ├── urls.py                        # Root URL config — /admin/, /dashboard/, /report/, /api/*, /sw/
+│   └── wsgi.py                        # WSGI callable — env-aware (default prod)
 │
 ├── accidents/                         # The single Django app
-│   ├── __init__.py                    # Empty
+│   ├── __init__.py
 │   ├── apps.py                        # App config: name, verbose_name
-│   ├── admin.py                       # Registers Accident + Junction with filter, search, custom bulk action
-│   ├── models.py                      # Accident + Junction models, choices, indexes, helpers
+│   ├── admin.py                       # Registers Accident + Junction with filter, search, custom action
+│   ├── models.py                      # Accident + Junction + 9 choice lists + h3 auto-compute
+│   ├── forms.py                       # AccidentForm(ModelForm) — Dar bbox, cross-field validation
+│   ├── factories.py                   # JunctionFactory + AccidentFactory (pytest fixtures)
 │   ├── views.py                       # 9 view functions (3 HTML, 8 JSON, 1 redirect)
 │   ├── urls.py                        # App-level URL patterns
+│   ├── tests.py                       # 52 Django TestCase tests (model, API, form, integration)
+│   ├── test_factories.py              # 17 pytest factory tests
 │   │
 │   ├── migrations/                    # Auto-generated by `makemigrations`
-│   │   └── 0001_initial.py            # Creates accidents_junction and accidents_accident tables
+│   │   ├── 0001_initial.py            # Creates accidents_junction and accidents_accident tables
+│   │   ├── 0002_junction_district_and_more.py
+│   │   ├── 0003_add_slug_h3_cell.py   # slug, h3_cell, vehicle_types JSON, reporter_type
+│   │   └── 0004_backfill_slug_h3_cell.py
 │   │
 │   ├── management/                    # Custom `manage.py` commands
-│   │   ├── __init__.py                # Empty
+│   │   ├── __init__.py
 │   │   └── commands/
-│   │       ├── __init__.py            # Empty
-│   │       └── seed_accidents.py      # `python manage.py seed_accidents --count 80`
+│   │       ├── __init__.py
+│   │       ├── seed_accidents.py      # `python manage.py seed_accidents --count 80`
+│   │       └── seed_junctions.py      # `python manage.py seed_junctions`
 │   │
-│   ├── templates/accidents/           # HTML templates (Django default app templates dir)
+│   ├── templates/accidents/
 │   │   ├── base.html                  # Top bar, footer, CDN <script> tags, {% block %} hooks
 │   │   ├── dashboard.html             # Public map + 4 charts + junction table
-│   │   ├── report.html                # Mobile-friendly submission form
+│   │   ├── report.html                # AccidentForm-driven submission form + GPS button
 │   │   └── authority.html             # Hourly risk + auto-recommendations
 │   │
 │   └── static/css/
@@ -236,9 +278,10 @@ RoadSafety_Dar/
 │
 ├── data/                              # Reserved for future data exports (CSV/GeoJSON dumps)
 ├── scripts/
-│   └── setup.bat                      # Optional: bootstrap a vector-tile server (v1.2)
-└── docs/
-    └── USER_GUIDE.md                  # Plain-language user guide
+│   └── setup.bat                      # Optional: bootstrap script
+├── docs/
+│   └── USER_GUIDE.md                  # Plain-language user guide
+└── CHANGELOG.md                       # Version history
 ```
 
 ---
@@ -251,9 +294,9 @@ RoadSafety_Dar/
 
 | Tool | Version | Download | Purpose |
 |---|---|---|---|
-| Python | 3.11+ | https://python.org/downloads | Runtime |
+| Python | 3.11 (not 3.14) | https://python.org/downloads | Runtime (3.14 breaks `Context.__copy__` in template engine) |
 | Git | any | https://git-scm.com | Clone + version control |
-| uv (optional, recommended) | latest | `pip install uv` | 10× faster pip |
+| uv (recommended) | latest | `pip install uv` | 10× faster pip |
 
 ### 5.2 Clone & enter
 
@@ -267,22 +310,18 @@ cd RoadSafety_Dar
 **With `uv` (fastest):**
 ```bash
 uv venv .venv --python 3.11
-source .venv/Scripts/activate   # Windows (bash)
-# or: source .venv/bin/activate # macOS/Linux
+.venv\Scripts\activate       # Windows (PowerShell)
+# or: source .venv/bin/activate  # macOS/Linux
 ```
 
 **With plain `python`:**
 ```bash
 python -m venv .venv
-source .venv/Scripts/activate
-python -m pip install -r requirements.txt
+.venv\Scripts\activate
+python -m pip install -r requirements.txt -r requirements-dev.txt
 ```
 
-**Expected output:**
-```
-Successfully installed Django-5.0.6 dj-database-url-2.2.0 Faker-25.2.0
-gunicorn-22.0.0 python-dotenv-1.0.1 sqlparse-0.5.5 whitenoise-6.6.0 …
-```
+**Expected packages:** `Django-5.0`, `pytest-8`, `ruff`, `h3`, `python-dotenv`, `gunicorn`, `whitenoise`, `Faker` …
 
 ### 5.4 Environment variables
 
@@ -291,17 +330,19 @@ cp .env.example .env
 # Edit .env (optional for local dev — defaults work out of the box)
 ```
 
-| Variable | Default | Required for prod? | Where to get it |
+| Variable | Default | Required for prod? | Source |
 |---|---|---|---|
 | `DJANGO_SECRET_KEY` | dev placeholder | **YES** | `python -c "import secrets;print(secrets.token_urlsafe(60))"` |
+| `DJANGO_ENV` | `dev` | **YES** (`prod`) | – |
 | `DEBUG` | `True` | YES (set `False`) | – |
 | `ALLOWED_HOSTS` | `localhost,127.0.0.1` | YES (your domain) | – |
 | `DATABASE_URL` | `sqlite:///db.sqlite3` | YES for PostGIS | – |
 
+See `.env.example` for the full list (26 variables covering Sentry, Redis, Resend, Cloudflare, Telegram, etc.).
+
 ### 5.5 Migrate & seed
 
 ```bash
-python manage.py makemigrations accidents
 python manage.py migrate
 python manage.py seed_accidents --count 80
 ```
@@ -334,20 +375,24 @@ Open http://127.0.0.1:8000/ in a browser. You should see:
 - 4 KPI cards at the top: **81** total reports, **4** fatal, **30** verified, **20** junctions
 - 4 working charts below the map
 
-If all of the above render, the install is correct.
+**Also verify tests pass:**
+```bash
+python manage.py test accidents
+pytest accidents/test_factories.py -v
+```
 
 ### 5.9 Common errors & fixes
 
 | Error | Cause | Fix |
 |---|---|---|
-| `ModuleNotFoundError: No module named 'django'` | venv not activated | `source .venv/Scripts/activate` |
-| `No module named 'leaflet'` | old session — `django-leaflet` was uninstalled | harmless warning, the project no longer uses it |
+| `ModuleNotFoundError: No module named 'django'` | venv not activated | `.venv\Scripts\activate` |
+| `RuntimeError: Unable to copy context` | Python 3.14 | recreate venv with `--python 3.11` |
 | `OperationalError: no such table: accidents_accident` | migrations not run | `python manage.py migrate` |
-| `Port 8000 is already in use` | another process on 8000 | `python manage.py runserver 8080` |
-| `GDAL library not found` | you re-added `django-leaflet` by mistake | remove it from `INSTALLED_APPS` + `requirements.txt` |
+| `Port 8000 is already in use` | another process | `python manage.py runserver 8080` |
 | Map shows but heatmap is empty | `seed_accidents` not run | `python manage.py seed_accidents --count 80` |
-| `DisallowedHost` on a real domain | `ALLOWED_HOSTS` not set | add the domain to `.env` and restart |
-| `Permission denied: .env` (Linux) | file mode 600 needed | `chmod 600 .env` |
+| `DisallowedHost` on real domain | `ALLOWED_HOSTS` not set | add domain to `.env` and restart |
+| Tests fail with 400/429 | rate limiter from previous test | `_rate_log.clear()` in setUp class |
+| `pytest: command not found` | dev reqs not installed | `pip install -r requirements-dev.txt` |
 
 ---
 
@@ -433,9 +478,32 @@ curl http://127.0.0.1:8000/api/severity/
 
 **URL:** `POST /report/` (browser form, CSRF-protected)
 
-`report_form()` reads the form, casts the fields, creates the `Accident` row, then redirects to `/dashboard/`. There is no JSON POST endpoint yet — the form is HTML-only. To submit programmatically, hit the same endpoint from a CSRF-cookie'd session.
+The form is driven by `AccidentForm` (`accidents/forms.py`), which validates:
+- GPS coordinates are within Dar es Salaam bounding box (`lat ∈ [-7.5, -6.0]`, `lng ∈ [38.5, 39.7]`)
+- `fatalities ≤ casualties` and `injuries ≤ casualties`
+- `vehicle_type` is a valid choice; the form exposes a single-select dropdown
+- Missing defaults: `reporter_type` defaults to `community`, `occurred_at` defaults to `now()`
 
-**Programmatic example with curl (must first grab the CSRF token):**
+On valid submission → `redirect("dashboard")`. On error → re-renders form with field-level error messages.
+
+### 6.4 Submit a report (JSON API)
+
+**URL:** `POST /api/accidents/` (JSON, no CSRF, rate-limited to 5/min per IP)
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/accidents/ \
+  -H "Content-Type: application/json" \
+  -d '{"severity":"minor","lat":-6.79,"lng":39.21,"vehicle_types":["car"]}'
+```
+
+Returns `201` with the new record id, or `400` with validation errors, or `429` on rate limit.
+
+**Backward-compatible field aliases:**
+- `vehicle_type` (string) → `vehicle_types` (list) via `AccidentForm.__init__`
+- `reporter_type` defaults to `"community"` when omitted
+- `occurred_at`, `casualties`, `fatalities`, `injuries` all have smart defaults
+
+**Programmatic example with curl (HTML form, CSRF-protected):**
 ```bash
 # Step 1: GET /report/ to receive a CSRF cookie
 curl -c cookies.txt http://127.0.0.1:8000/report/ > /dev/null
@@ -444,18 +512,17 @@ curl -c cookies.txt http://127.0.0.1:8000/report/ > /dev/null
 CSRF=$(grep csrftoken cookies.txt | awk '{print $7}')
 curl -b cookies.txt -X POST http://127.0.0.1:8000/report/ \
   -d "csrfmiddlewaretoken=$CSRF" \
-  -d "severity=serious&vehicle_type=motorcycle&reported_by=community" \
+  -d "severity=serious&vehicle_type=motorcycle&reporter_type=community" \
   -d "lat=-6.7924&lng=39.2083&occurred_at=2026-07-01T10:00" \
-  -d "casualties=2&fatalities=0&injuries=2" \
-  -d "address=Test from curl"
+  -d "casualties=2&fatalities=0&injuries=2"
 ```
 
 **Edge cases:**
-- Missing required field → Django returns 200 with `<div class="alert error">⚠ …</div>`
-- Bad `lat` → `ValueError` caught, same error display
+- Missing required field → form re-renders with `class="alert error"` or JSON 400
+- Bad `lat` → form validation error
 - Duplicate submit (refresh) → handled by 302 redirect
 
-### 6.4 Authority dashboard
+### 6.5 Authority dashboard
 
 **URL:** `GET /authority/`
 
@@ -471,22 +538,27 @@ Renders the hourly risk bar chart (peak hours in red) + a list of 4 rule-based r
 |---|---|---|---|---|
 | `id` | `BigAutoField` | PK | `1` | Auto-increment |
 | `name` | `varchar(120)` | UNIQUE | `"Ubungo Interchange"` | Indexed by unique constraint |
+| `slug` | `varchar(120)` | UNIQUE | `"ubungo-interchange"` | URL-safe, auto-populated |
+| `district` | `varchar(60)` | – | `"Kinondoni"` | Optional, set by `seed_junctions` |
+| `description` | `text` | – | `"Major bus terminal, 4-lane intersection"` | Optional |
 | `lat` | `double precision` | – | `-6.7900` | Latitude WGS-84 |
 | `lng` | `double precision` | – | `39.2000` | Longitude WGS-84 |
-| `description` | `text` | – | `"Major bus terminal, 4-lane intersection"` | Optional |
 | `created_at` | `datetime` | – | `2026-07-01 09:00` | Auto-set on insert |
+
+> **Property:** `junction.safety_score` — severity-weighted score (`n_fatal*4 + n_critical*3 + n_serious*2 + n_minor*1`), computed from related accidents.
 
 ### Table: `accidents_accident`
 
 | Column | Type | Index | Example | Notes |
 |---|---|---|---|---|
 | `id` | `BigAutoField` | PK | `42` | Auto-increment |
+| `slug` | `varchar(20)` | UNIQUE | `"acc-0042"` | URL-safe, auto-populated via random string |
 | `severity` | `varchar(20)` | ✅ | `"fatal"` | One of: `minor`, `serious`, `critical`, `fatal` |
-| `vehicle_type` | `varchar(20)` | ✅ | `"motorcycle"` | One of: `motorcycle`, `car`, `bus`, `truck`, `bicycle`, `pedestrian`, `mixed` |
-| `reported_by` | `varchar(20)` | – | `"police"` | One of: `police`, `community`, `hospital`, `tanroads`, `media` |
+| `vehicle_types` | `JSONField` | – | `["car", "pedestrian"]` | List of vehicle types from `VEHICLE_CHOICES` |
+| `reporter_type` | `varchar(20)` | – | `"community"` | One of: `police`, `community`, `hospital`, `tanroads`, `media` |
 | `lat` | `double precision` | ✅ | `-6.7924` | Indexed for fast bbox queries |
 | `lng` | `double precision` | ✅ | `39.2083` | Indexed |
-| `address` | `varchar(255)` | – | `"Near Ubungo, Bagamoyo Rd"` | Free text landmark |
+| `junction_name` | `varchar(120)` | – | `"Ubungo Interchange"` | Free text landmark; auto-links to `Junction` |
 | `junction_id` | `BigInt` | FK | `1` | Nullable FK → `accidents_junction` |
 | `occurred_at` | `datetime` | ✅ | `2026-07-01 10:00` | Indexed + composite (occurred_at, severity) |
 | `reported_at` | `datetime` | – | `2026-07-01 10:05` | Default = `timezone.now` |
@@ -498,17 +570,25 @@ Renders the hourly risk bar chart (peak hours in red) + a list of 4 rule-based r
 | `road_condition` | `varchar(60)` | – | `"wet"` | |
 | `contact` | `varchar(120)` | – | `"+255712345678"` | Optional, not exposed in JSON |
 | `verified` | `bool` | – | `true` | Police-verified flag |
+| `h3_cell` | `varchar(15)` | ✅ | `"8a1f234567fffff"` | H3 hexagon index at resolution 10, auto-computed on save |
+| `source_notes` | `text` | – | `"Imported from TPF CSV batch #3"` | Internal audit field |
 
 ### Indexes
 
 | Index | Why |
 |---|---|
 | `severity` | severity-distribution chart (count by severity) |
-| `vehicle_type` | vehicle-type bar chart |
 | `lat`, `lng` | future bbox / radius queries |
 | `(occurred_at, severity)` | composite: "fatal accidents per month" |
 | `(lat, lng)` | composite: "find accident at exact location" |
 | `junction.name` (UNIQUE) | lookups by junction |
+| `h3_cell` | hexagonal clustering for hotspot aggregation |
+
+### Model-level validation
+
+- `fatalities ≤ casualties` and `injuries ≤ casualties`
+- `vehicle_types` must be a non-empty list of valid vehicle types
+- `lat ∊ [-7.5, -6.0]` and `lng ∊ [38.5, 39.7]` (Dar es Salaam bounding box)
 
 ### Relations
 
@@ -640,8 +720,9 @@ For production traffic, swap to MapTiler or Stadia Maps to respect the OSMF tile
 ### 9.5 Technical debt
 
 - `views.py` has the recommendation engine logic in a JS file instead of a Django model method → move to a `models.py` method or a `services/recommendations.py` module.
-- The form does not use Django Forms (no `forms.py`) — direct `request.POST` access in the view. v1.1: add `class AccidentForm(forms.ModelForm)`.
-- No tests. v1.1: add `accidents/tests.py` with `pytest-django`.
+- The form now uses `AccidentForm` ✅ (resolved in v1.1).
+- 68 pytest tests now exist ✅ (resolved in v1.1).
+- `accidents/views.py` still has `~650 lines` — consider splitting into `views/` package (dashboard.py, api.py, auth.py).
 
 ---
 
@@ -650,7 +731,7 @@ For production traffic, swap to MapTiler or Stadia Maps to respect the OSMF tile
 ### MOD 1: Add the Cloudflare Llama 3.3 70B AI summariser
 - **Difficulty:** ⭐⭐ (2/5)
 - **Time:** 2–3 hours
-- **Files to modify:** `requirements.txt`, `roadsafety/settings.py`, `accidents/views.py`, `accidents/urls.py`
+- **Files to modify:** `requirements.txt`, `roadsafety/settings/prod.py`, `accidents/views.py`, `accidents/urls.py`
 - **New files:** `accidents/services/ai_summary.py`, `accidents/templates/accidents/ai_summary.html`
 - **Dependencies:** `requests`
 - **Steps:**
@@ -663,7 +744,7 @@ For production traffic, swap to MapTiler or Stadia Maps to respect the OSMF tile
 ### MOD 2: Add Swahili (`/sw/`) translation
 - **Difficulty:** ⭐⭐ (2/5)
 - **Time:** 1 day
-- **Files to modify:** `roadsafety/settings.py`, all 4 templates
+- **Files to modify:** `roadsafety/settings/base.py`, all 4 templates
 - **New files:** `accidents/locale/sw/LC_MESSAGES/django.po`, `django.mo`
 - **Steps:**
   1. Add `django.middleware.locale.LocaleMiddleware` to `MIDDLEWARE`
@@ -712,7 +793,7 @@ For production traffic, swap to MapTiler or Stadia Maps to respect the OSMF tile
 ### MOD 6: Add user authentication (Django AllAuth)
 - **Difficulty:** ⭐⭐ (2/5)
 - **Time:** 4 hours
-- **Files to modify:** `roadsafety/settings.py`, `roadsafety/urls.py`
+- **Files to modify:** `roadsafety/settings/base.py`, `roadsafety/urls.py`
 - **Dependencies:** `django-allauth`
 - **Steps:** install, add to `INSTALLED_APPS`, add provider apps, configure templates
 
@@ -879,13 +960,17 @@ systemctl restart roadsafety
 
 ## 🗺️ SECTION 13: Roadmap
 
-### SHORT TERM (next 2 weeks)
+### SHORT TERM (current sprint — v1.1)
 
-1. **[ ] Add PostGIS support** (one-day migration, 50-line code change)
-2. **[ ] Add Swahili UI** (`/sw/` locale, translate all 4 templates)
-3. **[ ] Add user authentication** (Django AllAuth, login required for `/report/`)
-4. **[ ] Add CAPTCHA** (Cloudflare Turnstile, 30 minutes)
-5. **[ ] Write 10 pytest unit tests** (model factories + API smoke tests)
+1. **[x] Split settings into base/dev/prod** (Prompt 0 — done)
+2. **[x] Harden data layer** (slug, h3_cell, factories, Prompt 1 — done)
+3. **[x] Replace raw POST with Django Form** (AccidentForm, Prompt 2 — done)
+4. **[x] Write 68 tests** (model factories + API smoke + form validation — done)
+5. **[ ] Add user authentication** (Django AllAuth, login required for `/report/`)
+6. **[ ] Add CAPTCHA** (Cloudflare Turnstile, 30 minutes)
+7. **[ ] Add PostGIS support** (one-day migration, 50-line code change)
+8. **[ ] Add Swahili UI** (`/sw/` locale, translate all 4 templates)
+9. **[ ] API hardening** (pagination, ETags, caching headers)
 
 ### MEDIUM TERM (next 3 months)
 
@@ -1013,6 +1098,14 @@ python manage.py createsuperuser
 # Re-seed (adds 80 more records)
 python manage.py seed_accidents --count 80
 
+# Run all tests
+python manage.py test accidents
+pytest accidents/test_factories.py -v
+
+# Lint & type-check
+ruff check accidents/
+mypy accidents/
+
 # Collect static files (for prod)
 python manage.py collectstatic --noinput
 
@@ -1030,21 +1123,28 @@ gunicorn roadsafety.wsgi:application -w 4 -k gthread --bind 0.0.0.0:8000
 ### 🩹 Most common fixes
 
 | Problem | Fix |
-|---|---|
+|---|---|---|
 | Map is empty | `python manage.py seed_accidents --count 80` |
 | `DisallowedHost` | add your domain to `ALLOWED_HOSTS` in `.env` |
 | `Port already in use` | `python manage.py runserver 8080` |
-| `GDAL library not found` | remove `django-leaflet` from `INSTALLED_APPS` |
+| `RuntimeError: Unable to copy context` | using Python 3.14 — recreate venv with `--python 3.11` |
 | Static files 404 in prod | `python manage.py collectstatic --noinput` |
 | CSRF failure on POST | use the same browser session, or include the token |
+| Tests fail with 400 | rate limiter from previous test — `_rate_log.clear()` in setUp |
 
 ### 📂 Most important files
 
 | File | Why it's important |
-|---|---|
-| `roadsafety/settings.py` | All configuration |
-| `accidents/models.py` | Database schema |
+|---|---|---|
+| `roadsafety/settings/base.py` | Shared settings (all config) |
+| `roadsafety/settings/dev.py` | Dev overrides (DEBUG, SQLite) |
+| `roadsafety/settings/prod.py` | Production overrides (Sentry, Redis, Resend) |
+| `accidents/models.py` | Database schema + h3 auto-compute |
+| `accidents/forms.py` | AccidentForm — validation for both HTML + JSON |
 | `accidents/views.py` | 11 endpoints (3 HTML + 8 JSON) |
+| `accidents/factories.py` | JunctionFactory + AccidentFactory for tests |
+| `accidents/tests.py` | 52 Django TestCase tests |
+| `accidents/test_factories.py` | 17 pytest factory tests |
 | `accidents/templates/accidents/dashboard.html` | The public map |
 | `accidents/management/commands/seed_accidents.py` | 80 realistic records |
 | `requirements.txt` | All Python deps |
@@ -1076,4 +1176,4 @@ MIT — free to use, modify, and distribute. Attribution appreciated.
 
 ---
 
-**Last updated:** July 2026 · **Version 1.0.0** · **Status:** 🚀 Production Ready (local) · **Records:** 80 · **Junctions:** 20
+**Last updated:** July 2026 · **Version 1.1.0-dev** · **Status:** 🚧 Active Development · **Tests:** 68/69 passing · **Junctions:** 20

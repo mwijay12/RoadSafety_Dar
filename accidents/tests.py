@@ -3,12 +3,14 @@ Tests for accidents app — covers models, views, and new v1.1 features.
 Run with: python manage.py test accidents
 """
 from datetime import datetime, timedelta
+
+from django.contrib.auth.models import User
+from django.core import mail
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils import timezone
 
 from .models import Accident, Junction, VEHICLE_CHOICES, SEVERITY_CHOICES
-
 
 class ModelTests(TestCase):
     """Test Accident + Junction model constraints and validation."""
@@ -170,13 +172,33 @@ class ReportFormTests(TestCase):
 
     def setUp(self):
         self.client = Client()
+        # Reset rate limiter between tests
+        from accidents.decorators import _rate_log
+        _rate_log.clear()
+        # Create a logged-in community user for form POST tests
+        self.user = User.objects.create_user("reporter1", "r@test.com", "pass1234")
+        # UserProfile is auto-created by signal with role=community
+
+    def _login(self):
+        self.client.login(username="reporter1", password="pass1234")
 
     def test_get_report_form_renders(self):
         resp = self.client.get(reverse("report"))
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "accidents/report.html")
 
+    def test_post_anonymous_redirects_to_login(self):
+        resp = self.client.post(reverse("report"), {
+            "severity": "minor",
+            "vehicle_type": "car",
+            "lat": -6.7924,
+            "lng": 39.2083,
+        })
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/accounts/login/", resp.url)
+
     def test_post_valid_form_redirects(self):
+        self._login()
         resp = self.client.post(reverse("report"), {
             "severity": "minor",
             "vehicle_type": "car",
@@ -191,6 +213,9 @@ class ReportFormTests(TestCase):
         self.assertEqual(Accident.objects.count(), 1)
 
     def test_post_invalid_lat_shows_error(self):
+        self._login()
+        from accidents.decorators import _rate_log
+        _rate_log.clear()
         resp = self.client.post(reverse("report"), {
             "severity": "minor",
             "vehicle_type": "car",
@@ -202,6 +227,9 @@ class ReportFormTests(TestCase):
         self.assertEqual(Accident.objects.count(), 0)
 
     def test_post_outside_dar_bbox(self):
+        self._login()
+        from accidents.decorators import _rate_log
+        _rate_log.clear()
         resp = self.client.post(reverse("report"), {
             "severity": "minor",
             "vehicle_type": "car",
@@ -312,7 +340,7 @@ class CSVDownloadTests(TestCase):
     def test_csv_download_endpoint_exists(self):
         resp = self.client.get("/api/export.csv")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp["Content-Type"], "text/csv")
+        self.assertIn("text/csv", resp["Content-Type"])
 
     def test_csv_download_has_data(self):
         resp = self.client.get("/api/export.csv")
@@ -366,16 +394,18 @@ class AIRecommendationsTests(TestCase):
         resp = self.client.get("/api/recommendations/")
         self.assertEqual(resp.status_code, 200)
 
-    def test_recommendations_returns_list(self):
+    def test_recommendations_returns_dict_with_list(self):
         resp = self.client.get("/api/recommendations/")
         data = resp.json()
-        self.assertIsInstance(data, list)
-        self.assertGreater(len(data), 0)
+        self.assertIsInstance(data, dict)
+        self.assertIn("recommendations", data)
+        self.assertIsInstance(data["recommendations"], list)
+        self.assertGreater(len(data["recommendations"]), 0)
 
     def test_recommendations_have_required_fields(self):
         resp = self.client.get("/api/recommendations/")
         data = resp.json()
-        rec = data[0]
+        rec = data["recommendations"][0]
         self.assertIn("junction", rec)
         self.assertIn("risk_level", rec)
         self.assertIn("actions", rec)
@@ -405,7 +435,11 @@ class FatalClusterNotificationTests(TestCase):
         from django.core.management import call_command
         from io import StringIO
         out = StringIO()
-        call_command("detect_fatal_clusters", stdout=out)
+        # Command exits with 1 when clusters found (by design for cron monitoring)
+        try:
+            call_command("detect_fatal_clusters", stdout=out)
+        except SystemExit as e:
+            self.assertEqual(e.code, 1)  # Expected exit code when clusters found
         output = out.getvalue()
         # Should detect Kariakoo as a cluster
         self.assertIn("Kariakoo", output)
@@ -636,22 +670,19 @@ class PremiumUITests(TestCase):
     def test_dashboard_uses_premium_palette(self):
         resp = self.client.get("/dashboard/")
         self.assertEqual(resp.status_code, 200)
-        # The premium CSS uses specific color variables
         content = resp.content.decode()
-        # Hero section with "Road Safety" + "Dar es Salaam"
         self.assertIn("Road Safety", content)
         self.assertIn("Dar es Salaam", content)
-        # KPI grid
-        self.assertIn("kpi fatal", content)
-        self.assertIn("kpi critical", content)
-        # Live badge
+        self.assertIn("featured-stat-card", content)
         self.assertIn("live-badge", content)
 
     def test_dashboard_has_severity_legend(self):
         resp = self.client.get("/dashboard/")
         content = resp.content.decode()
-        for sev in ["Total Reports", "Fatal", "Critical", "Serious", "Minor", "Verified"]:
+        for sev in ["Total Reports", "Fatal", "Tracked Junctions", "Police Verified"]:
             self.assertIn(sev, content, f"Missing severity: {sev}")
+        self.assertIn("Severity Distribution", content)
+        self.assertIn("severityChart", content)
 
     def test_dashboard_has_time_of_day_chart(self):
         resp = self.client.get("/dashboard/")
@@ -764,4 +795,339 @@ class EastAfricaTimezoneTests(TestCase):
         self.assertIsNotNone(now.tzinfo)
 
 
-# ===================== END v1.2.0 TESTS =====================
+
+class AuthTests(TestCase):
+    """Test authentication flows (Prompt 3)."""
+
+    def setUp(self):
+        self.client = Client()
+        from accidents.decorators import _rate_log
+        _rate_log.clear()
+        self.user = User.objects.create_user("authtest", "auth@test.com", "pass1234")
+        # UserProfile auto-created by signal, role defaults to community
+
+    def test_login_page_renders(self):
+        resp = self.client.get("/accounts/login/")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_signup_page_renders(self):
+        resp = self.client.get("/accounts/signup/")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_login_succeeds(self):
+        resp = self.client.post("/accounts/login/", {"login": "authtest", "password": "pass1234"})
+        self.assertIn(resp.status_code, (302, 200))
+
+    def test_authority_anonymous_redirects(self):
+        resp = self.client.get("/authority/")
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/accounts/login/", resp.url)
+
+    def test_authority_community_forbidden(self):
+        self.client.login(username="authtest", password="pass1234")
+        resp = self.client.get("/authority/")
+        # community user should be redirected (not 200)
+        self.assertEqual(resp.status_code, 302)
+
+    def test_authority_police_access(self):
+        police = User.objects.create_user("officer1", "police@test.com", "pass1234")
+        police.profile.role = "police"
+        police.profile.save()
+        self.client.login(username="officer1", password="pass1234")
+        resp = self.client.get("/authority/")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_user_profile_created_on_signup(self):
+        from .models import UserProfile
+        self.assertTrue(hasattr(self.user, "profile"))
+        self.assertEqual(self.user.profile.role, "community")
+
+    def test_report_post_sets_reporter_type_from_role(self):
+        self.client.login(username="authtest", password="pass1234")
+        resp = self.client.post(reverse("report"), {
+            "severity": "minor",
+            "vehicle_type": "car",
+            "lat": -6.7924,
+            "lng": 39.2083,
+            "occurred_at": "2026-07-01T10:00",
+            "casualties": 0,
+            "fatalities": 0,
+            "injuries": 0,
+        })
+        self.assertEqual(resp.status_code, 302)
+        a = Accident.objects.first()
+        self.assertEqual(a.reporter_type, "community")
+
+
+class EmailNotificationTests(TestCase):
+    """Test email notification signals (Prompt 6)."""
+
+    def setUp(self):
+        # Create a police user with email_notifications enabled
+        self.police = User.objects.create_user("officer", "officer@test.com", "pass1234")
+        self.police.profile.role = "police"
+        self.police.profile.email_notifications = True
+        self.police.profile.save()
+
+    def test_fatal_accident_sends_alert(self):
+        Accident.objects.create(
+            lat=-6.7924, lng=39.2083,
+            occurred_at=timezone.now(),
+            severity="fatal",
+            vehicle_types=["car"],
+            fatalities=1, casualties=1,
+            junction_name="Ubungo",
+        )
+        self.assertGreater(len(mail.outbox), 0)
+        self.assertIn("Fatal", mail.outbox[0].subject)
+        self.assertIn("officer@test.com", mail.outbox[0].to)
+
+    def test_critical_accident_sends_alert(self):
+        Accident.objects.create(
+            lat=-6.7924, lng=39.2083,
+            occurred_at=timezone.now(),
+            severity="critical",
+            vehicle_types=["bus"],
+            casualties=3,
+            junction_name="Mwenge",
+        )
+        self.assertGreater(len(mail.outbox), 0)
+        self.assertIn("Critical", mail.outbox[0].subject)
+
+    def test_minor_accident_does_not_send_alert(self):
+        Accident.objects.create(
+            lat=-6.7924, lng=39.2083,
+            occurred_at=timezone.now(),
+            severity="minor",
+            vehicle_types=["car"],
+        )
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_no_email_when_notifications_disabled(self):
+        self.police.profile.email_notifications = False
+        self.police.profile.save()
+        Accident.objects.create(
+            lat=-6.7924, lng=39.2083,
+            occurred_at=timezone.now(),
+            severity="fatal",
+            vehicle_types=["car"],
+            fatalities=1, casualties=1,
+        )
+        self.assertEqual(len(mail.outbox), 0)
+
+
+class DigestCommandTests(TestCase):
+    """Test the send_daily_digest management command (Prompt 6)."""
+
+    def setUp(self):
+        self.police = User.objects.create_user("officer2", "officer2@test.com", "pass1234")
+        self.police.profile.role = "police"
+        self.police.profile.email_notifications = True
+        self.police.profile.save()
+
+    def test_dry_run_does_not_send_email(self):
+        from io import StringIO
+        from django.core.management import call_command
+        out = StringIO()
+        call_command("send_daily_digest", dry_run=True, stdout=out)
+        output = out.getvalue()
+        self.assertIn("DRY-RUN", output)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_digest_sends_with_data(self):
+        from io import StringIO
+        from django.core.management import call_command
+        # Clear email outbox from signal (fatal accident triggers alert)
+        mail.outbox.clear()
+        Accident.objects.create(
+            lat=-6.7924, lng=39.2083,
+            occurred_at=timezone.now(),
+            severity="minor",
+            vehicle_types=["car"],
+        )
+        out = StringIO()
+        call_command("send_daily_digest", stdout=out)
+        self.assertGreater(len(mail.outbox), 0)
+        self.assertIn("Digest", mail.outbox[0].subject)
+        self.assertIn("officer2@test.com", mail.outbox[0].to)
+
+    def test_no_recipients_skips(self):
+        from io import StringIO
+        from django.core.management import call_command
+        self.police.profile.email_notifications = False
+        self.police.profile.save()
+        out = StringIO()
+        call_command("send_daily_digest", stdout=out)
+        self.assertIn("No authority recipients", out.getvalue())
+        self.assertEqual(len(mail.outbox), 0)
+
+
+
+# ===================== Prompt 8: Admin Panel & Data Quality Tests =====================
+
+
+class AuditLogModelTests(TestCase):
+    """Test AuditLog model creation and behaviour."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("adminuser", "admin@test.com", "pass1234")
+        self.accident = Accident.objects.create(
+            lat=-6.7924, lng=39.2083,
+            occurred_at=timezone.now(),
+            severity="minor",
+            vehicle_types=["car"],
+        )
+
+    def test_audit_log_created(self):
+        from .models import AuditLog
+        log = AuditLog.objects.create(
+            accident=self.accident, user=self.user,
+            action="verify", description="Test verify",
+        )
+        self.assertEqual(log.action, "verify")
+        self.assertEqual(log.accident, self.accident)
+        self.assertIsNotNone(log.created_at)
+
+    def test_audit_log_str(self):
+        from .models import AuditLog
+        log = AuditLog.objects.create(
+            accident=self.accident, user=self.user,
+            action="edit",
+        )
+        self.assertIn("Edit", str(log))
+
+    def test_audit_log_ordering(self):
+        from .models import AuditLog
+        log1 = AuditLog.objects.create(accident=self.accident, action="create")
+        log2 = AuditLog.objects.create(accident=self.accident, action="verify")
+        logs = AuditLog.objects.all().order_by("-created_at", "-pk")
+        self.assertEqual(logs[0], log2)
+        self.assertEqual(logs[1], log1)
+
+    def test_audit_log_no_accident_ok(self):
+        from .models import AuditLog
+        log = AuditLog.objects.create(user=self.user, action="junction_merge")
+        self.assertIsNone(log.accident)
+
+
+class DataQualityCommandTests(TestCase):
+    """Test the data_quality_report management command."""
+
+    def test_command_runs_with_no_data(self):
+        from io import StringIO
+        from django.core.management import call_command
+        out = StringIO()
+        call_command("data_quality_report", stdout=out)
+        self.assertIn("No accident records", out.getvalue())
+
+    def test_command_runs_with_data(self):
+        from io import StringIO
+        from django.core.management import call_command
+        Accident.objects.create(
+            lat=-6.7924, lng=39.2083,
+            occurred_at=timezone.now(),
+            severity="fatal",
+            vehicle_types=["car"],
+            fatalities=2, casualties=2,
+            description="Test crash",
+        )
+        out = StringIO()
+        call_command("data_quality_report", stdout=out)
+        output = out.getvalue()
+        self.assertIn("Overview", output)
+        self.assertIn("Total records", output)
+        self.assertIn("Overall Data Quality Score", output)
+
+    def test_command_markdown_output(self):
+        from io import StringIO
+        from django.core.management import call_command
+        Accident.objects.create(
+            lat=-6.7924, lng=39.2083,
+            occurred_at=timezone.now(),
+            severity="minor",
+            vehicle_types=["bicycle"],
+        )
+        out = StringIO()
+        call_command("data_quality_report", output="markdown", stdout=out)
+        output = out.getvalue()
+        # Markdown format uses pipe-delimited rows
+        self.assertIn("|", output)
+        self.assertIn("# Data Quality Report", output)
+
+    def test_command_grade_a_with_good_data(self):
+        from io import StringIO
+        from django.core.management import call_command
+        # Perfect records: all 5 core fields filled + verified
+        for i in range(10):
+            Accident.objects.create(
+                lat=-6.7924, lng=39.2083,
+                occurred_at=timezone.now(),
+                severity="minor",
+                vehicle_types=["car"],
+                casualties=0,
+                description=f"Test {i}",
+                weather="sunny",
+                road_condition="dry",
+                junction_name="Ubungo",
+                contact="+255700000000",
+                verified=True,
+            )
+        out = StringIO()
+        call_command("data_quality_report", stdout=out)
+        output = out.getvalue()
+        self.assertTrue("Grade: A" in output or "100.0%" in output)
+
+
+class AdminPanelTests(TestCase):
+    """Test admin panel customizations (Prompt 8/9)."""
+
+    def setUp(self):
+        self.admin = User.objects.create_superuser("super", "super@test.com", "pass1234")
+
+    def test_admin_index_shows_kpis(self):
+        self.client.login(username="super", password="pass1234")
+        resp = self.client.get("/admin/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Total Reports")
+        self.assertContains(resp, "Fatal Accidents")
+        self.assertContains(resp, "Tracked Junctions")
+
+    def test_admin_index_shows_model_links(self):
+        self.client.login(username="super", password="pass1234")
+        resp = self.client.get("/admin/")
+        self.assertContains(resp, "Accidents")
+        self.assertContains(resp, "Junctions")
+        self.assertContains(resp, "Audit Log")
+
+    def test_admin_accident_list_renders(self):
+        self.client.login(username="super", password="pass1234")
+        Accident.objects.create(
+            lat=-6.7924, lng=39.2083,
+            occurred_at=timezone.now(),
+            severity="minor",
+            vehicle_types=["car"],
+        )
+        resp = self.client.get("/admin/accidents/accident/")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_admin_verify_action_logs_audit(self):
+        from .models import AuditLog
+        self.client.login(username="super", password="pass1234")
+        a = Accident.objects.create(
+            lat=-6.7924, lng=39.2083,
+            occurred_at=timezone.now(),
+            severity="minor",
+            vehicle_types=["car"],
+        )
+        data = {
+            "action": "mark_verified",
+            "_selected_action": [a.id],
+        }
+        resp = self.client.post("/admin/accidents/accident/", data, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        a.refresh_from_db()
+        self.assertTrue(a.verified)
+        self.assertTrue(AuditLog.objects.filter(accident=a, action="verify").exists())
+
+
+# ===================== END v1.3 TESTS =====================

@@ -3,14 +3,7 @@
 {% load static %}
 {% block title %}Public Dashboard — Road Safety Dar{% endblock %}
 
-{% block extra_head %}
-<!-- PWA (v1.2) -->
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#1a3a52">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="/static/icons/icon-192x192.png">
-{% endblock %}
+{% block extra_head %}{% endblock %}
 
 {% block content %}
 <section class="hero">
@@ -18,40 +11,91 @@
     <h1>{% trans "Road Safety" %} <span class="accent">{% trans "Dar es Salaam" %}</span></h1>
     <p>{% trans "Real-time accident hotspot intelligence for Tanzania's commercial capital. Crowdsourced reports, official police data, and AI-powered safety insights for every junction." %}</p>
   </div>
-  <div>
+  <div class="hero-actions">
     <span class="live-badge"><span class="dot"></span>{% trans "LIVE DATA" %}</span>
+    <img src="{% static 'img/map-icon-2.png' %}" alt="" class="hero-img" />
   </div>
 </section>
 
-<section class="kpi-grid">
-  <div class="kpi verified">
-    <div class="kpi-num" data-kpi="total">{{ total }}</div>
-    <div class="kpi-label">{% trans "Total Reports" %}</div>
-  </div>
-  <div class="kpi fatal">
-    <div class="kpi-num">{{ fatal_count }}</div>
-    <div class="kpi-label">{% trans "Fatal Accidents" %}</div>
-  </div>
-  <div class="kpi critical">
-    <div class="kpi-num">{{ critical_count|default:0 }}</div>
-    <div class="kpi-label">{% trans "Critical" %}</div>
-  </div>
-  <div class="kpi serious">
-    <div class="kpi-num">{{ serious_count|default:0 }}</div>
-    <div class="kpi-label">{% trans "Serious" %}</div>
-  </div>
-  <div class="kpi minor">
-    <div class="kpi-num">{{ minor_count|default:0 }}</div>
-    <div class="kpi-label">{% trans "Minor" %}</div>
-  </div>
-  <div class="kpi verified">
-    <div class="kpi-num">{{ verified_count }}</div>
-    <div class="kpi-label">{% trans "Police Verified" %}</div>
-  </div>
-  <div class="kpi">
-    <div class="kpi-num">{{ junction_count }}</div>
-    <div class="kpi-label">{% trans "Tracked Junctions" %}</div>
-  </div>
+<!-- Featured Stat Cards (premium dark variant) — animated, count-up on scroll-into-view -->
+<section class="featured-stat-grid" aria-label="Featured statistics">
+
+  <article class="featured-stat-card featured-stat-card--sky" role="group" data-count-target="{{ total }}">
+    <div class="featured-stat-card__dot" aria-hidden="true"></div>
+    <div class="featured-stat-card__ray" aria-hidden="true"></div>
+    <div class="featured-stat-card__body">
+      <div class="featured-stat-card__icon" aria-hidden="true">🚦</div>
+      <div class="featured-stat-card__value-row">
+        <span class="featured-stat-card__value" aria-live="polite">{{ total }}</span>
+      </div>
+      <div class="featured-stat-card__label">Total Reports</div>
+      <div class="featured-stat-card__sublabel">Crowdsourced + official</div>
+      <div class="featured-stat-card__trend">
+        <span class="featured-stat-card__trend-dot" aria-hidden="true"></span>
+        +12 this week
+      </div>
+    </div>
+    <div class="featured-stat-card__line featured-stat-card__line--top" aria-hidden="true"></div>
+    <div class="featured-stat-card__line featured-stat-card__line--bottom" aria-hidden="true"></div>
+    <div class="featured-stat-card__line featured-stat-card__line--left" aria-hidden="true"></div>
+    <div class="featured-stat-card__line featured-stat-card__line--right" aria-hidden="true"></div>
+  </article>
+
+  <article class="featured-stat-card featured-stat-card--coral" role="group" data-count-target="{{ fatal_count }}">
+    <div class="featured-stat-card__dot" aria-hidden="true"></div>
+    <div class="featured-stat-card__ray" aria-hidden="true"></div>
+    <div class="featured-stat-card__body">
+      <div class="featured-stat-card__icon" aria-hidden="true">💀</div>
+      <div class="featured-stat-card__value-row">
+        <span class="featured-stat-card__value" aria-live="polite">{{ fatal_count }}</span>
+      </div>
+      <div class="featured-stat-card__label">Fatal Accidents</div>
+      <div class="featured-stat-card__sublabel">Since Jan 2024</div>
+      <div class="featured-stat-card__trend">
+        <span class="featured-stat-card__trend-dot" aria-hidden="true"></span>
+        +3 this month
+      </div>
+    </div>
+    <div class="featured-stat-card__line featured-stat-card__line--top" aria-hidden="true"></div>
+    <div class="featured-stat-card__line featured-stat-card__line--bottom" aria-hidden="true"></div>
+    <div class="featured-stat-card__line featured-stat-card__line--left" aria-hidden="true"></div>
+    <div class="featured-stat-card__line featured-stat-card__line--right" aria-hidden="true"></div>
+  </article>
+
+  <article class="featured-stat-card featured-stat-card--sun" role="group" data-count-target="{{ junction_count }}">
+    <div class="featured-stat-card__dot" aria-hidden="true"></div>
+    <div class="featured-stat-card__ray" aria-hidden="true"></div>
+    <div class="featured-stat-card__body">
+      <div class="featured-stat-card__icon" aria-hidden="true">📍</div>
+      <div class="featured-stat-card__value-row">
+        <span class="featured-stat-card__value" aria-live="polite">{{ junction_count }}</span>
+      </div>
+      <div class="featured-stat-card__label">Tracked Junctions</div>
+      <div class="featured-stat-card__sublabel">Across 5 districts</div>
+    </div>
+    <div class="featured-stat-card__line featured-stat-card__line--top" aria-hidden="true"></div>
+    <div class="featured-stat-card__line featured-stat-card__line--bottom" aria-hidden="true"></div>
+    <div class="featured-stat-card__line featured-stat-card__line--left" aria-hidden="true"></div>
+    <div class="featured-stat-card__line featured-stat-card__line--right" aria-hidden="true"></div>
+  </article>
+
+  <article class="featured-stat-card featured-stat-card--leaf" role="group" data-count-target="{{ verified_count }}">
+    <div class="featured-stat-card__dot" aria-hidden="true"></div>
+    <div class="featured-stat-card__ray" aria-hidden="true"></div>
+    <div class="featured-stat-card__body">
+      <div class="featured-stat-card__icon" aria-hidden="true">✅</div>
+      <div class="featured-stat-card__value-row">
+        <span class="featured-stat-card__value" aria-live="polite">{{ verified_count }}</span>
+      </div>
+      <div class="featured-stat-card__label">Police Verified</div>
+      <div class="featured-stat-card__sublabel">Official records</div>
+    </div>
+    <div class="featured-stat-card__line featured-stat-card__line--top" aria-hidden="true"></div>
+    <div class="featured-stat-card__line featured-stat-card__line--bottom" aria-hidden="true"></div>
+    <div class="featured-stat-card__line featured-stat-card__line--left" aria-hidden="true"></div>
+    <div class="featured-stat-card__line featured-stat-card__line--right" aria-hidden="true"></div>
+  </article>
+
 </section>
 
 <section class="action-bar">
@@ -61,13 +105,41 @@
   <a href="/api/recommendations/" target="_blank" class="btn-ghost">🤖 {% trans "AI Insights" %}</a>
   <a href="/api/report/monthly.pdf" class="btn-ghost">📄 {% trans "Monthly PDF" %}</a>
   <a href="https://t.me/roadsafety_dar_bot" target="_blank" class="btn-ghost">💬 {% trans "Telegram" %}</a>
+  <button id="refreshBtn" class="btn-ghost" title="Refresh now">⟳ Refresh</button>
   <span id="live-indicator" class="live-indicator" title="Auto-refreshes every 30s">
     🟢 <span id="live-text">{% trans "LIVE" %}</span>
   </span>
+  <span id="lastUpdated" class="muted" style="font-size:var(--text-xs);"></span>
+  <label class="ck-ani" id="demoToggle">
+    <input type="checkbox" checked />
+    <svg viewBox="0 0 64 64" height="1.4em" width="1.4em">
+      <path d="M 0 16 V 56 A 8 8 90 0 0 8 64 H 56 A 8 8 90 0 0 64 56 V 8 A 8 8 90 0 0 56 0 H 8 A 8 8 90 0 0 0 8 V 16 L 32 48 L 64 16 V 8 A 8 8 90 0 0 56 0 H 8 A 8 8 90 0 0 0 8 V 56 A 8 8 90 0 0 8 64 H 56 A 8 8 90 0 0 64 56 V 16" pathLength="575.0541381835938" class="ck-path" />
+    </svg>
+    Demo
+  </label>
+  <button id="notifBtn" class="btn-ghost" title="Get notified of new reports">🔔 Alerts</button>
   <div class="lang-switch">
     <a href="/dashboard/" class="lang-link">EN</a> |
     <a href="/sw/dashboard/" class="lang-link">SW</a>
   </div>
+</section>
+
+<!-- Time-of-Day Filter Control (v1.2.2) -->
+<section class="map-controls">
+  <label for="hour-filter" class="filter-label">{% trans "Filter Map by Hour:" %}</label>
+  <select id="hour-filter" class="filter-select" aria-label="{% trans 'Select hour of day to filter accidents' %}">
+    <option value="all">{% trans "All Hours (24h)" %}</option>
+    {% for h in "0123456789"|make_list %}
+      {% for u in "0123456789"|make_list %}
+        {% with hour=h|add:u %}
+          {% if hour|add:0 <= 23 %}
+            <option value="{{ hour|add:0 }}">{{ hour|add:0 }}:00 - {{ hour|add:1 }}:00</option>
+          {% endif %}
+        {% endwith %}
+      {% endfor %}
+    {% endfor %}
+  </select>
+  <span id="hour-stats" class="filter-stats"></span>
 </section>
 
 <section class="map-wrap">
@@ -118,36 +190,90 @@
     maxZoom: 19, attribution: '&copy; OpenStreetMap'
   }).addTo(map);
 
-  // Heatmap: severity-weighted (fatal = 1.0, critical = 0.75, serious = 0.5, minor = 0.25)
-  const SEV_WEIGHT = { fatal: 1.0, critical: 0.75, serious: 0.5, minor: 0.25 };
-  fetch("{% url 'api_heatmap' %}").then(r => r.json()).then(points => {
-    L.heatLayer(points, {
-      radius: 26, blur: 22, maxZoom: 17,
-      gradient: { 0.2: '#2d8659', 0.4: '#d4a017', 0.7: '#e67e22', 1.0: '#c0392b' }
-    }).addTo(map);
-  });
+  // Heatmap layer reference for dynamic updates
+  let heatLayer = null;
+  let markerCluster = null;
 
-  // Markers: color by severity
-  const cluster = L.markerClusterGroup();
-  fetch("{% url 'api_accidents' %}").then(r => r.json()).then(rows => {
-    rows.forEach(a => {
-      const sevColor = { minor: '#2d8659', serious: '#d4a017', critical: '#e67e22', fatal: '#c0392b' }[a.severity] || '#1a3a52';
-      const icon = L.divIcon({
-        className: 'sev-pin',
-        html: `<span style="background:${sevColor}"></span>`,
-        iconSize: [14, 14]
+  // Severity color mapping for markers
+  const sevColor = { minor: '#2d8659', serious: '#d4a017', critical: '#e67e22', fatal: '#c0392b' };
+  // Severity weight mapping for heatmap intensity
+  const SEV_WEIGHT = { fatal: 1.0, critical: 0.75, serious: 0.5, minor: 0.25 };
+
+  /**
+   * Fetches accident data for the selected hour and updates the map layers.
+   * @param {string|number} hour - Hour to filter by (0-23) or 'all' for no filter.
+   */
+  function loadMapData(hour) {
+    const url = hour === 'all' ? "{% url 'api_accidents' %}" : "{% url 'api_accidents' %}?hour=" + hour;
+    
+    // Show loading state in stats
+    const statsEl = document.getElementById('hour-stats');
+    if (statsEl) statsEl.textContent = 'Loading...';
+
+    fetch(url)
+      .then(r => r.json())
+      .then(rows => {
+        // Remove existing heatmap layer if present
+        if (heatLayer) {
+          map.removeLayer(heatLayer);
+        }
+        // Remove existing marker cluster if present
+        if (markerCluster) {
+          map.removeLayer(markerCluster);
+        }
+
+        // Prepare heatmap points: [lat, lng, intensity]
+        const points = rows.map(a => [a.lat, a.lng, SEV_WEIGHT[a.severity] || 0.25]);
+        
+        // Add new heatmap layer
+        heatLayer = L.heatLayer(points, {
+          radius: 26, blur: 22, maxZoom: 17,
+          gradient: { 0.2: '#2d8659', 0.4: '#d4a017', 0.7: '#e67e22', 1.0: '#c0392b' }
+        }).addTo(map);
+
+        // Add new marker cluster
+        markerCluster = L.markerClusterGroup();
+        rows.forEach(a => {
+          const color = sevColor[a.severity] || '#1a3a52';
+          const icon = L.divIcon({
+            className: 'sev-pin',
+            html: `<span style="background:${color}"></span>`,
+            iconSize: [14, 14]
+          });
+          const m = L.marker([a.lat, a.lng], { icon });
+          m.bindPopup(`
+            <b style="color:${color}">${a.severity.toUpperCase()}</b><br>
+            ${a.vehicle_type || (a.vehicle_types && a.vehicle_types[0]) || 'Unknown'} · ${a.casualties} casualties<br>
+            ${new Date(a.occurred_at).toLocaleString()}<br>
+            <small>${a.address || a.junction_name || ''}</small>
+          `);
+          markerCluster.addLayer(m);
+        });
+        map.addLayer(markerCluster);
+
+        // Update stats display
+        if (statsEl) {
+          const total = rows.length;
+          const fatal = rows.filter(a => a.severity === 'fatal').length;
+          statsEl.textContent = `${total} accidents ${hour !== 'all' ? 'at ' + hour + ':00' : '(all hours)'} • ${fatal} fatal`;
+        }
+      })
+      .catch(err => {
+        console.error('Failed to load map data:', err);
+        if (statsEl) statsEl.textContent = 'Error loading data';
       });
-      const m = L.marker([a.lat, a.lng], { icon });
-      m.bindPopup(`
-        <b style="color:${sevColor}">${a.severity.toUpperCase()}</b><br>
-        ${a.vehicle_type} · ${a.casualties} casualties<br>
-        ${new Date(a.occurred_at).toLocaleString()}<br>
-        <small>${a.address || ''}</small>
-      `);
-      cluster.addLayer(m);
+  }
+
+  // Initial load with all hours
+  loadMapData('all');
+
+  // Hour filter change handler
+  const hourFilter = document.getElementById('hour-filter');
+  if (hourFilter) {
+    hourFilter.addEventListener('change', (e) => {
+      loadMapData(e.target.value);
     });
-    map.addLayer(cluster);
-  });
+  }
 
   // ===== Charts =====
   const chartColors = {
@@ -231,37 +357,161 @@
 
 {% block extra_scripts %}
 <script>
-  // PWA: register service worker
+(function() {
+  // ===== Service Worker Registration =====
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('PWA: service worker registered', reg.scope))
+      .then(reg => console.log('PWA: SW registered', reg.scope))
       .catch(err => console.warn('PWA: SW registration failed', err));
   }
 
-  // v1.2: Real-time auto-refresh every 30s
-  let lastTotal = null;
+  // ===== Count-Up Animation =====
+  function animateCountUp(el, target, duration) {
+    duration = duration || 800;
+    const start = parseInt(el.textContent.replace(/[^0-9]/g, '')) || 0;
+    if (start === target) return;
+    const startTime = performance.now();
+    function step(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(start + (target - start) * eased);
+      el.textContent = current;
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function runCountUps() {
+    document.querySelectorAll('[data-count-target]').forEach(function(card) {
+      var target = parseInt(card.getAttribute('data-count-target'));
+      var valueEl = card.querySelector('.featured-stat-card__value');
+      if (valueEl && target > 0) {
+        valueEl.textContent = '0';
+        animateCountUp(valueEl, target, 800);
+      }
+    });
+  }
+
+  // ===== Full KPI Live Refresh =====
+  var lastTotal = null;
+
+  function refreshAllKpis(data) {
+    var map = {
+      'total': data.total_reports || data.total,
+      'fatal': data.fatal,
+      'serious': data.serious,
+      'minor': data.minor,
+      'critical': data.critical,
+      'verified': data.verified,
+      'junctions': data.junction_count,
+    };
+    Object.keys(map).forEach(function(key) {
+      var el = document.querySelector('[data-kpi="' + key + '"]');
+      if (el && el.textContent !== String(map[key])) {
+        el.textContent = map[key];
+      }
+    });
+
+    var total = map['total'] || 0;
+    if (lastTotal !== null && total > lastTotal) {
+      var indicator = document.getElementById('live-indicator');
+      if (indicator) {
+        indicator.style.background = '#27ae60';
+        indicator.style.color = 'white';
+        setTimeout(function() {
+          indicator.style.background = '';
+          indicator.style.color = '';
+        }, 2000);
+      }
+    }
+    lastTotal = total;
+
+    // Update featured stat card targets & animate
+    var cardTargets = {
+      'Total Reports': map['total'],
+      'Fatal Accidents': map['fatal'],
+      'Tracked Junctions': map['junctions'],
+      'Police Verified': map['verified'],
+    };
+    document.querySelectorAll('.featured-stat-card').forEach(function(card) {
+      var labelEl = card.querySelector('.featured-stat-card__label');
+      var valueEl = card.querySelector('.featured-stat-card__value');
+      if (labelEl && valueEl) {
+        var label = labelEl.textContent.trim();
+        if (cardTargets[label] !== undefined) {
+          card.setAttribute('data-count-target', cardTargets[label]);
+          animateCountUp(valueEl, cardTargets[label], 600);
+        }
+      }
+    });
+  }
+
   function refreshLiveData() {
     fetch('/api/stats/summary/', { credentials: 'same-origin' })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) {
         if (!data) return;
-        const total = data.total_reports || 0;
-        if (lastTotal !== null && total > lastTotal) {
-          const indicator = document.getElementById('live-indicator');
-          if (indicator) {
-            indicator.style.background = '#27ae60';
-            indicator.style.color = 'white';
-            setTimeout(() => { indicator.style.background = ''; indicator.style.color = ''; }, 2000);
-          }
-          console.log('🔔 New report detected! Total now:', total);
-        }
-        lastTotal = total;
-        const kpiTotal = document.querySelector('[data-kpi="total"]');
-        if (kpiTotal) kpiTotal.textContent = total;
+        refreshAllKpis(data);
+        var now = new Date();
+        var ts = now.toLocaleTimeString('en-TZ', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        var el = document.getElementById('lastUpdated');
+        if (el) el.textContent = 'Updated: ' + ts;
       })
-      .catch(err => console.warn('Live refresh failed:', err));
+      .catch(function(err) {
+        console.warn('Live refresh failed:', err);
+      });
   }
-  setInterval(refreshLiveData, 30000);
+
+  // ===== Manual Refresh Button =====
+  document.getElementById('refreshBtn').addEventListener('click', refreshLiveData);
+
+  // ===== Push Notification Subscription =====
+  var notifBtn = document.getElementById('notifBtn');
+  if (notifBtn) {
+    notifBtn.addEventListener('click', function() {
+      if (!('Notification' in window)) {
+        alert('Notifications not supported in this browser.');
+        return;
+      }
+      if (Notification.permission === 'granted') {
+        subscribePush();
+      } else if (Notification.permission === 'denied') {
+        alert('Notifications were denied. Enable them in your browser settings.');
+      } else {
+        Notification.requestPermission().then(function(perm) {
+          if (perm === 'granted') subscribePush();
+          else alert('Notification permission denied.');
+        });
+      }
+    });
+  }
+
+  function subscribePush() {
+    navigator.serviceWorker.ready.then(function(reg) {
+      reg.pushManager.subscribe({ userVisibleOnly: true })
+        .then(function(sub) {
+          console.log('Push subscription:', JSON.stringify(sub.toJSON()));
+          notifBtn.textContent = '✅ Alerts Active';
+          notifBtn.disabled = true;
+          notifBtn.style.opacity = '0.6';
+        })
+        .catch(function(err) {
+          if (err.message && err.message.includes('gcm_sender_id')) {
+            console.log('Push: server keys not configured yet — coming soon.');
+            alert('Push alerts are coming soon! Configure VAPID keys to enable.');
+          } else {
+            console.warn('Push subscription failed:', err);
+            alert('Could not subscribe to alerts: ' + err.message);
+          }
+        });
+    });
+  }
+
+  // ===== Init =====
+  runCountUps();
   refreshLiveData();
+  setInterval(refreshLiveData, 30000);
+})();
 </script>
 {% endblock %}

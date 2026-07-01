@@ -1,0 +1,41 @@
+{% extends "accidents/base.html" %}
+{% load static %}
+{% block title %}Sign Up — Road Safety Dar{% endblock %}
+{% block content %}
+<section class="form-wrap">
+  <div class="form-header">
+    <div>
+      <h2>Create an account</h2>
+      <p class="muted">Register to help make Dar es Salaam's roads safer.</p>
+    </div>
+    <img src="{% static 'img/accident-protection.png' %}" alt="" class="form-header-img" />
+  </div>
+  <form method="post" class="grid">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="alert error full">
+        {% for err in form.non_field_errors %}{{ err }}{% endfor %}
+      </div>
+    {% endif %}
+    {% for field in form %}
+      <label class="full">
+        {{ field.label }}
+        {{ field }}
+        {% if field.help_text %}
+          <span style="font-size:var(--text-caption);color:var(--ink-muted);">{{ field.help_text }}</span>
+        {% endif %}
+        {% if field.errors %}
+          <span style="color:var(--coral);font-size:var(--text-caption);">
+            {% for e in field.errors %}{{ e }}{% endfor %}
+          </span>
+        {% endif %}
+      </label>
+    {% endfor %}
+    <button type="submit" class="btn-primary full" style="justify-content:center;">Create Account</button>
+    <p class="muted full" style="text-align:center;margin:var(--space-4) 0 0;">
+      Already have an account?
+      <a href="{% url 'account_login' %}" style="color:var(--sky);font-weight:600;">Log in</a>
+    </p>
+  </form>
+</section>
+{% endblock %}

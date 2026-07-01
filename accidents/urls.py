@@ -6,6 +6,7 @@ urlpatterns = [
     path("dashboard/", views.dashboard, name="dashboard"),
     path("report/", views.report_form, name="report"),
     path("authority/", views.authority, name="authority"),
+    path("offline/", views.offline_page, name="offline"),
 
     # JSON API (PRD §6)
     path("api/accidents", views.api_accidents, name="api_accidents"),
@@ -33,4 +34,55 @@ urlpatterns = [
     # v1.2 new features
     path("api/report/monthly.pdf", views.api_monthly_report, name="api_monthly_report"),
     path("api/telegram/webhook/", views.api_telegram_webhook, name="api_telegram_webhook"),
+
+    # v1.3 — Authority dashboard endpoints
+    path("api/authority/filter/", views.api_authority_filter, name="api_authority_filter"),
+    path("api/authority/export/csv/", views.api_authority_export_csv, name="api_authority_export_csv"),
+
+    # v1.3 — API docs
+    path("api/docs/", views.api_docs, name="api_docs"),
 ]
+
+# ===================== /api/v1/ versioned aliases (Prompt 7) =====================
+# All existing API endpoints mirrored under /api/v1/ for versioned access.
+# Old /api/ paths continue to work indefinitely.
+_api_v1_patterns = [
+    "api/v1/accidents",
+    "api/v1/accidents/",
+    "api/v1/stats/severity",
+    "api/v1/stats/vehicles",
+    "api/v1/stats/monthly",
+    "api/v1/stats/hourly",
+    "api/v1/stats/junctions",
+    "api/v1/stats/summary",
+    "api/v1/export.csv",
+    "api/v1/recommendations/",
+    "api/v1/report/monthly.pdf",
+    "api/v1/telegram/webhook/",
+    "api/v1/authority/filter/",
+    "api/v1/authority/export/csv/",
+]
+
+# Map each v1 path to its corresponding view by swapping the old path prefix
+_view_map = {
+    "api/v1/accidents": views.api_accidents,
+    "api/v1/accidents/": views.api_accidents_create,
+    "api/v1/stats/severity": views.api_stats_severity,
+    "api/v1/stats/vehicles": views.api_stats_vehicles,
+    "api/v1/stats/monthly": views.api_stats_monthly,
+    "api/v1/stats/hourly": views.api_stats_hourly,
+    "api/v1/stats/junctions": views.api_stats_junctions,
+    "api/v1/stats/summary": views.api_stats_summary,
+    "api/v1/export.csv": views.api_export_csv,
+    "api/v1/recommendations/": views.api_recommendations,
+    "api/v1/report/monthly.pdf": views.api_monthly_report,
+    "api/v1/telegram/webhook/": views.api_telegram_webhook,
+    "api/v1/authority/filter/": views.api_authority_filter,
+    "api/v1/authority/export/csv/": views.api_authority_export_csv,
+}
+
+for _path, _view in _view_map.items():
+    urlpatterns.append(path(_path, _view))
+
+# Register api_docs under /api/v1/docs/ too
+urlpatterns.append(path("api/v1/docs/", views.api_docs))

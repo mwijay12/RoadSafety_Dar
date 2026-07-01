@@ -12,10 +12,10 @@ Update CHANGELOG.md with notable changes.
 import datetime
 
 # Application version (semver)
-VERSION = "1.2.0"
-VERSION_NAME = "Mwangaza"  # Swahili: "Light" — appropriate for safety app
-RELEASE_DATE = "2026-07-01"
-BUILD = "20260701.001"
+VERSION = "1.3.1"
+VERSION_NAME = "Mwitikio"  # Swahili: "Responsive" — Responsive + PDF polish
+RELEASE_DATE = "2026-07-02"
+BUILD = "20260702.001"
 
 # Status
 STATUS = "stable"  # "alpha" | "beta" | "stable" | "deprecated"
@@ -27,6 +27,20 @@ DJANGO_MIN = "5.0"
 
 # Changelog summary
 CHANGELOG = [
+    ("1.3.1", "2026-07-02", "Mwitikio", [
+        "✨ Full responsive design (mobile, tablet, desktop)",
+        "✨ Polished PDF monthly report with severity/vehicle/peak-hour breakdown",
+        "🔧 Hero, nav, forms, action bar, map, KPIs all scale on <720px / <480px",
+    ]),
+    ("1.3.0", "2026-07-01", "Chombo", [
+        "✨ Docker + Docker Compose (PostGIS 16 + Redis 7)",
+        "✨ Demo/real data toggle with SiteSettings",
+        "✨ 500 realistic seed records with time/weather patterns",
+        "✨ SecurityHeadersMiddleware (CSP, Permissions-Policy)",
+        "✨ 3D icons throughout UI",
+        "🔧 Skylearn pill buttons, dark gradient hero, animated checkbox",
+        "🔧 All 97 tests passing",
+    ]),
     ("1.2.0", "2026-07-01", "Mwangaza", [
         "✨ PDF monthly report generation (reportlab)",
         "✨ Progressive Web App (PWA) with offline support",

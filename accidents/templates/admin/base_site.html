@@ -1,0 +1,78 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}RoadSafety Dar — Admin{% endblock %}
+
+{% block extrastyle %}
+<style>
+  :root {
+    --primary: #3B82F6;
+    --secondary: #1D4ED8;
+    --accent: #FBBF24;
+    --header-bg: #3B82F6;
+    --breadcrumbs-bg: #2563EB;
+    --link-fg: #3B82F6;
+    --link-hover-color: #1D4ED8;
+    --button-bg: #3B82F6;
+    --button-hover-bg: #1D4ED8;
+    --default-button-bg: #22C55E;
+    --default-button-hover-bg: #16A34A;
+    --close-button-bg: #F87171;
+    --delete-button-bg: #F87171;
+    --object-tools-bg: #3B82F6;
+    --object-tools-hover-bg: #1D4ED8;
+  }
+  #header {
+    background: var(--header-bg);
+    color: #fff;
+    padding: 12px 20px;
+  }
+  #branding h1 {
+    font-family: "Hubot Sans", system-ui, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  #branding h1 a { color: #fff; }
+  #branding h1 a:hover { color: #DBEAFE; }
+  .module h2, .module caption {
+    background: var(--primary);
+    font-family: "Hubot Sans", system-ui, sans-serif;
+  }
+  a.section:link, a.section:visited { color: #fff; }
+  div.breadcrumbs {
+    background: var(--breadcrumbs-bg);
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+  .button, input[type=submit], input[type=button], .submit-row input {
+    background: var(--primary);
+    border-radius: 8px;
+  }
+  .button:hover, input[type=submit]:hover, input[type=button]:hover {
+    background: var(--secondary);
+  }
+  .button.default, input[type=submit].default {
+    background: var(--default-button-bg);
+  }
+  .button.default:hover, input[type=submit].default:hover {
+    background: var(--default-button-hover-bg);
+  }
+  .dashboard #content { max-width: 1400px; }
+  body { font-family: "Atkinson Hyperlegible", system-ui, sans-serif; }
+  #changelist table { border-radius: 12px; overflow: hidden; }
+  td, th { font-size: 13px; }
+  .messagelist li.success { background: #DCFCE7; color: #16A34A; }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+  <a href="{% url 'admin:index' %}">🚦 RoadSafety Dar — Admin Panel</a>
+</h1>
+{% endblock %}
+
+{% block nav-global %}
+<div style="float:right;margin-top:4px;">
+  <a href="/" style="color:#fff;text-decoration:none;padding:6px 14px;border:1px solid rgba(255,255,255,0.3);border-radius:8px;font-size:13px;">← Site</a>
+</div>
+{% endblock %}

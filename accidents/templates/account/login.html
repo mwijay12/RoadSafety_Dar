@@ -1,0 +1,41 @@
+{% extends "accidents/base.html" %}
+{% load static %}
+{% block title %}Login — Road Safety Dar{% endblock %}
+{% block content %}
+<section class="form-wrap">
+  <div class="form-header">
+    <div>
+      <h2>Welcome back</h2>
+      <p class="muted">Log in to report road accidents in Dar es Salaam.</p>
+    </div>
+    <img src="{% static 'img/sign-in.png' %}" alt="" class="form-header-img" />
+  </div>
+  <form method="post" class="grid">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="alert error full">
+        {% for err in form.non_field_errors %}{{ err }}{% endfor %}
+      </div>
+    {% endif %}
+    {% for field in form %}
+      <label class="full">
+        {{ field.label }}
+        {{ field }}
+        {% if field.errors %}
+          <span style="color:var(--coral);font-size:var(--text-caption);">
+            {% for e in field.errors %}{{ e }}{% endfor %}
+          </span>
+        {% endif %}
+      </label>
+    {% endfor %}
+    {% if redirect_field_value %}
+      <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+    {% endif %}
+    <button type="submit" class="btn-primary full" style="margin-top:var(--space-2);justify-content:center;">Log In</button>
+    <p class="muted full" style="text-align:center;margin:var(--space-4) 0 0;">
+      Don't have an account?
+      <a href="{% url 'account_signup' %}" style="color:var(--sky);font-weight:600;">Sign up</a>
+    </p>
+  </form>
+</section>
+{% endblock %}

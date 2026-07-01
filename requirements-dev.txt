@@ -1,0 +1,21 @@
+# ============================================================================
+# RoadSafety_Dar — Development-only dependencies
+# ============================================================================
+# Install:    pip install -r requirements-dev.txt
+# ============================================================================
+
+-r requirements.txt
+
+# --- Linting + formatting --------------------------------------------------
+ruff==0.6.4
+
+# --- Testing ---------------------------------------------------------------
+# Django's built-in test runner works without pytest, but pytest-django
+# gives you better output, fixtures, and parametrization. See conftest.py.
+pytest==8.3.3
+pytest-django==4.9.0
+pytest-cov==5.0.0
+
+# --- Type checking (optional) ---------------------------------------------
+mypy==1.11.2
+django-stubs[compatible-mypy]==5.1.0

@@ -4,10 +4,23 @@ Accident data model — PRD-compliant.
 vehicle_types is a JSON list of one-or-more vehicle types
 matching the PRD (e.g. ["bus", "motorcycle"] for a daladala+ boda crash).
 We use Django's JSONField (works on SQLite 3.9+ and PostGIS alike).
+
+H3 cell indexing (v1.2.1+):
+Every new accident automatically gets an Uber H3 hex cell ID at resolution
+10 (~68m edge) via ``h3.latlng_to_cell()``. This enables proper spatial
+grouping for the junction heatmap without PostGIS.
 """
+import logging
+
+from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils import timezone
+from django.utils.text import slugify
 from django.core.validators import MinValueValidator, MaxValueValidator
+
+logger = logging.getLogger(__name__)
 
 
 SEVERITY_CHOICES = [
@@ -16,6 +29,14 @@ SEVERITY_CHOICES = [
     ("fatal", "Fatal (1+ deaths)"),
     ("critical", "Critical (multiple casualties)"),
 ]
+
+# Weight per severity for safety-score and clustering
+SEVERITY_WEIGHT = {
+    "minor": 1,
+    "serious": 2,
+    "fatal": 4,
+    "critical": 3,
+}
 
 VEHICLE_CHOICES = [
     ("motorcycle", "Motorcycle / Bodaboda"),
@@ -44,6 +65,10 @@ DAR_LNG_MIN, DAR_LNG_MAX = 38.5, 39.7
 class Junction(models.Model):
     """Named intersections / black-spots we track separately."""
     name = models.CharField(max_length=120, unique=True)
+    slug = models.SlugField(
+        max_length=120, unique=False, blank=True, db_index=True,
+        help_text="URL-safe identifier. Auto-generated from name on save.",
+    )
     lat = models.FloatField()
     lng = models.FloatField()
     district = models.CharField(
@@ -52,6 +77,10 @@ class Junction(models.Model):
     )
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_demo = models.BooleanField(
+        default=False,
+        help_text="Demo/seed junction — hidden from public when demo data is toggled off",
+    )
 
     class Meta:
         ordering = ["name"]
@@ -64,6 +93,144 @@ class Junction(models.Model):
             return f"{self.name} ({self.district})"
         return self.name
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = self._unique_slug(self.name)
+        super().save(*args, **kwargs)
+
+    def _unique_slug(self, source: str) -> str:
+        base = slugify(source)[:100]
+        slug = base
+        counter = 1
+        while Junction.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+            slug = f"{base}-{counter}"
+            counter += 1
+        return slug
+
+    @property
+    def safety_score(self) -> float:
+        """Severity-weighted risk score (0–100). Higher = more dangerous."""
+        qs = self.accidents.all()
+        total = qs.count()
+        if total == 0:
+            return 0.0
+        weighted = sum(SEVERITY_WEIGHT.get(a.severity, 1) for a in qs)
+        return round((weighted / total) * 25, 1)
+
+    def safety_score_from_queryset(self, qs) -> float:
+        """Same as ``safety_score`` but accepts a pre-filtered accident queryset."""
+        total = qs.count()
+        if total == 0:
+            return 0.0
+        weighted = sum(SEVERITY_WEIGHT.get(a.severity, 1) for a in qs)
+        return round((weighted / total) * 25, 1)
+
+
+ROLE_CHOICES = [
+    ("community", "Community Member"),
+    ("police", "Police / TPF"),
+    ("admin", "Administrator"),
+]
+
+AUDIT_ACTION_CHOICES = [
+    ("verify", "Verified"),
+    ("unverify", "Unverified"),
+    ("severity_change", "Severity Changed"),
+    ("junction_merge", "Junction Merged"),
+    ("bulk_update", "Bulk Update"),
+    ("create", "Created"),
+    ("edit", "Edited"),
+]
+
+
+class AuditLog(models.Model):
+    """Simple audit trail for admin actions on accident records."""
+    accident = models.ForeignKey(
+        "Accident", on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="audit_logs",
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+    )
+    action = models.CharField(max_length=30, choices=AUDIT_ACTION_CHOICES)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Audit Log Entry"
+        verbose_name_plural = "Audit Log"
+
+    def __str__(self):
+        return f"{self.get_action_display()} @ {self.created_at:%Y-%m-%d %H:%M}"
+
+
+class UserProfile(models.Model):
+    """Extra profile data tied to Django's built-in User model."""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="community")
+    phone = models.CharField(max_length=20, blank=True, help_text="Tanzania phone number")
+    email_notifications = models.BooleanField(
+        default=True,
+        help_text="Receive email alerts for fatal/critical incidents and daily digests",
+    )
+
+    def __str__(self):
+        return f"{self.user.username} ({self.get_role_display()})"
+
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    """Auto-create a UserProfile whenever a new User is created."""
+    if created:
+        UserProfile.objects.create(user=instance)
+
+
+class SiteSettings(models.Model):
+    """Singleton model — toggle demo/real data visibility across the public site."""
+    show_demo_data = models.BooleanField(
+        default=True,
+        help_text="When ON, demo records appear alongside real data. When OFF, only real data is shown.",
+    )
+
+    class Meta:
+        verbose_name = "Site Settings"
+        verbose_name_plural = "Site Settings"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1  # enforce singleton
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_settings(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def __str__(self):
+        return f"Site Settings (show_demo={'ON' if self.show_demo_data else 'OFF'})"
+
+
+def visible_accidents():
+    """All accidents if show_demo_data is ON; real-data-only if OFF.
+
+    Use in PUBLIC views so the dashboard/API respect the toggle.
+    Authority views and admin always see everything.
+    """
+    settings = SiteSettings.get_settings()
+    qs = Accident.objects.all()
+    if not settings.show_demo_data:
+        qs = qs.filter(is_demo=False)
+    return qs
+
+
+def visible_junctions():
+    """All junctions if show_demo_data is ON; real-data-only if OFF."""
+    settings = SiteSettings.get_settings()
+    qs = Junction.objects.all()
+    if not settings.show_demo_data:
+        qs = qs.filter(is_demo=False)
+    return qs
+
 
 class Accident(models.Model):
     """Core accident report — PRD schema §5."""
@@ -75,6 +242,10 @@ class Accident(models.Model):
     lng = models.FloatField(
         db_index=True,
         validators=[MinValueValidator(DAR_LNG_MIN), MaxValueValidator(DAR_LNG_MAX)],
+    )
+    h3_cell = models.CharField(
+        max_length=20, blank=True, db_index=True,
+        help_text="Uber H3 hex cell ID at resolution 10 (~68m). Auto-set on save.",
     )
     junction_name = models.CharField(
         max_length=120, blank=True,
@@ -113,6 +284,10 @@ class Accident(models.Model):
 
     # Meta
     verified = models.BooleanField(default=False, help_text="Police-verified record")
+    is_demo = models.BooleanField(
+        default=False,
+        help_text="Demo/seed record — hidden from public when demo data is toggled off",
+    )
 
     class Meta:
         ordering = ["-occurred_at"]
@@ -123,6 +298,22 @@ class Accident(models.Model):
 
     def __str__(self):
         return f"{self.get_severity_display()} @ {self.occurred_at:%Y-%m-%d %H:%M}"
+
+    def save(self, *args, **kwargs):
+        if not self.h3_cell:
+            self._compute_h3_cell()
+        super().save(*args, **kwargs)
+
+    def _compute_h3_cell(self) -> None:
+        """Compute ``h3_cell`` from ``lat``/``lng`` at resolution 10 (~68m).
+
+        Gracefully no-ops if the ``h3`` package is not installed.
+        """
+        try:
+            import h3
+            self.h3_cell = h3.latlng_to_cell(self.lat, self.lng, 10)
+        except Exception:
+            logger.debug("h3 computation skipped (package missing or invalid coords)")
 
     def clean(self):
         """Cross-field validation per PRD §7."""

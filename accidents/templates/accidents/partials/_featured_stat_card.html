@@ -1,0 +1,39 @@
+{# Reusable featured stat card — premium dark variant with animated dot + ray.
+   Usage: {% include "accidents/partials/_featured_stat_card.html" with value=total label="Total Reports" %}
+#}
+<article
+  class="featured-stat-card featured-stat-card--{{ color|default:'indigo' }}"
+  role="group"
+  data-count-target="{{ value|default:0 }}"
+>
+  <div class="featured-stat-card__dot" aria-hidden="true"></div>
+  <div class="featured-stat-card__ray" aria-hidden="true"></div>
+
+  <div class="featured-stat-card__body">
+    {% if icon %}
+      <div class="featured-stat-card__icon" aria-hidden="true">{{ icon|safe }}</div>
+    {% endif %}
+
+    <div class="featured-stat-card__value-row">
+      <span class="featured-stat-card__value" aria-live="polite">{{ value|default:0 }}</span>{% if suffix %}<span class="featured-stat-card__suffix">{{ suffix }}</span>{% endif %}
+    </div>
+
+    <div class="featured-stat-card__label">{{ label }}</div>
+
+    {% if sublabel %}
+      <div class="featured-stat-card__sublabel">{{ sublabel }}</div>
+    {% endif %}
+
+    {% if trend %}
+      <div class="featured-stat-card__trend">
+        <span class="featured-stat-card__trend-dot" aria-hidden="true"></span>
+        {{ trend }}
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="featured-stat-card__line featured-stat-card__line--top" aria-hidden="true"></div>
+  <div class="featured-stat-card__line featured-stat-card__line--bottom" aria-hidden="true"></div>
+  <div class="featured-stat-card__line featured-stat-card__line--left" aria-hidden="true"></div>
+  <div class="featured-stat-card__line featured-stat-card__line--right" aria-hidden="true"></div>
+</article>

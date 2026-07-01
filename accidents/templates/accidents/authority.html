@@ -1,49 +1,253 @@
 {% extends "accidents/base.html" %}
 {% block title %}Authority Dashboard — Road Safety Dar{% endblock %}
-
 {% block content %}
-<section class="kpi-grid">
-  <div class="kpi"><div class="kpi-num">{{ total }}</div><div class="kpi-label">Total incidents</div></div>
-  <div class="kpi danger"><div class="kpi-num">{{ fatal }}</div><div class="kpi-label">Fatal incidents</div></div>
-  <div class="kpi"><div class="kpi-num">🚦</div><div class="kpi-label">Evidence-based decisions</div></div>
+
+<h2 style="margin:0 0 var(--space-4);">Authority Dashboard</h2>
+
+<div class="action-bar">
+  <a href="{% url 'report' %}" class="btn-primary">+ Report New</a>
+  <button class="btn-secondary" id="exportBtn">Export CSV</button>
+  <span class="live-indicator" id="liveDot"><span class="dot"></span> Live</span>
+</div>
+
+<section class="filter-bar" id="filterBar">
+  <label>From
+    <input type="date" id="filterStart" class="filter-input">
+  </label>
+  <label>To
+    <input type="date" id="filterEnd" class="filter-input">
+  </label>
+  <label>Severity
+    <div class="checkbox-group">
+      {% for key, label in sev_choices %}
+      <label class="checkbox-label"><input type="checkbox" value="{{ key }}" class="sev-check"> {{ label|cut:" ("|cut:")" }}</label>
+      {% endfor %}
+    </div>
+  </label>
+  <label>Vehicle
+    <select id="filterVehicle" class="filter-input">
+      <option value="">All</option>
+      {% for key, label in veh_choices %}
+      <option value="{{ key }}">{{ label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Junction
+    <input type="text" id="filterJunction" class="filter-input" placeholder="e.g. Mwenge">
+  </label>
+  <div class="filter-actions">
+    <button class="btn-primary" id="filterApply">Apply</button>
+    <button class="btn-ghost" id="filterReset">Reset</button>
+  </div>
 </section>
 
-<section class="charts-grid">
-  <div class="chart-card wide">
-    <h3>High-Risk Time-of-Day Profile</h3>
-    <canvas id="hourChart"></canvas>
-    <p class="muted">Peak hours show when infrastructure (signals, lighting, patrols) is most needed.</p>
-  </div>
-  <div class="chart-card wide">
-    <h3>Recommended Interventions (auto-suggested)</h3>
-    <ul id="recommendations" class="reco-list"></ul>
-  </div>
+<section class="kpi-grid" id="kpiStrip">
+  <div class="kpi"><div class="kpi-num" id="kpiTotal">—</div><div class="kpi-label">Total Incidents</div></div>
+  <div class="kpi fatal"><div class="kpi-num" id="kpiFatal">—</div><div class="kpi-label">Fatal</div></div>
+  <div class="kpi critical"><div class="kpi-num" id="kpiCritical">—</div><div class="kpi-label">Critical</div></div>
+  <div class="kpi"><div class="kpi-num" id="kpiAvgCas">—</div><div class="kpi-label">Avg Casualties</div></div>
+  <div class="kpi verified"><div class="kpi-num" id="kpiVerified">—</div><div class="kpi-label">Verified</div></div>
 </section>
+
+<div class="authority-grid">
+  <div>
+    <section class="chart-card wide" style="grid-column:unset;">
+      <h3>Recent Incidents</h3>
+      <div class="table-scroll">
+        <table class="data-table" id="incidentsTable">
+          <thead>
+            <tr>
+              <th>Severity</th>
+              <th>Junction</th>
+              <th>Vehicles</th>
+              <th>Cas</th>
+              <th>Fatal</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="incidentsBody">
+            <tr><td colspan="6" class="muted" style="text-align:center;padding:var(--space-5);">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted" style="margin-top:var(--space-2);font-size:var(--text-xs);">Showing last 20 incidents matching filters.</p>
+    </section>
+  </div>
+
+  <div class="authority-sidebar">
+    <h3 style="margin:0 0 var(--space-3);font-size:var(--text-base);color:var(--indigo-deep);text-transform:uppercase;letter-spacing:0.04em;">Junction Ranking</h3>
+    <div id="junctionRanking">
+      <p class="muted">Loading…</p>
+    </div>
+    <hr style="margin:var(--space-4) 0;border:0;border-top:1px solid rgba(26,31,46,0.08);">
+    <h3 style="margin:0 0 var(--space-3);font-size:var(--text-base);color:var(--indigo-deep);text-transform:uppercase;letter-spacing:0.04em;">Recommendations</h3>
+    <div id="recommendations">
+      <p class="muted">Loading…</p>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
 <script>
-  fetch("{% url 'api_hourly' %}").then(r=>r.json()).then(data=>{
-    new Chart(document.getElementById('hourChart'), {
-      type:'bar',
-      data:{labels: data.map(d=>d.hour+':00'),
-            datasets:[{label:'Incidents', data: data.map(d=>d.count),
-                       backgroundColor: data.map(d => d.count > 5 ? '#c0392b' : '#3b6cb0')}]},
-      options:{plugins:{legend:{display:false}}}
-    });
-  });
+const FILTER_API = "{% url 'api_authority_filter' %}";
+const RECOMMEND_API = "{% url 'api_recommendations' %}";
+const EXPORT_URL = "{% url 'api_authority_export_csv' %}";
 
-  // Simple rule-based recommendations
-  fetch("{% url 'api_hourly' %}").then(r=>r.json()).then(data=>{
-    const peak = data.reduce((a,b)=> b.count>a.count? b:a, {hour:0,count:0});
-    const list = [
-      `🚦 Deploy traffic police at peak hour <b>${peak.hour}:00</b> (${peak.count} incidents).`,
-      `💡 Add solar lighting at junctions with &gt;5 incidents/night.`,
-      `🚌 Enforce bodaboda lane discipline at hotspots.`,
-      `📋 Generate monthly engineering report (PDF) for TANROADS.`
-    ];
-    document.getElementById('recommendations').innerHTML =
-      list.map(t => `<li>${t}</li>`).join('');
-  });
+function getFilters() {
+  const start = document.getElementById('filterStart').value;
+  const end = document.getElementById('filterEnd').value;
+  const sevChecked = [...document.querySelectorAll('.sev-check:checked')].map(c => c.value);
+  const vehicle = document.getElementById('filterVehicle').value;
+  const junction = document.getElementById('filterJunction').value.trim();
+  const params = new URLSearchParams();
+  if (start) params.set('start', start);
+  if (end) params.set('end', end);
+  if (sevChecked.length) params.set('severity', sevChecked.join(','));
+  if (vehicle) params.set('vehicle_type', vehicle);
+  if (junction) params.set('junction', junction);
+  return params;
+}
+
+function updateURL(params) {
+  const qs = params.toString();
+  const url = window.location.pathname + (qs ? '?' + qs : '');
+  window.history.replaceState(null, '', url);
+}
+
+function loadFiltersFromURL() {
+  const p = new URLSearchParams(window.location.search);
+  if (p.has('start')) document.getElementById('filterStart').value = p.get('start');
+  if (p.has('end')) document.getElementById('filterEnd').value = p.get('end');
+  if (p.has('severity')) {
+    const vals = p.get('severity').split(',');
+    document.querySelectorAll('.sev-check').forEach(c => { c.checked = vals.includes(c.value); });
+  }
+  if (p.has('vehicle_type')) document.getElementById('filterVehicle').value = p.get('vehicle_type');
+  if (p.has('junction')) document.getElementById('filterJunction').value = p.get('junction');
+}
+
+const SEV_LABELS = {fatal:'Fatal', critical:'Critical', serious:'Serious', minor:'Minor'};
+const SEV_COLORS = {fatal:'#c0392b', critical:'#e67e22', serious:'#d4a017', minor:'#2d8659'};
+
+function renderKPI(data) {
+  document.getElementById('kpiTotal').textContent = data.total;
+  document.getElementById('kpiFatal').textContent = data.fatal_count;
+  document.getElementById('kpiCritical').textContent = data.critical_count;
+  document.getElementById('kpiAvgCas').textContent = data.avg_casualties;
+  document.getElementById('kpiVerified').textContent = data.verified_pct + '%';
+}
+
+function renderIncidents(data) {
+  const tbody = document.getElementById('incidentsBody');
+  if (!data.recent || data.recent.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center;padding:var(--space-5);">No incidents match the current filters.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.recent.map(a => {
+    const sev = a.severity || 'minor';
+    const color = SEV_COLORS[sev] || '#6b7280';
+    const label = SEV_LABELS[sev] || sev;
+    const vt = Array.isArray(a.vehicle_types) ? a.vehicle_types.join(', ') : a.vehicle_types || '';
+    const date = a.occurred_at ? new Date(a.occurred_at).toLocaleDateString('en-TZ', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
+    return `<tr>
+      <td><span class="sev-badge" style="background:${color};">${label}</span></td>
+      <td>${a.junction_name || '—'}</td>
+      <td style="font-size:var(--text-xs);">${vt}</td>
+      <td>${a.casualties}</td>
+      <td>${a.fatalities}</td>
+      <td style="font-size:var(--text-xs);white-space:nowrap;">${date}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderJunctions(data) {
+  const el = document.getElementById('junctionRanking');
+  if (!data.junctions || data.junctions.length === 0) {
+    el.innerHTML = '<p class="muted">No junction data.</p>';
+    return;
+  }
+  el.innerHTML = data.junctions.map((j, i) => {
+    const score = j.safety_score;
+    const barColor = score >= 50 ? '#c0392b' : score >= 30 ? '#e67e22' : score >= 15 ? '#d4a017' : '#2d8659';
+    return `<div class="junction-row">
+      <div class="junction-rank">${i + 1}</div>
+      <div class="junction-meta">
+        <div class="junction-name">${j.name}</div>
+        <div class="junction-bar-wrap">
+          <div class="junction-bar" style="width:${Math.min(score, 100)}%;background:${barColor};"></div>
+        </div>
+      </div>
+      <div class="junction-score">${score}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderRecommendations(data) {
+  const el = document.getElementById('recommendations');
+  if (!data.recommendations || data.recommendations.length === 0) {
+    el.innerHTML = '<p class="muted">No recommendations available.</p>';
+    return;
+  }
+  el.innerHTML = data.recommendations.map(r => {
+    const level = r.risk_level || 'LOW';
+    const badgeColor = level === 'HIGH' ? '#c0392b' : level === 'MEDIUM' ? '#e67e22' : '#2d8659';
+    return `<div class="reco-card">
+      <div class="reco-header">
+        <strong>${r.junction}</strong>
+        <span class="sev-badge" style="background:${badgeColor};">${level}</span>
+      </div>
+      <div class="reco-stats">${r.incidents} incidents · ${r.fatalities} deaths · ${r.casualties} casualties</div>
+      <ul class="reco-actions">${r.actions.map(a => `<li>${a}</li>`).join('')}</ul>
+    </div>`;
+  }).join('');
+  if (data.ai_narrative) {
+    el.innerHTML += `<div class="reco-ai"><strong>AI Analysis:</strong> ${data.ai_narrative}</div>`;
+  }
+}
+
+function fetchData() {
+  const params = getFilters();
+  updateURL(params);
+  fetch(FILTER_API + '?' + params.toString())
+    .then(r => r.json())
+    .then(data => {
+      renderKPI(data);
+      renderIncidents(data);
+      renderJunctions(data);
+    })
+    .catch(() => {
+      document.getElementById('incidentsBody').innerHTML =
+        '<tr><td colspan="6" class="muted" style="text-align:center;padding:var(--space-5);">Failed to load data.</td></tr>';
+    });
+}
+
+function fetchRecommendations() {
+  fetch(RECOMMEND_API)
+    .then(r => r.json())
+    .then(renderRecommendations)
+    .catch(() => {
+      document.getElementById('recommendations').innerHTML = '<p class="muted">Failed to load recommendations.</p>';
+    });
+}
+
+document.getElementById('filterApply').addEventListener('click', fetchData);
+document.getElementById('filterReset').addEventListener('click', function() {
+  document.getElementById('filterStart').value = '';
+  document.getElementById('filterEnd').value = '';
+  document.querySelectorAll('.sev-check').forEach(c => { c.checked = false; });
+  document.getElementById('filterVehicle').value = '';
+  document.getElementById('filterJunction').value = '';
+  fetchData();
+});
+document.getElementById('exportBtn').addEventListener('click', function() {
+  const params = getFilters();
+  window.open(EXPORT_URL + '?' + params.toString(), '_blank');
+});
+
+loadFiltersFromURL();
+fetchData();
+fetchRecommendations();
 </script>
 {% endblock %}

@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{% block title %}Road Safety Dar{% endblock %}</title>
 
+  <link rel="icon" type="image/svg+xml" href="{% static 'icons/favicon.svg' %}">
+  <link rel="apple-touch-icon" href="{% static 'icons/favicon.svg' %}">
+  <link rel="manifest" href="{% static 'manifest.json' %}">
+  <meta name="theme-color" content="#3B82F6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
@@ -15,11 +22,23 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">🚦 Road Safety Dar es Salaam</div>
+    <div class="brand">
+      <img src="{% static 'img/accident-protection.png' %}" alt="" class="brand-icon" />
+      Road Safety Dar es Salaam
+    </div>
     <nav>
       <a href="{% url 'dashboard' %}">Dashboard</a>
-      <a href="{% url 'report' %}">Report Accident</a>
-      <a href="{% url 'authority' %}">Authority View</a>
+      <a href="{% url 'report' %}">Report</a>
+      {% if user.is_authenticated %}
+        {% if user.profile.role == "police" or user.profile.role == "admin" %}
+          <a href="{% url 'authority' %}">Authority</a>
+        {% endif %}
+        <span class="auth-name">{{ user.username }}</span>
+        <a href="{% url 'account_logout' %}">Logout</a>
+      {% else %}
+        <a href="{% url 'account_login' %}">Sign In</a>
+        <a href="{% url 'account_signup' %}">Sign Up</a>
+      {% endif %}
     </nav>
   </header>
 
@@ -35,6 +54,7 @@
   <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="{% static 'js/featured_stat_card.js' %}" defer></script>
   {% block scripts %}{% endblock %}
   {% block extra_scripts %}{% endblock %}
 </body>

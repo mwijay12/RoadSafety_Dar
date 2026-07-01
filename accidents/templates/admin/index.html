@@ -1,0 +1,196 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .kpi-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 20px 16px;
+    box-shadow: 0 1px 3px rgba(15,23,42,0.04);
+    text-align: center;
+    border: 1px solid #E2E8F0;
+    transition: transform 240ms cubic-bezier(0.34,1.56,0.64,1), box-shadow 240ms ease;
+  }
+  .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(15,23,42,0.06); }
+  .kpi-card .kpi-emoji { font-size: 28px; margin-bottom: 4px; }
+  .kpi-card .kpi-value { font-size: 40px; font-weight: 800; line-height: 1.1; font-family: "Hubot Sans", system-ui, sans-serif; }
+  .kpi-card .kpi-label { font-size: 14px; color: #475569; margin-top: 4px; font-weight: 600; letter-spacing: 0.01em; }
+  .kpi-card.danger { border-top: 3px solid #F87171; }
+  .kpi-card.warning { border-top: 3px solid #FBBF24; }
+  .kpi-card.success { border-top: 3px solid #22C55E; }
+  .kpi-card.info { border-top: 3px solid #3B82F6; }
+  .kpi-dashboard-panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 800px) {
+    .kpi-dashboard-panels { grid-template-columns: 1fr; }
+  }
+  .kpi-dashboard-panels h2 { font-family: "Hubot Sans", system-ui, sans-serif; font-size: 16px; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #E2E8F0; }
+  .kpi-dashboard-panels table { width: 100%; border-collapse: collapse; }
+  .kpi-dashboard-panels th, .kpi-dashboard-panels td { padding: 6px 8px; text-align: left; font-size: 13px; border-bottom: 1px solid #F1F5F9; }
+  .kpi-dashboard-panels th { font-weight: 600; color: #475569; text-transform: uppercase; font-size: 11px; letter-spacing: 0.04em; }
+  .severity-badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; color: #fff; }
+  .severity-fatal { background: #F87171; }
+  .severity-critical { background: #FBBF24; color: #0F172A; }
+  .severity-serious { background: #3B82F6; }
+  .severity-minor { background: #22C55E; }
+  .app-list .module { margin-bottom: 8px; }
+  .app-list table { border-radius: 12px; overflow: hidden; }
+  .app-list caption { background: #3B82F6 !important; font-family: "Hubot Sans", system-ui, sans-serif; }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">🚦 RoadSafety Dar — Admin Panel</a></h1>
+{% endblock %}
+
+{% block nav-global %}
+<div style="float:right;margin-top:4px;">
+  <a href="/" style="color:#fff;text-decoration:none;padding:6px 14px;border:1px solid rgba(255,255,255,0.3);border-radius:8px;font-size:13px;">← Site</a>
+</div>
+{% endblock %}
+
+{% block content_title %}<h1>📊 Operational Dashboard</h1>{% endblock %}
+
+{% block content %}
+<div class="kpi-grid">
+  <div class="kpi-card info">
+    <div class="kpi-emoji">🚦</div>
+    <div class="kpi-value">{{ kpi_total }}</div>
+    <div class="kpi-label">Total Reports</div>
+  </div>
+  <div class="kpi-card danger">
+    <div class="kpi-emoji">💀</div>
+    <div class="kpi-value" style="color:#F87171;">{{ kpi_fatal }}</div>
+    <div class="kpi-label">Fatal Accidents</div>
+  </div>
+  <div class="kpi-card warning">
+    <div class="kpi-emoji">🚑</div>
+    <div class="kpi-value" style="color:#D97706;">{{ kpi_critical }}</div>
+    <div class="kpi-label">Critical</div>
+  </div>
+  <div class="kpi-card info">
+    <div class="kpi-emoji">⚠️</div>
+    <div class="kpi-value" style="color:#3B82F6;">{{ kpi_serious }}</div>
+    <div class="kpi-label">Serious</div>
+  </div>
+  <div class="kpi-card success">
+    <div class="kpi-emoji">✅</div>
+    <div class="kpi-value" style="color:#22C55E;">{{ kpi_minor }}</div>
+    <div class="kpi-label">Minor</div>
+  </div>
+  <div class="kpi-card danger">
+    <div class="kpi-emoji">❓</div>
+    <div class="kpi-value" style="color:#F87171;">{{ kpi_unverified }}</div>
+    <div class="kpi-label">Unverified</div>
+  </div>
+  <div class="kpi-card info">
+    <div class="kpi-emoji">📍</div>
+    <div class="kpi-value">{{ kpi_junctions }}</div>
+    <div class="kpi-label">Tracked Junctions</div>
+  </div>
+  <div class="kpi-card warning">
+    <div class="kpi-emoji">🤕</div>
+    <div class="kpi-value" style="color:#D97706;">{{ kpi_total_casualties }}</div>
+    <div class="kpi-label">Total Casualties</div>
+  </div>
+  <div class="kpi-card danger">
+    <div class="kpi-emoji">🪦</div>
+    <div class="kpi-value" style="color:#F87171;">{{ kpi_total_fatalities }}</div>
+    <div class="kpi-label">Total Fatalities</div>
+  </div>
+</div>
+
+<div style="background:#FEF3C7;border:2px solid #FBBF24;border-radius:12px;padding:12px 20px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
+  <span style="font-size:24px;">🔴</span>
+  <div>
+    <strong style="font-size:15px;">
+      Demo Data: <span style="color:#D97706;">{{ show_demo_data|yesno:"SHOWING,HIDDEN" }}</span>
+    </strong>
+    <span style="display:block;font-size:13px;color:#92400E;margin-top:2px;">
+      Public dashboard
+      {% if show_demo_data %}
+      shows demo + real data. <a href="{% url 'admin:accidents_sitesettings_change' 1 %}" style="color:#1D4ED8;">Toggle OFF</a> to show only real records.
+      {% else %}
+      hides demo/seed data. <a href="{% url 'admin:accidents_sitesettings_change' 1 %}" style="color:#1D4ED8;">Toggle ON</a> to re-enable demo data visibility.
+      {% endif %}
+    </span>
+  </div>
+</div>
+
+<div class="kpi-dashboard-panels">
+  <div>
+    <h2>⏳ Unverified Reports ({{ kpi_unverified }})</h2>
+    {% if unverified_list %}
+    <table>
+      <thead><tr><th>ID</th><th>Date</th><th>Severity</th><th>Junction</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for a in unverified_list %}
+        <tr>
+          <td>#{{ a.id }}</td>
+          <td>{{ a.occurred_at|date:"Y-m-d H:i" }}</td>
+          <td><span class="severity-badge severity-{{ a.severity }}">{{ a.get_severity_display|cut:" ("|cut:")"|truncatechars:10 }}</span></td>
+          <td>{{ a.junction_name|truncatechars:20 }}</td>
+          <td><a href="{% url 'admin:accidents_accident_change' a.id %}">Edit</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:#94A3B8;font-style:italic;">All reports are verified ✓</p>
+    {% endif %}
+  </div>
+  <div>
+    <h2>📋 Recent Audit Log</h2>
+    {% if audit_list %}
+    <table>
+      <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Accident</th><th>Description</th></tr></thead>
+      <tbody>
+        {% for log in audit_list %}
+        <tr>
+          <td>{{ log.created_at|date:"H:i" }}</td>
+          <td>{{ log.user|default:"—" }}</td>
+          <td>{{ log.get_action_display }}</td>
+          <td>{% if log.accident %}<a href="{% url 'admin:accidents_accident_change' log.accident.id %}">#{{ log.accident.id }}</a>{% else %}—{% endif %}</td>
+          <td>{{ log.description|truncatechars:40 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:#94A3B8;font-style:italic;">No audit entries yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="app-list">
+  {% for app in app_list %}
+  <div class="module">
+    <table style="width:100%">
+      <caption><a href="{{ app.app_url }}" class="section" title="{% blocktranslate with name=app.name %}Models in the {{ name }} application{% endblocktranslate %}">{{ app.name }}</a></caption>
+      {% for model in app.models %}
+      <tr>
+        <th scope="row">{% if model.admin_url %}<a href="{{ model.admin_url }}">{{ model.name }}</a>{% else %}{{ model.name }}{% endif %}</th>
+        <td style="text-align:right;">
+          {% if model.admin_url %}<a href="{{ model.admin_url }}" class="changelink">{% translate 'Change' %}</a>{% endif %}
+          {% if model.add_url %}<a href="{{ model.add_url }}" class="addlink">{% translate 'Add' %}</a>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}

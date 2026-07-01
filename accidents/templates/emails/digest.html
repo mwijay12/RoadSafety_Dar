@@ -1,0 +1,26 @@
+{% extends "emails/base_email.html" %}
+{% block email_body %}
+<h2>📊 Daily Digest — {{ date|default:"Today" }}</h2>
+<p>Here is your daily summary of road incidents in Dar es Salaam.</p>
+<table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
+  <tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:600;color:#1a3a52">Total Incidents</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee">{{ total }}</td></tr>
+  <tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:600;color:#c0392b">Fatal</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee;color:#c0392b;font-weight:700">{{ fatal_count }}</td></tr>
+  <tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:600;color:#e67e22">Critical</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee;color:#e67e22;font-weight:700">{{ critical_count }}</td></tr>
+  <tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:600;color:#1a3a52">Total Casualties</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee">{{ total_casualties }}</td></tr>
+  <tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:600;color:#1a3a52">Total Fatalities</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee">{{ total_fatalities }}</td></tr>
+  {% if top_junction %}
+  <tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:600;color:#1a3a52">Worst Junction</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee">{{ top_junction }} ({{ top_junction_count }} incidents)</td></tr>
+  {% endif %}
+</table>
+<p>
+  <a href="{{ dashboard_url }}" class="btn">View Full Dashboard</a>
+</p>
+<p class="muted">You received this because you have email notifications enabled. <br>
+Adjust preferences in your account settings.</p>
+{% endblock %}

@@ -1,0 +1,64 @@
+# RoadSafety_Dar — Docker Compose for local development
+# ============================================================================
+# Spins up Django + PostGIS + Redis.  All free-tier compatible.
+# Usage:
+#   docker compose build     # build the image
+#   docker compose up -d     # start everything
+#   docker compose exec web python manage.py migrate
+#   docker compose exec web python manage.py createsuperuser
+#   docker compose logs -f   # tail logs
+#   docker compose down      # stop
+# ============================================================================
+
+services:
+
+  # ---------- PostGIS database ----------
+  db:
+    image: postgis/postgis:16-3.4
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: roadsafety
+      POSTGRES_USER: roadsafety
+      POSTGRES_PASSWORD: roadsafety
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U roadsafety -d roadsafety"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------- Redis (optional, for caching) ----------
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------- Django web ----------
+  web:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DJANGO_ENV: dev
+      DATABASE_URL: postgis://roadsafety:roadsafety@db:5432/roadsafety
+      REDIS_URL: redis://redis:6379/0
+      DEBUG: "True"
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      SITE_URL: http://localhost:8000
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+
+volumes:
+  postgres_data:

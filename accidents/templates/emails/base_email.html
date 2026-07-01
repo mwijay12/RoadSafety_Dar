@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  body{margin:0;padding:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#f4ead5;font-size:15px;line-height:1.6;color:#1a1f2e}
+  .wrap{max-width:600px;margin:24px auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(26,31,46,0.1)}
+  .head{background:#1a3a52;padding:20px 28px;border-bottom:3px solid #d4a017}
+  .head h1{margin:0;color:#fff;font-size:20px;font-weight:800;letter-spacing:-0.01em}
+  .head h1 span{color:#d4a017}
+  .body{padding:28px}
+  .body h2{color:#1a3a52;font-size:18px;margin:0 0 16px}
+  .body p{margin:0 0 12px;color:#1a1f2e}
+  .btn{display:inline-block;padding:10px 20px;background:#c0392b;color:#fff;text-decoration:none;border-radius:4px;font-weight:600;font-size:14px;margin:8px 0}
+  .btn:hover{background:#962b1f}
+  .muted{color:#6b7280;font-size:13px}
+  .foot{padding:20px 28px;border-top:1px solid rgba(26,31,46,0.08);font-size:12px;color:#6b7280;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head"><h1>🚦 Road Safety <span>Dar es Salaam</span></h1></div>
+  <div class="body">{% block email_body %}{% endblock %}</div>
+  <div class="foot">&copy; {% now "Y" %} RoadSafety Dar &middot; SDG 11.2 &middot; Safer urban transport</div>
+</div>
+</body>
+</html>

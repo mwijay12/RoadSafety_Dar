@@ -1,0 +1,130 @@
+# ============================================================================
+# RoadSafety_Dar — project configuration
+# ============================================================================
+# Tooling config lives here so ruff, mypy, and pytest all read the same
+# settings from one file. Install dev tooling with:
+#     pip install -r requirements-dev.txt
+# ============================================================================
+
+[project]
+name = "roadsafety-dar"
+version = "1.2.0"
+description = "Spatial road-accident information management for Dar es Salaam (SDG 11.2)."
+requires-python = ">=3.11"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Davie Byanmwijage (Mwijay)" }]
+
+# ============================================================================
+# ruff — linter + formatter
+# ============================================================================
+[tool.ruff]
+target-version = "py311"
+line-length = 99
+extend-exclude = [
+    ".venv",
+    "landing/node_modules",
+    "landing/dist",
+    "staticfiles",
+    "migrations",
+    "__pycache__",
+]
+
+[tool.ruff.lint]
+# Reasonable default rule set: pycodestyle (E/W), pyflakes (F), isort (I),
+# bugbear (B), comprehensions (C4), pyupgrade (UP), security (S).
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "S",   # flake8-bandit (security)
+    "DJ",  # flake8-django
+]
+ignore = [
+    "E501",   # line-too-long (ruff format handles this)
+    "S101",   # assert (used in tests; legitimate)
+    "B008",   # function-call-in-default-argument (Django common pattern)
+    "DJ001",  # django-not-configured — false positive in some settings
+]
+fixable = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/migrations/*.py" = ["E", "F", "I", "UP", "S"]  # migrations are auto-generated
+"**/tests.py" = ["S"]                              # tests can use assert
+"**/test_*.py" = ["S"]
+"**/*_test.py" = ["S"]
+"conftest.py" = ["S"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["accidents", "roadsafety"]
+combine-as-imports = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+
+# ============================================================================
+# pytest
+# ============================================================================
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "roadsafety.settings.dev"
+python_files = ["test_*.py", "*_test.py", "tests.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--tb=short",
+]
+testpaths = ["accidents"]
+filterwarnings = [
+    "ignore::DeprecationWarning:whitenoise.*",
+    "ignore::DeprecationWarning:reportlab.*",
+]
+
+# ============================================================================
+# coverage.py
+# ============================================================================
+[tool.coverage.run]
+source = ["accidents"]
+omit = [
+    "*/migrations/*",
+    "*/test_*",
+    "*/tests.py",
+    "*/conftest.py",
+    "*/management/commands/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+skip_empty = true
+fail_under = 70
+sort = "Cover"
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "def __str__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.",
+    "class .*\\bMeta\\b",
+    "logger.debug",
+    "logger.info",
+]
+
+# ============================================================================
+# mypy
+# ============================================================================
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "roadsafety.settings.dev"
