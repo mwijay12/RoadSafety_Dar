@@ -1,0 +1,49 @@
+{% extends "accidents/base.html" %}
+{% block title %}Authority Dashboard — Road Safety Dar{% endblock %}
+
+{% block content %}
+<section class="kpi-grid">
+  <div class="kpi"><div class="kpi-num">{{ total }}</div><div class="kpi-label">Total incidents</div></div>
+  <div class="kpi danger"><div class="kpi-num">{{ fatal }}</div><div class="kpi-label">Fatal incidents</div></div>
+  <div class="kpi"><div class="kpi-num">🚦</div><div class="kpi-label">Evidence-based decisions</div></div>
+</section>
+
+<section class="charts-grid">
+  <div class="chart-card wide">
+    <h3>High-Risk Time-of-Day Profile</h3>
+    <canvas id="hourChart"></canvas>
+    <p class="muted">Peak hours show when infrastructure (signals, lighting, patrols) is most needed.</p>
+  </div>
+  <div class="chart-card wide">
+    <h3>Recommended Interventions (auto-suggested)</h3>
+    <ul id="recommendations" class="reco-list"></ul>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  fetch("{% url 'api_hourly' %}").then(r=>r.json()).then(data=>{
+    new Chart(document.getElementById('hourChart'), {
+      type:'bar',
+      data:{labels: data.map(d=>d.hour+':00'),
+            datasets:[{label:'Incidents', data: data.map(d=>d.count),
+                       backgroundColor: data.map(d => d.count > 5 ? '#c0392b' : '#3b6cb0')}]},
+      options:{plugins:{legend:{display:false}}}
+    });
+  });
+
+  // Simple rule-based recommendations
+  fetch("{% url 'api_hourly' %}").then(r=>r.json()).then(data=>{
+    const peak = data.reduce((a,b)=> b.count>a.count? b:a, {hour:0,count:0});
+    const list = [
+      `🚦 Deploy traffic police at peak hour <b>${peak.hour}:00</b> (${peak.count} incidents).`,
+      `💡 Add solar lighting at junctions with &gt;5 incidents/night.`,
+      `🚌 Enforce bodaboda lane discipline at hotspots.`,
+      `📋 Generate monthly engineering report (PDF) for TANROADS.`
+    ];
+    document.getElementById('recommendations').innerHTML =
+      list.map(t => `<li>${t}</li>`).join('');
+  });
+</script>
+{% endblock %}

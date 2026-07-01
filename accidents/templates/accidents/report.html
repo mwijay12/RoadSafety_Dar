@@ -1,0 +1,99 @@
+{% extends "accidents/base.html" %}
+{% block title %}Report an Accident — Road Safety Dar{% endblock %}
+{% block content %}
+<section class="form-wrap">
+  <h2>📝 Report a Road Accident</h2>
+  <p class="muted">Help us build a safer Dar es Salaam. All fields except <em>description</em> are required.</p>
+
+  {% if error %}<div class="alert error">⚠ {{ error }}</div>{% endif %}
+
+  <form method="post" id="accidentForm" class="grid">
+    {% csrf_token %}
+
+    <label>Reporter type
+      <select name="reported_by" required>
+        <option value="community">Community member</option>
+        <option value="police">Tanzania Police Force</option>
+        <option value="hospital">Hospital / EMS</option>
+        <option value="tanroads">TANROADS</option>
+        <option value="media">Media</option>
+      </select>
+    </label>
+
+    <label>Severity
+      <select name="severity" required>
+        <option value="minor">Minor (no casualties)</option>
+        <option value="serious">Serious (injury, no fatality)</option>
+        <option value="fatal">Fatal (1+ deaths)</option>
+        <option value="critical">Critical (multiple casualties)</option>
+      </select>
+    </label>
+
+    <label>Vehicle type
+      <select name="vehicle_type" required>
+        <option value="motorcycle">Motorcycle / Bodaboda</option>
+        <option value="car">Car</option>
+        <option value="bus">Bus / Daladala</option>
+        <option value="truck">Truck / Lorry</option>
+        <option value="bicycle">Bicycle</option>
+        <option value="pedestrian">Pedestrian only</option>
+        <option value="mixed">Mixed / Multiple</option>
+      </select>
+    </label>
+
+    <label>Date & time
+      <input type="datetime-local" name="occurred_at" required>
+    </label>
+
+    <label>GPS Latitude
+      <input type="number" step="any" name="lat" id="lat" required>
+    </label>
+    <label>GPS Longitude
+      <input type="number" step="any" name="lng" id="lng" required>
+    </label>
+
+    <button type="button" id="gpsBtn" class="btn-secondary">📍 Use my current location</button>
+
+    <label>Address / landmark
+      <input type="text" name="address" placeholder="e.g. Near Ubungo Interchange, Bagamoyo Road">
+    </label>
+
+    <label>Casualties
+      <input type="number" name="casualties" min="0" value="0">
+    </label>
+    <label>Fatalities
+      <input type="number" name="fatalities" min="0" value="0">
+    </label>
+    <label>Injuries
+      <input type="number" name="injuries" min="0" value="0">
+    </label>
+
+    <label>Weather
+      <input type="text" name="weather" placeholder="clear / rainy / drizzle">
+    </label>
+    <label>Road condition
+      <input type="text" name="road_condition" placeholder="good / wet / potholed">
+    </label>
+
+    <label class="full">Description
+      <textarea name="description" rows="3" placeholder="What happened? (English or Swahili)"></textarea>
+    </label>
+
+    <label class="full">Your contact (optional)
+      <input type="text" name="contact" placeholder="phone or email for follow-up">
+    </label>
+
+    <button type="submit" class="btn-primary full">Submit Report</button>
+  </form>
+</section>
+
+<script>
+  document.getElementById('gpsBtn').addEventListener('click', () => {
+    if (!navigator.geolocation) { alert('Geolocation not supported'); return; }
+    navigator.geolocation.getCurrentPosition(p => {
+      document.getElementById('lat').value = p.coords.latitude.toFixed(6);
+      document.getElementById('lng').value = p.coords.longitude.toFixed(6);
+    }, err => alert('GPS error: ' + err.message));
+  });
+</script>
+{% endblock %}

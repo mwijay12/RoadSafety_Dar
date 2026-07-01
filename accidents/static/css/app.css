@@ -1,0 +1,67 @@
+/* Road Safety Dar — UI */
+:root {
+  --primary: #c0392b;       /* alert red */
+  --secondary: #2c3e50;     /* authority navy */
+  --accent: #f4d35e;        /* warning gold */
+  --bg: #f7f7f9;
+  --card: #ffffff;
+  --text: #1a1a1a;
+  --muted: #6b7280;
+  --good: #1f9d55;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px; background: var(--secondary); color: #fff;
+  position: sticky; top: 0; z-index: 1000;
+}
+.topbar .brand { font-weight: 700; font-size: 1.1rem; }
+.topbar nav a { color: #fff; text-decoration: none; margin-left: 16px; font-size: 0.95rem; }
+.topbar nav a:hover { color: var(--accent); }
+main { max-width: 1280px; margin: 0 auto; padding: 20px; }
+footer { text-align: center; padding: 16px; color: var(--muted); }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 12px; margin-bottom: 20px; }
+.kpi { background: var(--card); padding: 18px; border-radius: 8px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.kpi-num { font-size: 2rem; font-weight: 800; color: var(--secondary); }
+.kpi.danger .kpi-num { color: var(--primary); }
+.kpi.success .kpi-num { color: var(--good); }
+.kpi-label { font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+
+.map-wrap { background: var(--card); border-radius: 8px; padding: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.08); margin-bottom: 20px; }
+#map { height: 480px; border-radius: 6px; }
+
+.charts-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 16px; }
+.chart-card { background: var(--card); padding: 16px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.chart-card.wide { grid-column: span 2; }
+.chart-card h3 { margin-top: 0; font-size: 1rem; color: var(--secondary); }
+@media (max-width: 720px) { .charts-grid { grid-template-columns: 1fr; } .chart-card.wide { grid-column: span 1; } }
+
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th, .data-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+.data-table th { color: var(--muted); }
+
+.sev-pin span { display: block; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.3); }
+
+.form-wrap { background: var(--card); padding: 24px; border-radius: 8px; max-width: 760px; margin: 0 auto; }
+.form-wrap h2 { margin-top: 0; color: var(--secondary); }
+.muted { color: var(--muted); font-size: 0.9rem; }
+.grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
+.grid label { display: flex; flex-direction: column; font-size: 0.9rem; color: var(--secondary); gap: 4px; }
+.grid label.full { grid-column: 1 / -1; }
+.grid input, .grid select, .grid textarea { padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1rem; }
+.btn-primary { background: var(--primary); color: #fff; border: 0; padding: 12px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+.btn-primary:hover { background: #962b1f; }
+.btn-secondary { background: var(--accent); color: #1a1a1a; border: 0; padding: 10px 14px; border-radius: 6px; cursor: pointer; }
+.full { width: 100%; }
+.alert { padding: 10px 14px; border-radius: 6px; margin: 8px 0; }
+.alert.error { background: #fde2e0; color: #962b1f; }
+.reco-list { line-height: 1.8; padding-left: 1.2rem; }
+.reco-list li { margin: 4px 0; }
+
+@media (max-width: 600px) {
+  .grid { grid-template-columns: 1fr; }
+  .topbar { flex-direction: column; gap: 8px; }
+  .topbar nav a { margin: 0 8px; }
+}

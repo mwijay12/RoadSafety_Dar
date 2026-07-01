@@ -1,0 +1,100 @@
+# Swahili translations for RoadSafety Dar
+# Translates all visible UI strings.
+# Generated for v1.1 — add more entries as UI grows.
+# Usage: {% trans "Key" %} in templates, gettext_lazy("Key") in Python.
+
+msgid "Road Safety"
+msgstr "Usalama Barabarani"
+
+msgid "Dar es Salaam"
+msgstr "Dar es Salaam"
+
+msgid "Dashboard"
+msgstr "Dashibodi"
+
+msgid "Report Accident"
+msgstr "Ripoti Ajali"
+
+msgid "Authority Dashboard"
+msgstr "Dashibodi ya Mamlaka"
+
+msgid "Total Reports"
+msgstr "Ripoti Jumla"
+
+msgid "Fatal Accidents"
+msgstr "Ajali za Kifo"
+
+msgid "Verified"
+msgstr "Zilizothibitishwa"
+
+msgid "Junctions Tracked"
+msgstr "Makutano Yanafuatiliwa"
+
+msgid "Severity"
+msgstr "Ukubwa"
+
+msgid "Vehicle"
+msgstr "Gari"
+
+msgid "Time"
+msgstr "Muda"
+
+msgid "Weather"
+msgstr "Hali ya Hewa"
+
+msgid "Road Condition"
+msgstr "Hali ya Barabara"
+
+msgid "Description"
+msgid "Maelezo"
+
+msgid "Submit Report"
+msgstr "Wasilisha Ripoti"
+
+msgid "Use my current location"
+msgstr "Tumia eneo langu la sasa"
+
+msgid "Casualties"
+msgstr "Walioathirika"
+
+msgid "Fatalities"
+msgstr "Vifo"
+
+msgid "Injuries"
+msgstr "Majeraha"
+
+msgid "Minor"
+msgstr "Kidogo"
+
+msgid "Serious"
+msgstr "Zito"
+
+msgid "Critical"
+msgstr "Hatari"
+
+msgid "Recommendations"
+msgstr "Mapendekezo"
+
+msgid "Risk Level"
+msgstr "Kiwango cha Hatari"
+
+msgid "HIGH"
+msgstr "JUU"
+
+msgid "MEDIUM"
+msgstr "WASTANI"
+
+msgid "LOW"
+msgstr "CHINI"
+
+msgid "Download CSV"
+msgstr "Pakua CSV"
+
+msgid "Powered by community reports"
+msgstr "Inaendeshwa na ripoti za jamii"
+
+msgid "Public Hotspot Map"
+msgstr "Ramani ya Maeneo ya Hatari"
+
+msgid "Accident Hotspots in Dar es Salaam"
+msgstr "Maeneo ya Hatari ya Ajali Dar es Salaam"

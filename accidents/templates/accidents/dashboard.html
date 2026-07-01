@@ -1,0 +1,123 @@
+{% extends "accidents/base.html" %}
+{% load i18n %}
+{% load static %}
+{% block title %}Public Dashboard — Road Safety Dar{% endblock %}
+
+{% block content %}
+<section class="kpi-grid">
+  <div class="kpi"><div class="kpi-num">{{ total }}</div><div class="kpi-label">{% trans "Total Reports" %}</div></div>
+  <div class="kpi danger"><div class="kpi-num">{{ fatal_count }}</div><div class="kpi-label">{% trans "Fatal" %}</div></div>
+  <div class="kpi success"><div class="kpi-num">{{ verified_count }}</div><div class="kpi-label">{% trans "Verified" %}</div></div>
+  <div class="kpi"><div class="kpi-num">{{ junction_count }}</div><div class="kpi-label">{% trans "Tracked Junctions" %}</div></div>
+</section>
+
+<section class="action-bar">
+  <a href="{% url 'report' %}" class="btn btn-primary">➕ {% trans "Report Accident" %}</a>
+  <a href="{% url 'authority' %}" class="btn btn-secondary">👮 {% trans "Authority Dashboard" %}</a>
+  <a href="/api/export.csv" class="btn btn-secondary">📥 {% trans "Download CSV" %}</a>
+  <a href="/api/recommendations/" target="_blank" class="btn btn-secondary">🤖 {% trans "AI Recommendations" %}</a>
+  <div class="lang-switch">
+    <a href="/en/dashboard/" class="lang-link">EN</a> |
+    <a href="/sw/dashboard/" class="lang-link">SW</a>
+  </div>
+</section>
+
+<section class="map-wrap">
+  <div id="map" role="region" aria-label="Accident hotspot map of Dar es Salaam"></div>
+</section>
+
+<section class="charts-grid">
+  <div class="chart-card"><h3>Severity Distribution</h3><canvas id="severityChart"></canvas></div>
+  <div class="chart-card"><h3>Vehicle Types</h3><canvas id="vehicleChart"></canvas></div>
+  <div class="chart-card wide"><h3>Monthly Trends</h3><canvas id="monthlyChart"></canvas></div>
+  <div class="chart-card wide">
+    <h3>Top 10 Worst-Affected Junctions</h3>
+    <table id="junctionTable" class="data-table">
+      <thead><tr><th>#</th><th>Lat,Lng</th><th>Accidents</th><th>Fatalities</th><th>Casualties</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const map = L.map('map').setView({{ center|safe }}, 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, attribution: '&copy; OpenStreetMap'
+  }).addTo(map);
+
+  // ---- Heatmap layer ----
+  fetch("{% url 'api_heatmap' %}").then(r => r.json()).then(points => {
+    L.heatLayer(points, {radius: 22, blur: 18, maxZoom: 17,
+      gradient: {0.2:'#1f9d55', 0.4:'#f4d35e', 0.7:'#ee964b', 1.0:'#c0392b'}
+    }).addTo(map);
+  });
+
+  // ---- Marker cluster of all accidents ----
+  const cluster = L.markerClusterGroup();
+  fetch("{% url 'api_accidents' %}").then(r => r.json()).then(rows => {
+    rows.forEach(a => {
+      const sevColor = {minor:'#1f9d55', serious:'#f4d35e',
+                        critical:'#ee964b', fatal:'#c0392b'}[a.severity] || '#333';
+      const icon = L.divIcon({
+        className: 'sev-pin',
+        html: `<span style="background:${sevColor}"></span>`,
+        iconSize: [14, 14]
+      });
+      const m = L.marker([a.lat, a.lng], {icon});
+      m.bindPopup(
+        `<b>${a.severity.toUpperCase()}</b><br>` +
+        `${a.vehicle_type} · ${a.casualties} casualties<br>` +
+        `${new Date(a.occurred_at).toLocaleString()}<br>` +
+        `<small>${a.address||''}</small>`
+      );
+      cluster.addLayer(m);
+    });
+    map.addLayer(cluster);
+  });
+
+  // ---- Severity chart ----
+  fetch("{% url 'api_severity' %}").then(r => r.json()).then(data => {
+    new Chart(document.getElementById('severityChart'), {
+      type: 'doughnut',
+      data: {labels: Object.keys(data),
+             datasets: [{data: Object.values(data),
+                backgroundColor: ['#1f9d55','#f4d35e','#ee964b','#c0392b']}]},
+      options: {plugins: {legend: {position: 'bottom'}}}
+    });
+  });
+
+  // ---- Vehicle chart ----
+  fetch("{% url 'api_vehicles' %}").then(r => r.json()).then(data => {
+    new Chart(document.getElementById('vehicleChart'), {
+      type: 'bar',
+      data: {labels: Object.keys(data), datasets:[{label:'Accidents',
+            data: Object.values(data), backgroundColor:'#3b6cb0'}]},
+      options: {plugins:{legend:{display:false}}}
+    });
+  });
+
+  // ---- Monthly trend ----
+  fetch("{% url 'api_monthly' %}").then(r => r.json()).then(data => {
+    new Chart(document.getElementById('monthlyChart'), {
+      type:'line',
+      data:{labels: data.map(d=>d.month),
+            datasets:[{label:'Accidents/month',
+              data: data.map(d=>d.count), borderColor:'#c0392b',
+              backgroundColor:'rgba(192,57,43,.2)', fill:true, tension:.3}]},
+      options:{plugins:{legend:{position:'bottom'}}}
+    });
+  });
+
+  // ---- Junction ranking table ----
+  fetch("{% url 'api_junctions' %}").then(r=>r.json()).then(rows => {
+    const tb = document.querySelector('#junctionTable tbody');
+    rows.slice(0,10).forEach((r,i)=>{
+      tb.insertAdjacentHTML('beforeend',
+        `<tr><td>${i+1}</td><td>${r.lat.toFixed(4)}, ${r.lng.toFixed(4)}</td>
+             <td>${r.count}</td><td>${r.fatalities}</td><td>${r.casualties}</td></tr>`);
+    });
+  });
+</script>
+{% endblock %}
