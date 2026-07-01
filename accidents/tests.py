@@ -317,7 +317,8 @@ class CSVDownloadTests(TestCase):
     def test_csv_download_has_data(self):
         resp = self.client.get("/api/export.csv")
         content = resp.content.decode()
-        self.assertIn("id,severity,lat,lng", content)  # header
+        # Header is sorted alphabetically (stable)
+        self.assertIn("id,occurred_at,severity,vehicle_types", content)
         self.assertIn("fatal", content)
         self.assertIn("Ubungo", content)
 

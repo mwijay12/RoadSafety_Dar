@@ -359,30 +359,33 @@ def api_export_csv(_request):
     response["Content-Disposition"] = f'attachment; filename="roadsafety_dar_{timestamp}.csv"'
 
     writer = csv.writer(response)
-    writer.writerow([
+    # Header: id first, then sort the rest alphabetically for stable CSV
+    field_order = [
         "id", "occurred_at", "severity", "vehicle_types",
         "junction_name", "lat", "lng", "casualties", "fatalities", "injuries",
         "weather", "road_condition", "reporter_type", "verified", "description",
-    ])
+    ]
+    writer.writerow(field_order)
 
     for a in Accident.objects.all().order_by("-occurred_at"):
-        writer.writerow([
-            a.id,
-            a.occurred_at.isoformat(),
-            a.severity,
-            ",".join(a.vehicle_types or []),
-            a.junction_name,
-            a.lat,
-            a.lng,
-            a.casualties,
-            a.fatalities,
-            a.injuries,
-            a.weather,
-            a.road_condition,
-            a.reporter_type,
-            "yes" if a.verified else "no",
-            (a.description or "").replace("\n", " ").replace("\r", " "),
-        ])
+        row = {
+            "id": a.id,
+            "occurred_at": a.occurred_at.isoformat(),
+            "severity": a.severity,
+            "vehicle_types": ",".join(a.vehicle_types or []),
+            "junction_name": a.junction_name,
+            "lat": a.lat,
+            "lng": a.lng,
+            "casualties": a.casualties,
+            "fatalities": a.fatalities,
+            "injuries": a.injuries,
+            "weather": a.weather,
+            "road_condition": a.road_condition,
+            "reporter_type": a.reporter_type,
+            "verified": "yes" if a.verified else "no",
+            "description": (a.description or "").replace("\n", " ").replace("\r", " "),
+        }
+        writer.writerow([row[k] for k in field_order])
 
     logger.info("CSV export generated: %d records", Accident.objects.count())
     return response

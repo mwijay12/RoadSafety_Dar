@@ -1,13 +1,25 @@
-# Swahili translations for RoadSafety Dar
-# Translates all visible UI strings.
-# Generated for v1.1 — add more entries as UI grows.
-# Usage: {% trans "Key" %} in templates, gettext_lazy("Key") in Python.
+# Swahili (sw) translations for RoadSafety Dar
+# Copyright (C) 2026 Davie Byanmwijage
+# This file is distributed under the MIT license.
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.1\n"
+"Report-Msgid-Bugs-To: dev@roadsafety.local\n"
+"POT-Creation-Date: 2026-07-01 10:00+0300\n"
+"PO-Revision-Date: 2026-07-01 10:00+0300\n"
+"Language: sw\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 
 msgid "Road Safety"
 msgstr "Usalama Barabarani"
 
 msgid "Dar es Salaam"
 msgstr "Dar es Salaam"
+
+msgid "Kiswahili"
+msgstr "Kiswahili"
 
 msgid "Dashboard"
 msgstr "Dashibodi"
@@ -46,7 +58,7 @@ msgid "Road Condition"
 msgstr "Hali ya Barabara"
 
 msgid "Description"
-msgid "Maelezo"
+msgstr "Maelezo"
 
 msgid "Submit Report"
 msgstr "Wasilisha Ripoti"
