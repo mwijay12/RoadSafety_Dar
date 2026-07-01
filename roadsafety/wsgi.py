@@ -1,4 +1,4 @@
-"""WSGI config for roadsafety project."""
+"""WSGI config — production-ready for Railway/Render/gunicorn."""
 import os
 from django.core.wsgi import get_wsgi_application
 

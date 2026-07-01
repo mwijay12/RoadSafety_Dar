@@ -1,0 +1,21 @@
+# Render deployment configuration
+# See: https://render.com/docs/deploy-django
+
+services:
+  - type: web
+    name: roadsafety-dar
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput"
+    startCommand: "python manage.py migrate && gunicorn roadsafety.wsgi"
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: PYTHON_VERSION
+        value: 3.11.10
+    healthCheckPath: /dashboard/
+    autoDeploy: true
