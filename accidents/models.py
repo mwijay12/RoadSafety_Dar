@@ -46,13 +46,22 @@ class Junction(models.Model):
     name = models.CharField(max_length=120, unique=True)
     lat = models.FloatField()
     lng = models.FloatField()
+    district = models.CharField(
+        max_length=60, blank=True, db_index=True,
+        help_text="Dar es Salaam district: Ilala, Kinondoni, Temeke, Ubungo, Kigamboni",
+    )
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["name"]
+        indexes = [
+            models.Index(fields=["lat", "lng"]),
+        ]
 
     def __str__(self):
+        if self.district:
+            return f"{self.name} ({self.district})"
         return self.name
 
 

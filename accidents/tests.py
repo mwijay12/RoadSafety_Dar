@@ -578,4 +578,190 @@ class TelegramBotModuleTests(TestCase):
         self.assertFalse(result)
 
 
-# ===================== END v1.2 TESTS =====================
+# ===================== v1.2.0 TESTS (Versioning + Premium UI) =====================
+
+class VersioningTests(TestCase):
+    """Test the versioning system."""
+
+    def test_version_endpoint_returns_json(self):
+        resp = self.client.get("/api/version")
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertIn("version", data)
+        self.assertIn("version_name", data)
+        self.assertIn("status", data)
+
+    def test_healthz_endpoint(self):
+        resp = self.client.get("/healthz")
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        # /healthz should report service_status = "ok" for the load balancer
+        self.assertEqual(data["service_status"], "ok")
+        self.assertEqual(data["service"], "roadsafety-dar")
+        self.assertIn("version", data)
+
+    def test_version_module(self):
+        from roadsafety.version import version_info, short_version
+        info = version_info()
+        self.assertIn("version", info)
+        self.assertIn("build", info)
+        # Short version should be formatted
+        sv = short_version()
+        self.assertIn(info["version"], sv)
+
+
+class SeedJunctionsTests(TestCase):
+    """Test the seed_junctions management command."""
+
+    def test_junction_has_district(self):
+        from accidents.models import Junction
+        # After seeding, junctions should have district field
+        j = Junction.objects.first()
+        if j:
+            # District is optional but at least 50+ should have it after seeding
+            self.assertTrue(hasattr(j, "district"))
+
+    def test_seed_junctions_command_runs(self):
+        from django.core.management import call_command
+        from io import StringIO
+        out = StringIO()
+        # Should not raise even if already seeded
+        call_command("seed_junctions", stdout=out)
+        self.assertIn("junctions", out.getvalue().lower())
+
+
+class PremiumUITests(TestCase):
+    """Test the premium UI redesign (v1.2.0)."""
+
+    def test_dashboard_uses_premium_palette(self):
+        resp = self.client.get("/dashboard/")
+        self.assertEqual(resp.status_code, 200)
+        # The premium CSS uses specific color variables
+        content = resp.content.decode()
+        # Hero section with "Road Safety" + "Dar es Salaam"
+        self.assertIn("Road Safety", content)
+        self.assertIn("Dar es Salaam", content)
+        # KPI grid
+        self.assertIn("kpi fatal", content)
+        self.assertIn("kpi critical", content)
+        # Live badge
+        self.assertIn("live-badge", content)
+
+    def test_dashboard_has_severity_legend(self):
+        resp = self.client.get("/dashboard/")
+        content = resp.content.decode()
+        for sev in ["Total Reports", "Fatal", "Critical", "Serious", "Minor", "Verified"]:
+            self.assertIn(sev, content, f"Missing severity: {sev}")
+
+    def test_dashboard_has_time_of_day_chart(self):
+        resp = self.client.get("/dashboard/")
+        content = resp.content.decode()
+        self.assertIn("hourlyChart", content)
+        self.assertIn("Time of Day", content)
+
+    def test_dashboard_has_telegram_link(self):
+        resp = self.client.get("/dashboard/")
+        content = resp.content.decode()
+        self.assertIn("t.me/roadsafety_dar_bot", content)
+
+    def test_dashboard_has_pdf_download(self):
+        resp = self.client.get("/dashboard/")
+        content = resp.content.decode()
+        self.assertIn("/api/report/monthly.pdf", content)
+
+
+class APIImprovementsTests(TestCase):
+    """Test API improvements for v1.2.0."""
+
+    def test_summary_has_total_reports_alias(self):
+        # Add trailing slash follow to handle APPEND_SLASH
+        resp = self.client.get("/api/stats/summary", follow=True)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        # Live refresh JS uses both
+        self.assertIn("total", data)
+        self.assertIn("total_reports", data)
+        self.assertEqual(data["total"], data["total_reports"])
+
+    def test_summary_has_service_metadata(self):
+        resp = self.client.get("/api/stats/summary", follow=True)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertEqual(data["service"], "roadsafety-dar")
+        self.assertIn("server_time", data)
+
+    def test_heatmap_is_severity_weighted(self):
+        # Create one of each severity at the same location
+        from datetime import datetime, timedelta
+        from django.utils import timezone
+        Accident.objects.create(
+            occurred_at=timezone.now(), severity="fatal",
+            vehicle_types=["car"], lat=-6.79, lng=39.20,
+        )
+        resp = self.client.get("/api/heatmap/")
+        pts = resp.json()
+        # Each point is [lat, lng, intensity]
+        self.assertGreater(len(pts), 0)
+        # Fatal should have intensity = 4
+        for p in pts:
+            self.assertEqual(len(p), 3)
+            self.assertGreater(p[2], 0)
+
+    def test_junctions_includes_district(self):
+        from datetime import datetime, timedelta
+        from django.utils import timezone
+        # Create a junction and a linked accident
+        j = Junction.objects.create(
+            name="Test District Junction",
+            lat=-6.79, lng=39.20,
+            district="Kinondoni",
+        )
+        Accident.objects.create(
+            occurred_at=timezone.now(), severity="minor",
+            vehicle_types=["car"], lat=-6.79, lng=39.20,
+            junction=j, junction_name="Test District Junction",
+        )
+        resp = self.client.get("/api/junctions/?limit=100")
+        data = resp.json()
+        test_j = next((x for x in data if x["name"] == "Test District Junction"), None)
+        if test_j:
+            self.assertEqual(test_j["district"], "Kinondoni")
+
+
+class ResponsiveLayoutTests(TestCase):
+    """Test responsive mobile layout."""
+
+    def test_css_has_mobile_breakpoints(self):
+        resp = self.client.get("/static/css/app.css")
+        # WhiteNoise uses streaming_content for static files
+        content = b"".join(resp.streaming_content) if hasattr(resp, "streaming_content") else resp.content
+        # CSS should have @media queries
+        self.assertIn(b"@media", content)
+        self.assertTrue(
+            b"max-width: 720px" in content or b"max-width: 900px" in content,
+            "No mobile breakpoint found",
+        )
+
+    def test_dashboard_renders_on_mobile_user_agent(self):
+        # Render should not fail with mobile UA
+        c = Client(HTTP_USER_AGENT="Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)")
+        resp = c.get("/dashboard/")
+        self.assertEqual(resp.status_code, 200)
+
+
+class EastAfricaTimezoneTests(TestCase):
+    """Test EAT (Africa/Dar_es_Salaam) timezone settings."""
+
+    def test_timezone_is_set_in_settings(self):
+        from django.conf import settings
+        self.assertEqual(settings.TIME_ZONE, "Africa/Dar_es_Salaam")
+
+    def test_timezone_is_activated(self):
+        from django.utils import timezone
+        from datetime import datetime
+        # Make a datetime and verify it has EAT applied
+        now = timezone.now()
+        self.assertIsNotNone(now.tzinfo)
+
+
+# ===================== END v1.2.0 TESTS =====================

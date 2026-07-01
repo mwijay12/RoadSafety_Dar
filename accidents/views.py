@@ -63,6 +63,9 @@ def dashboard(request):
     context = {
         "total": qs.count(),
         "fatal_count": qs.filter(severity="fatal").count(),
+        "critical_count": qs.filter(severity="critical").count(),
+        "serious_count": qs.filter(severity="serious").count(),
+        "minor_count": qs.filter(severity="minor").count(),
         "verified_count": qs.filter(verified=True).count(),
         "junction_count": Junction.objects.count(),
         "center": [first.lat if first else -6.7924, first.lng if first else 39.2083],
@@ -281,7 +284,7 @@ def api_stats_junctions(request):
     limit = max(1, min(100, limit))
 
     buckets = defaultdict(lambda: {"count": 0, "fatalities": 0, "casualties": 0,
-                                    "lat": 0.0, "lng": 0.0, "name": ""})
+                                    "lat": 0.0, "lng": 0.0, "name": "", "district": ""})
     for a in Accident.objects.exclude(junction_name=""):
         b = buckets[a.junction_name]
         b["name"] = a.junction_name
@@ -290,6 +293,9 @@ def api_stats_junctions(request):
         b["casualties"] += a.casualties
         b["lat"] = a.lat
         b["lng"] = a.lng
+        # Look up district from Junction model if linked
+        if not b.get("district") and a.junction:
+            b["district"] = a.junction.district
     ranked = sorted(buckets.values(), key=lambda x: x["count"], reverse=True)[:limit]
     return JsonResponse(ranked, safe=False)
 
@@ -299,6 +305,7 @@ def api_stats_summary(_request):
     qs = Accident.objects.all()
     return JsonResponse({
         "total": qs.count(),
+        "total_reports": qs.count(),  # alias for live-refresh JS
         "fatal": qs.filter(severity="fatal").count(),
         "serious": qs.filter(severity="serious").count(),
         "minor": qs.filter(severity="minor").count(),
@@ -307,6 +314,8 @@ def api_stats_summary(_request):
         "total_fatalities": qs.aggregate(s=Sum("fatalities"))["s"] or 0,
         "total_casualties": qs.aggregate(s=Sum("casualties"))["s"] or 0,
         "junction_count": Junction.objects.count(),
+        "service": "roadsafety-dar",
+        "server_time": timezone.now().isoformat(),
     })
 
 

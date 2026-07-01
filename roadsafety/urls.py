@@ -24,6 +24,23 @@ def offline_page(_request):
     return render(_request, "accidents/offline.html")
 
 
+def healthz(_request):
+    """Liveness probe for Railway/Render health checks. Returns 200 + version."""
+    from roadsafety.version import version_info
+    return JsonResponse({
+        "service_status": "ok",   # for the load balancer
+        "status": "ok",           # legacy alias
+        "service": "roadsafety-dar",
+        **version_info(),
+    })
+
+
+def version_endpoint(_request):
+    """Public version endpoint — for monitoring and API consumers."""
+    from roadsafety.version import version_info
+    return JsonResponse(version_info())
+
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", RedirectView.as_view(url="/dashboard/", permanent=False)),
@@ -31,6 +48,9 @@ urlpatterns = [
     path("manifest.json", pwa_manifest, name="pwa_manifest"),
     path("sw.js", pwa_sw, name="pwa_sw"),
     path("offline/", offline_page, name="offline"),
+    # System endpoints
+    path("healthz", healthz, name="healthz"),
+    path("api/version", version_endpoint, name="version"),
     # Single include — Django's LocaleMiddleware handles /sw/ prefix automatically
     # when Accept-Language or session says so. URLs work both /dashboard/ AND /sw/dashboard/
     path("", include("accidents.urls")),

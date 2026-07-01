@@ -6,48 +6,104 @@
 {% block extra_head %}
 <!-- PWA (v1.2) -->
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#c0392b">
+<meta name="theme-color" content="#1a3a52">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="/static/icons/icon-192x192.png">
 {% endblock %}
 
 {% block content %}
+<section class="hero">
+  <div>
+    <h1>{% trans "Road Safety" %} <span class="accent">{% trans "Dar es Salaam" %}</span></h1>
+    <p>{% trans "Real-time accident hotspot intelligence for Tanzania's commercial capital. Crowdsourced reports, official police data, and AI-powered safety insights for every junction." %}</p>
+  </div>
+  <div>
+    <span class="live-badge"><span class="dot"></span>{% trans "LIVE DATA" %}</span>
+  </div>
+</section>
+
 <section class="kpi-grid">
-  <div class="kpi"><div class="kpi-num" data-kpi="total">{{ total }}</div><div class="kpi-label">{% trans "Total Reports" %}</div></div>
-  <div class="kpi danger"><div class="kpi-num">{{ fatal_count }}</div><div class="kpi-label">{% trans "Fatal" %}</div></div>
-  <div class="kpi success"><div class="kpi-num">{{ verified_count }}</div><div class="kpi-label">{% trans "Verified" %}</div></div>
-  <div class="kpi"><div class="kpi-num">{{ junction_count }}</div><div class="kpi-label">{% trans "Tracked Junctions" %}</div></div>
+  <div class="kpi verified">
+    <div class="kpi-num" data-kpi="total">{{ total }}</div>
+    <div class="kpi-label">{% trans "Total Reports" %}</div>
+  </div>
+  <div class="kpi fatal">
+    <div class="kpi-num">{{ fatal_count }}</div>
+    <div class="kpi-label">{% trans "Fatal Accidents" %}</div>
+  </div>
+  <div class="kpi critical">
+    <div class="kpi-num">{{ critical_count|default:0 }}</div>
+    <div class="kpi-label">{% trans "Critical" %}</div>
+  </div>
+  <div class="kpi serious">
+    <div class="kpi-num">{{ serious_count|default:0 }}</div>
+    <div class="kpi-label">{% trans "Serious" %}</div>
+  </div>
+  <div class="kpi minor">
+    <div class="kpi-num">{{ minor_count|default:0 }}</div>
+    <div class="kpi-label">{% trans "Minor" %}</div>
+  </div>
+  <div class="kpi verified">
+    <div class="kpi-num">{{ verified_count }}</div>
+    <div class="kpi-label">{% trans "Police Verified" %}</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-num">{{ junction_count }}</div>
+    <div class="kpi-label">{% trans "Tracked Junctions" %}</div>
+  </div>
 </section>
 
 <section class="action-bar">
-  <a href="{% url 'report' %}" class="btn btn-primary">➕ {% trans "Report Accident" %}</a>
-  <a href="{% url 'authority' %}" class="btn btn-secondary">👮 {% trans "Authority Dashboard" %}</a>
-  <a href="/api/export.csv" class="btn btn-secondary">📥 {% trans "Download CSV" %}</a>
-  <a href="/api/recommendations/" target="_blank" class="btn btn-secondary">🤖 {% trans "AI Recommendations" %}</a>
-  <a href="/api/report/monthly.pdf" class="btn btn-secondary">📄 {% trans "Monthly PDF" %}</a>
-  <a href="https://t.me/roadsafety_dar_bot" target="_blank" class="btn btn-secondary">💬 {% trans "Telegram Bot" %}</a>
+  <a href="{% url 'report' %}" class="btn-primary">➕ {% trans "Report Accident" %}</a>
+  <a href="{% url 'authority' %}" class="btn-secondary">👮 {% trans "Authority Dashboard" %}</a>
+  <a href="/api/export.csv" class="btn-ghost">📥 {% trans "CSV Data" %}</a>
+  <a href="/api/recommendations/" target="_blank" class="btn-ghost">🤖 {% trans "AI Insights" %}</a>
+  <a href="/api/report/monthly.pdf" class="btn-ghost">📄 {% trans "Monthly PDF" %}</a>
+  <a href="https://t.me/roadsafety_dar_bot" target="_blank" class="btn-ghost">💬 {% trans "Telegram" %}</a>
   <span id="live-indicator" class="live-indicator" title="Auto-refreshes every 30s">
     🟢 <span id="live-text">{% trans "LIVE" %}</span>
   </span>
   <div class="lang-switch">
-    <a href="/en/dashboard/" class="lang-link">EN</a> |
+    <a href="/dashboard/" class="lang-link">EN</a> |
     <a href="/sw/dashboard/" class="lang-link">SW</a>
   </div>
 </section>
 
 <section class="map-wrap">
-  <div id="map" role="region" aria-label="Accident hotspot map of Dar es Salaam"></div>
+  <div id="map" role="region" aria-label="{% trans 'Accident hotspot map of Dar es Salaam' %}"></div>
 </section>
 
 <section class="charts-grid">
-  <div class="chart-card"><h3>Severity Distribution</h3><canvas id="severityChart"></canvas></div>
-  <div class="chart-card"><h3>Vehicle Types</h3><canvas id="vehicleChart"></canvas></div>
-  <div class="chart-card wide"><h3>Monthly Trends</h3><canvas id="monthlyChart"></canvas></div>
+  <div class="chart-card">
+    <h3>{% trans "Severity Distribution" %}</h3>
+    <canvas id="severityChart"></canvas>
+  </div>
+  <div class="chart-card">
+    <h3>{% trans "Vehicle Types" %}</h3>
+    <canvas id="vehicleChart"></canvas>
+  </div>
   <div class="chart-card wide">
-    <h3>Top 10 Worst-Affected Junctions</h3>
+    <h3>{% trans "Monthly Trends" %}</h3>
+    <canvas id="monthlyChart"></canvas>
+  </div>
+  <div class="chart-card wide">
+    <h3>{% trans "Time of Day" %}</h3>
+    <canvas id="hourlyChart"></canvas>
+  </div>
+  <div class="chart-card wide">
+    <h3>{% trans "Top 10 Worst-Affected Junctions" %}</h3>
     <table id="junctionTable" class="data-table">
-      <thead><tr><th>#</th><th>Lat,Lng</th><th>Accidents</th><th>Fatalities</th><th>Casualties</th></tr></thead>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>{% trans "Junction" %}</th>
+          <th>{% trans "District" %}</th>
+          <th>{% trans "Accidents" %}</th>
+          <th>{% trans "Fatalities" %}</th>
+          <th>{% trans "Casualties" %}</th>
+        </tr>
+      </thead>
       <tbody></tbody>
     </table>
   </div>
@@ -56,81 +112,118 @@
 
 {% block scripts %}
 <script>
+  // ===== Map (Severity-weighted) =====
   const map = L.map('map').setView({{ center|safe }}, 12);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19, attribution: '&copy; OpenStreetMap'
   }).addTo(map);
 
-  // ---- Heatmap layer ----
+  // Heatmap: severity-weighted (fatal = 1.0, critical = 0.75, serious = 0.5, minor = 0.25)
+  const SEV_WEIGHT = { fatal: 1.0, critical: 0.75, serious: 0.5, minor: 0.25 };
   fetch("{% url 'api_heatmap' %}").then(r => r.json()).then(points => {
-    L.heatLayer(points, {radius: 22, blur: 18, maxZoom: 17,
-      gradient: {0.2:'#1f9d55', 0.4:'#f4d35e', 0.7:'#ee964b', 1.0:'#c0392b'}
+    L.heatLayer(points, {
+      radius: 26, blur: 22, maxZoom: 17,
+      gradient: { 0.2: '#2d8659', 0.4: '#d4a017', 0.7: '#e67e22', 1.0: '#c0392b' }
     }).addTo(map);
   });
 
-  // ---- Marker cluster of all accidents ----
+  // Markers: color by severity
   const cluster = L.markerClusterGroup();
   fetch("{% url 'api_accidents' %}").then(r => r.json()).then(rows => {
     rows.forEach(a => {
-      const sevColor = {minor:'#1f9d55', serious:'#f4d35e',
-                        critical:'#ee964b', fatal:'#c0392b'}[a.severity] || '#333';
+      const sevColor = { minor: '#2d8659', serious: '#d4a017', critical: '#e67e22', fatal: '#c0392b' }[a.severity] || '#1a3a52';
       const icon = L.divIcon({
         className: 'sev-pin',
         html: `<span style="background:${sevColor}"></span>`,
         iconSize: [14, 14]
       });
-      const m = L.marker([a.lat, a.lng], {icon});
-      m.bindPopup(
-        `<b>${a.severity.toUpperCase()}</b><br>` +
-        `${a.vehicle_type} · ${a.casualties} casualties<br>` +
-        `${new Date(a.occurred_at).toLocaleString()}<br>` +
-        `<small>${a.address||''}</small>`
-      );
+      const m = L.marker([a.lat, a.lng], { icon });
+      m.bindPopup(`
+        <b style="color:${sevColor}">${a.severity.toUpperCase()}</b><br>
+        ${a.vehicle_type} · ${a.casualties} casualties<br>
+        ${new Date(a.occurred_at).toLocaleString()}<br>
+        <small>${a.address || ''}</small>
+      `);
       cluster.addLayer(m);
     });
     map.addLayer(cluster);
   });
 
-  // ---- Severity chart ----
+  // ===== Charts =====
+  const chartColors = {
+    minor: '#2d8659', serious: '#d4a017',
+    critical: '#e67e22', fatal: '#c0392b',
+  };
+
   fetch("{% url 'api_severity' %}").then(r => r.json()).then(data => {
     new Chart(document.getElementById('severityChart'), {
       type: 'doughnut',
-      data: {labels: Object.keys(data),
-             datasets: [{data: Object.values(data),
-                backgroundColor: ['#1f9d55','#f4d35e','#ee964b','#c0392b']}]},
-      options: {plugins: {legend: {position: 'bottom'}}}
+      data: {
+        labels: Object.keys(data),
+        datasets: [{
+          data: Object.values(data),
+          backgroundColor: Object.keys(data).map(k => chartColors[k] || '#1a3a52'),
+        }]
+      },
+      options: { plugins: { legend: { position: 'bottom' } } }
     });
   });
 
-  // ---- Vehicle chart ----
   fetch("{% url 'api_vehicles' %}").then(r => r.json()).then(data => {
     new Chart(document.getElementById('vehicleChart'), {
       type: 'bar',
-      data: {labels: Object.keys(data), datasets:[{label:'Accidents',
-            data: Object.values(data), backgroundColor:'#3b6cb0'}]},
-      options: {plugins:{legend:{display:false}}}
+      data: {
+        labels: Object.keys(data),
+        datasets: [{ label: '{% trans "Accidents" %}', data: Object.values(data), backgroundColor: '#1a3a52' }]
+      },
+      options: { plugins: { legend: { display: false } } }
     });
   });
 
-  // ---- Monthly trend ----
   fetch("{% url 'api_monthly' %}").then(r => r.json()).then(data => {
     new Chart(document.getElementById('monthlyChart'), {
-      type:'line',
-      data:{labels: data.map(d=>d.month),
-            datasets:[{label:'Accidents/month',
-              data: data.map(d=>d.count), borderColor:'#c0392b',
-              backgroundColor:'rgba(192,57,43,.2)', fill:true, tension:.3}]},
-      options:{plugins:{legend:{position:'bottom'}}}
+      type: 'line',
+      data: {
+        labels: data.map(d => d.month),
+        datasets: [{
+          label: '{% trans "Accidents/month" %}',
+          data: data.map(d => d.count),
+          borderColor: '#c0392b',
+          backgroundColor: 'rgba(192, 57, 43, 0.1)',
+          fill: true, tension: 0.3
+        }]
+      },
+      options: { plugins: { legend: { position: 'bottom' } } }
     });
   });
 
-  // ---- Junction ranking table ----
-  fetch("{% url 'api_junctions' %}").then(r=>r.json()).then(rows => {
+  fetch("{% url 'api_hourly' %}").then(r => r.json()).then(data => {
+    new Chart(document.getElementById('hourlyChart'), {
+      type: 'bar',
+      data: {
+        labels: data.map(d => d.hour + ':00'),
+        datasets: [{
+          label: '{% trans "Accidents" %}',
+          data: data.map(d => d.count),
+          backgroundColor: data.map(d => d.count > (data.reduce((a, b) => a + b.count, 0) / 24) * 1.5 ? '#c0392b' : '#d4a017')
+        }]
+      },
+      options: { plugins: { legend: { display: false } } }
+    });
+  });
+
+  fetch("{% url 'api_junctions' %}").then(r => r.json()).then(rows => {
     const tb = document.querySelector('#junctionTable tbody');
-    rows.slice(0,10).forEach((r,i)=>{
+    rows.slice(0, 10).forEach((r, i) => {
       tb.insertAdjacentHTML('beforeend',
-        `<tr><td>${i+1}</td><td>${r.lat.toFixed(4)}, ${r.lng.toFixed(4)}</td>
-             <td>${r.count}</td><td>${r.fatalities}</td><td>${r.casualties}</td></tr>`);
+        `<tr>
+          <td>${i + 1}</td>
+          <td>${r.name || (r.lat.toFixed(4) + ', ' + r.lng.toFixed(4))}</td>
+          <td>${r.district || '—'}</td>
+          <td><strong>${r.count}</strong></td>
+          <td>${r.fatalities || 0}</td>
+          <td>${r.casualties || 0}</td>
+        </tr>`);
     });
   });
 </script>
@@ -154,26 +247,21 @@
         if (!data) return;
         const total = data.total_reports || 0;
         if (lastTotal !== null && total > lastTotal) {
-          // New report! Highlight indicator
           const indicator = document.getElementById('live-indicator');
           if (indicator) {
             indicator.style.background = '#27ae60';
             indicator.style.color = 'white';
-            setTimeout(() => {
-              indicator.style.background = '';
-              indicator.style.color = '';
-            }, 2000);
+            setTimeout(() => { indicator.style.background = ''; indicator.style.color = ''; }, 2000);
           }
           console.log('🔔 New report detected! Total now:', total);
         }
         lastTotal = total;
-        // Update the total KPI in the DOM
         const kpiTotal = document.querySelector('[data-kpi="total"]');
         if (kpiTotal) kpiTotal.textContent = total;
       })
       .catch(err => console.warn('Live refresh failed:', err));
   }
-  setInterval(refreshLiveData, 30000);  // 30s
-  refreshLiveData();  // initial check
+  setInterval(refreshLiveData, 30000);
+  refreshLiveData();
 </script>
 {% endblock %}
