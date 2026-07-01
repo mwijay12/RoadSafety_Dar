@@ -1,0 +1,11 @@
+{% extends "accidents/base.html" %}
+{% load i18n %}
+{% block title %}Offline — Road Safety Dar{% endblock %}
+{% block content %}
+<section class="offline-page">
+  <h1>📡 {% trans "You're offline" %}</h1>
+  <p>{% trans "RoadSafety Dar is offline. Your report will be saved and submitted when you reconnect." %}</p>
+  <p><a href="/report/" class="btn btn-primary">{% trans "Submit a report (will save offline)" %}</a></p>
+  <p><a href="/dashboard/" class="btn btn-secondary">{% trans "Try the dashboard again" %}</a></p>
+</section>
+{% endblock %}

@@ -29,4 +29,8 @@ urlpatterns = [
     # v1.1 new features
     path("api/export.csv", views.api_export_csv, name="api_export_csv"),
     path("api/recommendations/", views.api_recommendations, name="api_recommendations"),
+
+    # v1.2 new features
+    path("api/report/monthly.pdf", views.api_monthly_report, name="api_monthly_report"),
+    path("api/telegram/webhook/", views.api_telegram_webhook, name="api_telegram_webhook"),
 ]

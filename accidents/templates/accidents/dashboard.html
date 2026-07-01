@@ -3,9 +3,18 @@
 {% load static %}
 {% block title %}Public Dashboard — Road Safety Dar{% endblock %}
 
+{% block extra_head %}
+<!-- PWA (v1.2) -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#c0392b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="/static/icons/icon-192x192.png">
+{% endblock %}
+
 {% block content %}
 <section class="kpi-grid">
-  <div class="kpi"><div class="kpi-num">{{ total }}</div><div class="kpi-label">{% trans "Total Reports" %}</div></div>
+  <div class="kpi"><div class="kpi-num" data-kpi="total">{{ total }}</div><div class="kpi-label">{% trans "Total Reports" %}</div></div>
   <div class="kpi danger"><div class="kpi-num">{{ fatal_count }}</div><div class="kpi-label">{% trans "Fatal" %}</div></div>
   <div class="kpi success"><div class="kpi-num">{{ verified_count }}</div><div class="kpi-label">{% trans "Verified" %}</div></div>
   <div class="kpi"><div class="kpi-num">{{ junction_count }}</div><div class="kpi-label">{% trans "Tracked Junctions" %}</div></div>
@@ -16,6 +25,11 @@
   <a href="{% url 'authority' %}" class="btn btn-secondary">👮 {% trans "Authority Dashboard" %}</a>
   <a href="/api/export.csv" class="btn btn-secondary">📥 {% trans "Download CSV" %}</a>
   <a href="/api/recommendations/" target="_blank" class="btn btn-secondary">🤖 {% trans "AI Recommendations" %}</a>
+  <a href="/api/report/monthly.pdf" class="btn btn-secondary">📄 {% trans "Monthly PDF" %}</a>
+  <a href="https://t.me/roadsafety_dar_bot" target="_blank" class="btn btn-secondary">💬 {% trans "Telegram Bot" %}</a>
+  <span id="live-indicator" class="live-indicator" title="Auto-refreshes every 30s">
+    🟢 <span id="live-text">{% trans "LIVE" %}</span>
+  </span>
   <div class="lang-switch">
     <a href="/en/dashboard/" class="lang-link">EN</a> |
     <a href="/sw/dashboard/" class="lang-link">SW</a>
@@ -119,5 +133,47 @@
              <td>${r.count}</td><td>${r.fatalities}</td><td>${r.casualties}</td></tr>`);
     });
   });
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // PWA: register service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('PWA: service worker registered', reg.scope))
+      .catch(err => console.warn('PWA: SW registration failed', err));
+  }
+
+  // v1.2: Real-time auto-refresh every 30s
+  let lastTotal = null;
+  function refreshLiveData() {
+    fetch('/api/stats/summary/', { credentials: 'same-origin' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return;
+        const total = data.total_reports || 0;
+        if (lastTotal !== null && total > lastTotal) {
+          // New report! Highlight indicator
+          const indicator = document.getElementById('live-indicator');
+          if (indicator) {
+            indicator.style.background = '#27ae60';
+            indicator.style.color = 'white';
+            setTimeout(() => {
+              indicator.style.background = '';
+              indicator.style.color = '';
+            }, 2000);
+          }
+          console.log('🔔 New report detected! Total now:', total);
+        }
+        lastTotal = total;
+        // Update the total KPI in the DOM
+        const kpiTotal = document.querySelector('[data-kpi="total"]');
+        if (kpiTotal) kpiTotal.textContent = total;
+      })
+      .catch(err => console.warn('Live refresh failed:', err));
+  }
+  setInterval(refreshLiveData, 30000);  // 30s
+  refreshLiveData();  // initial check
 </script>
 {% endblock %}

@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
 
   {% block head_extra %}{% endblock %}
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
   <header class="topbar">
@@ -35,5 +36,6 @@
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   {% block scripts %}{% endblock %}
+  {% block extra_scripts %}{% endblock %}
 </body>
 </html>

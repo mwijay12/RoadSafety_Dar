@@ -1,0 +1,143 @@
+/**
+ * RoadSafety Dar PWA Service Worker — v1.2
+ *
+ * Strategy:
+ * - Cache-first for static assets (CSS, JS, icons)
+ * - Network-first for API calls (with 3s timeout)
+ * - Offline fallback for the report form
+ */
+
+const CACHE_NAME = "roadsafety-v1.2";
+const STATIC_CACHE = "roadsafety-static-v1.2";
+const API_TIMEOUT_MS = 3000;
+
+const STATIC_ASSETS = [
+  "/static/css/app.css",
+  "/static/manifest.json",
+  "/dashboard/",
+  "/report/",
+  "/",
+];
+
+// Install: pre-cache the shell
+self.addEventListener("install", (event) => {
+  console.log("[SW] Installing v1.2");
+  event.waitUntil(
+    caches.open(STATIC_CACHE).then((cache) => {
+      return cache.addAll(STATIC_ASSETS).catch((err) => {
+        console.warn("[SW] Pre-cache failed (probably offline):", err);
+      });
+    })
+  );
+  self.skipWaiting();
+});
+
+// Activate: clean old caches
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys
+          .filter((k) => k !== CACHE_NAME && k !== STATIC_CACHE)
+          .map((k) => caches.delete(k))
+      );
+    })
+  );
+  self.clients.claim();
+});
+
+// Fetch: route requests
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Skip non-GET
+  if (request.method !== "GET") return;
+
+  // API: network-first with timeout, fallback to cache
+  if (url.pathname.startsWith("/api/")) {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  // Static: cache-first
+  if (url.pathname.startsWith("/static/") ||
+      url.pathname === "/manifest.json" ||
+      url.pathname === "/sw.js") {
+    event.respondWith(cacheFirst(request));
+    return;
+  }
+
+  // HTML pages: network-first, cache fallback, offline fallback
+  if (request.headers.get("accept")?.includes("text/html")) {
+    event.respondWith(networkFirstWithOffline(request));
+    return;
+  }
+});
+
+async function networkFirst(request) {
+  try {
+    const response = await Promise.race([
+      fetch(request),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("timeout")), API_TIMEOUT_MS)
+      ),
+    ]);
+    const cache = await caches.open(CACHE_NAME);
+    cache.put(request, response.clone());
+    return response;
+  } catch (err) {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    return new Response(JSON.stringify({ error: "offline" }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+}
+
+async function cacheFirst(request) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+  try {
+    const response = await fetch(request);
+    const cache = await caches.open(STATIC_CACHE);
+    cache.put(request, response.clone());
+    return response;
+  } catch (err) {
+    return new Response("Offline", { status: 503 });
+  }
+}
+
+async function networkFirstWithOffline(request) {
+  try {
+    const response = await fetch(request);
+    const cache = await caches.open(CACHE_NAME);
+    cache.put(request, response.clone());
+    return response;
+  } catch (err) {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    // Offline fallback page
+    return caches.match("/offline/");
+  }
+}
+
+// Push notifications (for future use)
+self.addEventListener("push", (event) => {
+  if (!event.data) return;
+  const data = event.data.json();
+  event.waitUntil(
+    self.registration.showNotification(data.title || "RoadSafety Dar", {
+      body: data.body || "",
+      icon: "/static/icons/icon-192x192.png",
+      badge: "/static/icons/badge-72x72.png",
+      data: { url: data.url || "/dashboard/" },
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(clients.openWindow(event.notification.data.url));
+});

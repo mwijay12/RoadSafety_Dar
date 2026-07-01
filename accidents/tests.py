@@ -409,3 +409,173 @@ class FatalClusterNotificationTests(TestCase):
         output = out.getvalue()
         # Should detect Kariakoo as a cluster
         self.assertIn("Kariakoo", output)
+
+
+# ===================== v1.2 NEW TESTS =====================
+
+class PWAEndpointTests(TestCase):
+    """Test PWA endpoints (manifest, service worker, offline page)."""
+
+    def test_manifest_returns_json(self):
+        resp = self.client.get("/manifest.json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("application/json", resp["Content-Type"])
+        data = resp.json()
+        self.assertEqual(data["name"], "RoadSafety Dar es Salaam")
+        self.assertEqual(data["display"], "standalone")
+        self.assertIn("icons", data)
+
+    def test_sw_returns_javascript(self):
+        resp = self.client.get("/sw.js")
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("javascript", resp["Content-Type"])
+        content = resp.content.decode()
+        self.assertIn("CACHE_NAME", content)
+
+    def test_offline_page(self):
+        resp = self.client.get("/offline/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("offline", resp.content.decode().lower())
+
+
+class PDFReportTests(TestCase):
+    """Test PDF monthly report endpoint."""
+
+    def setUp(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        Accident.objects.create(
+            occurred_at=timezone.now() - timedelta(days=5),
+            severity="fatal", vehicle_types=["motorcycle"],
+            junction_name="Test Junction",
+            lat=-6.7924, lng=39.2083,
+            fatalities=2, casualties=3, injuries=1,
+        )
+
+    def test_pdf_endpoint_returns_pdf(self):
+        resp = self.client.get("/api/report/monthly.pdf")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp["Content-Type"], "application/pdf")
+        self.assertTrue(resp.content.startswith(b"%PDF-"))
+
+    def test_pdf_with_month_param(self):
+        resp = self.client.get("/api/report/monthly.pdf?month=2026-06")
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("attachment", resp["Content-Disposition"])
+
+    def test_pdf_invalid_month(self):
+        resp = self.client.get("/api/report/monthly.pdf?month=invalid")
+        self.assertEqual(resp.status_code, 400)
+
+    def test_pdf_empty_month_still_works(self):
+        resp = self.client.get("/api/report/monthly.pdf?month=2020-01")
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.content.startswith(b"%PDF-"))
+
+
+class TelegramWebhookTests(TestCase):
+    """Test Telegram bot webhook."""
+
+    def test_webhook_post_start_command(self):
+        import json as jsonmod
+        update = {
+            "update_id": 12345,
+            "message": {
+                "chat": {"id": 123456},
+                "text": "/start",
+            },
+        }
+        resp = self.client.post(
+            "/api/telegram/webhook/",
+            data=jsonmod.dumps(update),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content, b"ok")
+
+    def test_webhook_get_returns_info(self):
+        resp = self.client.get("/api/telegram/webhook/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("POST", resp.content.decode())
+
+    def test_webhook_invalid_json(self):
+        resp = self.client.post(
+            "/api/telegram/webhook/",
+            data="not json",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+
+
+class RealTimeRefreshTests(TestCase):
+    """Test that the dashboard includes the live refresh elements."""
+
+    def test_dashboard_has_live_indicator(self):
+        resp = self.client.get("/dashboard/")
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn("live-indicator", content)
+        self.assertIn("LIVE", content)
+
+    def test_dashboard_has_service_worker_register(self):
+        resp = self.client.get("/dashboard/")
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn("serviceWorker", content)
+        self.assertIn("/sw.js", content)
+
+    def test_dashboard_has_manifest_link(self):
+        resp = self.client.get("/dashboard/")
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn("/manifest.json", content)
+
+
+class GenerateMonthlyReportTests(TestCase):
+    """Test the PDF report generation command."""
+
+    def test_command_runs(self):
+        from django.core.management import call_command
+        from io import StringIO
+        import tempfile
+        import os
+        with tempfile.TemporaryDirectory() as tmp:
+            output = os.path.join(tmp, "test_report.pdf")
+            out = StringIO()
+            try:
+                call_command(
+                    "generate_monthly_report",
+                    month="2026-06",
+                    output=output,
+                    stdout=out,
+                )
+                self.assertTrue(os.path.exists(output))
+                with open(output, "rb") as f:
+                    content = f.read()
+                self.assertTrue(content.startswith(b"%PDF-"))
+            except Exception as e:
+                if "reportlab" not in str(e).lower():
+                    raise
+
+
+class TelegramBotModuleTests(TestCase):
+    """Test the telegram_bot utility module."""
+
+    def test_send_message_without_token_returns_false(self):
+        from accidents.telegram_bot import send_message
+        # Without TELEGRAM_BOT_TOKEN env, should silently return False
+        result = send_message(123456, "test")
+        self.assertFalse(result)
+
+    def test_broadcast_stats_returns_zero_without_token(self):
+        from accidents.telegram_bot import broadcast_stats
+        result = broadcast_stats([1, 2, 3], total=10, fatal=2)
+        self.assertEqual(result, 0)
+
+    def test_send_fatal_alert_returns_false_without_token(self):
+        from accidents.telegram_bot import send_fatal_alert
+        result = send_fatal_alert(123, "Test Junction", 5)
+        self.assertFalse(result)
+
+
+# ===================== END v1.2 TESTS =====================
