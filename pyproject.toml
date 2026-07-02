@@ -14,6 +14,19 @@ requires-python = ">=3.11"
 readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name = "Davie Byanmwijage (Mwijay)" }]
+dependencies = [
+    "Django==5.0.6",
+    "python-dotenv==1.0.1",
+    "dj-database-url==2.2.0",
+    "whitenoise==6.6.0",
+    "gunicorn==22.0.0",
+    "Faker==25.2.0",
+    "factory-boy==3.3.3",
+    "h3==4.5.0",
+    "reportlab==4.2.5",
+    "python-telegram-bot==21.7",
+    "django-cors-headers==4.9.0",
+]
 
 # ============================================================================
 # ruff — linter + formatter
