@@ -79,9 +79,24 @@ TEMPLATES = [
 # ---------------------------------------------------------------------------
 # Database: SQLite by default, swap to PostGIS in prod via DATABASE_URL
 # ---------------------------------------------------------------------------
+_db_url = os.getenv("DATABASE_URL")
+if not _db_url:
+    _sqlite_path = BASE_DIR / "db.sqlite3"
+    if os.environ.get("VERCEL") == "1":
+        # Vercel functions are read-only except /tmp
+        _sqlite_path = Path("/tmp") / "db.sqlite3"
+        _src_db = BASE_DIR / "db.sqlite3"
+        if _src_db.exists() and not _sqlite_path.exists():
+            import shutil
+            try:
+                shutil.copy2(_src_db, _sqlite_path)
+            except Exception:
+                pass
+    _db_url = f"sqlite:///{_sqlite_path}"
+
 DATABASES = {
     "default": dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}", conn_max_age=600
+        default=_db_url, conn_max_age=600
     )
 }
 
