@@ -18,44 +18,98 @@
       </p>
     </div>
 
-    <!-- Role explanation -->
-    <div class="login-roles">
-      <div class="role-item">
-        <span class="role-icon">👤</span>
-        <div>
-          <strong>Community User</strong>
-          <p>Track your submitted reports. Confirm incidents others reported.</p>
+    <!-- Tab Switcher -->
+    <div class="login-tabs">
+      <button class="tab-btn active" data-tab="google" onclick="switchTab('google')">Google</button>
+      <button class="tab-btn" data-tab="email" onclick="switchTab('email')">Email</button>
+      <button class="tab-btn" data-tab="otp" onclick="switchTab('otp')">OTP</button>
+    </div>
+
+    <!-- ============ TAB 1: Google ============ -->
+    <div id="tab-google" class="tab-content active">
+      <div class="login-roles">
+        <div class="role-item">
+          <span class="role-icon">👤</span>
+          <div>
+            <strong>Community User</strong>
+            <p>Track your submitted reports. Confirm incidents others reported.</p>
+          </div>
+        </div>
+        <div class="role-item">
+          <span class="role-icon">👮</span>
+          <div>
+            <strong>Officer / Editor</strong>
+            <p>Verify reports, add official notes, access the authority dashboard.</p>
+          </div>
         </div>
       </div>
-      <div class="role-item">
-        <span class="role-icon">👮</span>
-        <div>
-          <strong>Officer / Editor</strong>
-          <p>Verify reports, add official notes, access the authority dashboard.</p>
-        </div>
+
+      <div class="login-actions">
+        <button id="google-signin-btn" class="btn-google" onclick="signInWithGoogle()">
+          <svg width="20" height="20" viewBox="0 0 48 48" style="margin-right:10px">
+            <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.7 2.3 30.2 0 24 0 14.7 0 6.7 5.4 2.7 13.3l7.8 6C12.4 13 17.8 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.1-.4-4.6H24v8.7h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.2 5.6c4.2-3.9 6.6-9.6 7.1-16.6z"/>
+            <path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.8-6A23.9 23.9 0 0 0 0 24c0 3.8.9 7.5 2.6 10.7l7.9-6z"/>
+            <path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.2-5.6c-2 1.4-4.6 2.1-8 2.1-6.2 0-11.5-4.2-13.4-9.8l-7.9 6C6.7 42.6 14.7 48 24 48z"/>
+          </svg>
+          Continue with Google
+        </button>
+
+        <p class="login-note">
+          We only request your name and email address.
+        </p>
       </div>
     </div>
 
-    <!-- Google Sign-In Button -->
-    <div class="login-actions">
-      <button
-        id="google-signin-btn"
-        class="btn-google"
-        onclick="signInWithGoogle()"
-      >
-        <svg width="20" height="20" viewBox="0 0 48 48" style="margin-right:10px">
-          <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.7 2.3 30.2 0 24 0 14.7 0 6.7 5.4 2.7 13.3l7.8 6C12.4 13 17.8 9.5 24 9.5z"/>
-          <path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.1-.4-4.6H24v8.7h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.2 5.6c4.2-3.9 6.6-9.6 7.1-16.6z"/>
-          <path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.8-6A23.9 23.9 0 0 0 0 24c0 3.8.9 7.5 2.6 10.7l7.9-6z"/>
-          <path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.2-5.6c-2 1.4-4.6 2.1-8 2.1-6.2 0-11.5-4.2-13.4-9.8l-7.9 6C6.7 42.6 14.7 48 24 48z"/>
-        </svg>
-        Continue with Google
-      </button>
-
-      <p class="login-note">
-        🔒 We only request your name and email address.<br>
-        Your location data is never linked to your Google account.
+    <!-- ============ TAB 2: Email + Password ============ -->
+    <div id="tab-email" class="tab-content">
+      <form id="email-login-form" onsubmit="return emailLogin(event)">
+        <div class="form-group">
+          <label for="email-input">Email</label>
+          <input type="email" id="email-input" class="form-input" placeholder="you@example.com" required>
+        </div>
+        <div class="form-group">
+          <label for="password-input">Password</label>
+          <input type="password" id="password-input" class="form-input" placeholder="Enter your password" required>
+        </div>
+        <div id="email-error" class="form-error"></div>
+        <button type="submit" id="email-login-btn" class="btn-primary">Sign In</button>
+      </form>
+      <p class="login-switch">
+        Don't have an account?
+        <a href="{% url 'register' %}">Create one</a>
       </p>
+    </div>
+
+    <!-- ============ TAB 3: OTP / Magic Link ============ -->
+    <div id="tab-otp" class="tab-content">
+      <div id="otp-send-step">
+        <p class="login-note" style="margin-bottom:1rem">
+          Enter your email and we'll send you a one-time code.
+        </p>
+        <form onsubmit="return sendOTP(event)">
+          <div class="form-group">
+            <label for="otp-email-input">Email</label>
+            <input type="email" id="otp-email-input" class="form-input" placeholder="you@example.com" required>
+          </div>
+          <div id="otp-send-error" class="form-error"></div>
+          <button type="submit" id="otp-send-btn" class="btn-primary">Send OTP</button>
+        </form>
+      </div>
+      <div id="otp-verify-step" style="display:none">
+        <p class="login-note" style="margin-bottom:1rem">
+          Check your email for the one-time code.
+        </p>
+        <form onsubmit="return verifyOTP(event)">
+          <div class="form-group">
+            <label for="otp-code-input">One-time Code</label>
+            <input type="text" id="otp-code-input" class="form-input" placeholder="123456" inputmode="numeric" required>
+          </div>
+          <div id="otp-verify-error" class="form-error"></div>
+          <button type="submit" id="otp-verify-btn" class="btn-primary">Verify & Sign In</button>
+        </form>
+        <button class="btn-link" onclick="resetOTP()">Use a different email</button>
+      </div>
     </div>
 
     <!-- Anonymous option -->
@@ -72,14 +126,137 @@
 </div>
 
 <script>
+  // ── Tab switching ──
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
+    document.getElementById(`tab-${tab}`).classList.add('active');
+  }
+
+  // ── Google OAuth ──
   function signInWithGoogle() {
     const btn = document.getElementById('google-signin-btn');
     btn.disabled = true;
     btn.textContent = 'Redirecting to Google...';
-    
-    // Pass next URL through
     const next = "{{ next|escapejs }}";
     window.location.href = `/auth/google/?next=${encodeURIComponent(next)}`;
+  }
+
+  // ── Email + Password ──
+  async function emailLogin(e) {
+    e.preventDefault();
+    const btn = document.getElementById('email-login-btn');
+    const errEl = document.getElementById('email-error');
+    errEl.textContent = '';
+    btn.disabled = true;
+    btn.textContent = 'Signing in...';
+
+    try {
+      const res = await fetch('/auth/login/email/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
+        body: JSON.stringify({
+          email: document.getElementById('email-input').value,
+          password: document.getElementById('password-input').value,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        window.location.href = data.redirect || '/dashboard/';
+      } else {
+        errEl.textContent = data.error || 'Invalid email or password';
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+      }
+    } catch (err) {
+      errEl.textContent = 'Network error. Please try again.';
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+    }
+  }
+
+  // ── OTP Login ──
+  let otpEmail = '';
+
+  async function sendOTP(e) {
+    e.preventDefault();
+    const btn = document.getElementById('otp-send-btn');
+    const errEl = document.getElementById('otp-send-error');
+    errEl.textContent = '';
+    otpEmail = document.getElementById('otp-email-input').value;
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    try {
+      const res = await fetch('/auth/login/otp/send/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
+        body: JSON.stringify({ email: otpEmail }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('otp-send-step').style.display = 'none';
+        document.getElementById('otp-verify-step').style.display = 'block';
+      } else {
+        errEl.textContent = data.error || 'Failed to send OTP';
+        btn.disabled = false;
+        btn.textContent = 'Send OTP';
+      }
+    } catch (err) {
+      errEl.textContent = 'Network error. Please try again.';
+      btn.disabled = false;
+      btn.textContent = 'Send OTP';
+    }
+  }
+
+  async function verifyOTP(e) {
+    e.preventDefault();
+    const btn = document.getElementById('otp-verify-btn');
+    const errEl = document.getElementById('otp-verify-error');
+    errEl.textContent = '';
+    btn.disabled = true;
+    btn.textContent = 'Verifying...';
+
+    try {
+      const res = await fetch('/auth/login/otp/verify/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
+        body: JSON.stringify({
+          email: otpEmail,
+          token: document.getElementById('otp-code-input').value,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        window.location.href = data.redirect || '/dashboard/';
+      } else {
+        errEl.textContent = data.error || 'Invalid code';
+        btn.disabled = false;
+        btn.textContent = 'Verify & Sign In';
+      }
+    } catch (err) {
+      errEl.textContent = 'Network error. Please try again.';
+      btn.disabled = false;
+      btn.textContent = 'Verify & Sign In';
+    }
+  }
+
+  function resetOTP() {
+    otpEmail = '';
+    document.getElementById('otp-code-input').value = '';
+    document.getElementById('otp-verify-step').style.display = 'none';
+    document.getElementById('otp-send-step').style.display = 'block';
+    document.getElementById('otp-send-btn').disabled = false;
+    document.getElementById('otp-send-btn').textContent = 'Send OTP';
+  }
+
+  // ── CSRF helper ──
+  function getCSRF() {
+    const value = `; ${document.cookie}`;
+    const parts = value.split('; csrftoken=');
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return '';
   }
 </script>
 
@@ -90,6 +267,7 @@
     align-items: center;
     justify-content: center;
     padding: 2rem;
+    background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
   }
   .login-card {
     background: white;
@@ -97,12 +275,44 @@
     padding: 2.5rem;
     max-width: 480px;
     width: 100%;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
     text-align: center;
+    border: 1px solid #e2e8f0;
   }
   .login-icon { font-size: 3rem; display: block; margin-bottom: 0.5rem; }
   .login-title { color: var(--red); margin: 0 0 0.5rem; font-size: 1.8rem; }
-  .login-subtitle { color: #666; margin: 0 0 2rem; line-height: 1.5; }
+  .login-subtitle { color: #666; margin: 0 0 1.5rem; line-height: 1.5; }
+
+  /* ── Tabs ── */
+  .login-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #d0d7de;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    border: none;
+    background: #f6f8fa;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #57606a;
+    transition: all 0.2s;
+  }
+  .tab-btn:not(:last-child) { border-right: 1px solid #d0d7de; }
+  .tab-btn.active {
+    background: var(--red);
+    color: white;
+  }
+  .tab-btn:hover:not(.active) { background: #eaeef2; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── Roles ── */
   .login-roles {
     text-align: left;
     background: #f8f9fa;
@@ -120,24 +330,91 @@
   .role-icon { font-size: 1.5rem; flex-shrink: 0; }
   .role-item strong { display: block; color: var(--navy); }
   .role-item p { margin: 0.2rem 0 0; font-size: 0.85rem; color: #666; }
+
+  /* ── Google Button ── */
   .btn-google {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
     padding: 0.85rem 1.5rem;
-    background: white;
-    border: 2px solid #ddd;
+    background: #f8faff;
+    border: 2px solid #c5d0e0;
     border-radius: 8px;
     font-size: 1rem;
     font-weight: 600;
-    color: #333;
+    color: #1a1a2e;
     cursor: pointer;
     transition: all 0.2s;
     margin-bottom: 1rem;
   }
-  .btn-google:hover { border-color: #4285F4; box-shadow: 0 2px 8px rgba(66,133,244,0.3); }
+  .btn-google:hover {
+    background: #fff;
+    border-color: #4285F4;
+    box-shadow: 0 2px 12px rgba(66,133,244,0.25);
+  }
   .btn-google:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* ── Form ── */
+  .form-group {
+    text-align: left;
+    margin-bottom: 1rem;
+  }
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #2c3e50;
+    margin-bottom: 0.3rem;
+  }
+  .form-input {
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+    border: 2px solid #d0d7de;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+  }
+  .form-input:focus {
+    outline: none;
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(192,57,43,0.15);
+  }
+  .form-error {
+    color: var(--red);
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    min-height: 1.2em;
+  }
+  .btn-primary {
+    width: 100%;
+    padding: 0.85rem;
+    background: var(--red);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover { background: #a93226; }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+  .btn-link {
+    background: none;
+    border: none;
+    color: var(--red);
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+  }
+  .btn-link:hover { text-decoration: underline; }
+  .login-switch { margin-top: 1rem; font-size: 0.9rem; color: #666; }
+  .login-switch a { color: var(--red); font-weight: 600; text-decoration: none; }
+  .login-switch a:hover { text-decoration: underline; }
   .login-note { font-size: 0.8rem; color: #888; line-height: 1.5; }
   .login-skip { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #eee; }
   .login-skip-link { color: var(--navy); font-weight: 600; text-decoration: none; }

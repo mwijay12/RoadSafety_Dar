@@ -330,6 +330,10 @@
       day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
     });
 
+    const photo = a.photo_url
+      ? `<img src="${a.photo_url}" alt="Accident photo" style="width:100%; max-height:160px; object-fit:cover; border-radius:6px; margin-bottom:0.5rem;">`
+      : '';
+
     return `
       <div class="popup-card">
         <div class="popup-header" style="border-left: 4px solid ${color}">
@@ -338,7 +342,8 @@
           ${a.verified ? '<span class="popup-verified">✅ Verified</span>' : ''}
         </div>
         <div class="popup-body">
-          <p>📍 ${a.junction_name || a.address || 'Unknown location'}</p>
+          ${photo}
+          <p>📍 ${a.district ? a.district + ' · ' : ''}${a.junction_name || a.address || 'Unknown location'}</p>
           <p>🚗 ${Array.isArray(a.vehicle_types) ? a.vehicle_types.join(', ') : a.vehicle_types || 'Unknown'}</p>
           <p>👥 ${a.casualties} casualties
              ${a.fatalities > 0 ? `· <strong style="color:#c0392b">${a.fatalities} fatal</strong>` : ''}

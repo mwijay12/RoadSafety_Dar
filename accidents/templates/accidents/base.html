@@ -67,17 +67,18 @@
     .role-badge--user    { background: #1f9d55; color: white; }
     .role-badge--community { background: #1f9d55; color: white; }
     .btn-signin {
-      background: white;
-      color: #2c3e50;
-      padding: 0.35rem 0.85rem;
+      background: #60A5FA;
+      color: #fff;
+      padding: 0.4rem 1rem;
       border-radius: 6px;
-      font-weight: 600;
+      font-weight: 700;
       text-decoration: none;
       font-size: 0.85rem;
       margin-left: 0.5rem;
-      transition: background 0.2s;
+      transition: background 0.2s, transform 0.15s;
+      box-shadow: 0 2px 6px rgba(59,130,246,0.3);
     }
-    .btn-signin:hover { background: #f4d35e; }
+    .btn-signin:hover { background: #3B82F6; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,0.4); }
   </style>
 </head>
 <body>
@@ -135,6 +136,10 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="{% static 'js/featured_stat_card.js' %}" defer></script>
   <script>
+    console.log('%c🚦 RoadSafety Dar es Salaam', 'font-size:18px; font-weight:bold; color:#c0392b;');
+    console.log('%c© 2026 Mwijay Davie. All rights reserved.', 'font-size:12px; color:#475569;');
+    console.log('%cBuilt with ❤️ for safer urban transport in Dar es Salaam (SDG 11.2)', 'font-size:11px; color:#64748b;');
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')

@@ -84,6 +84,7 @@
 
           <div class="queue-location">
             📍 {{ accident.junction_name|default:accident.address|default:"Location not specified" }}
+            {% if accident.district %}<small style="color:#888; display:block; font-weight:400;">{{ accident.district }}</small>{% endif %}
           </div>
 
           <div class="queue-details">

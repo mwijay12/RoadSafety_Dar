@@ -58,9 +58,39 @@
       </div>
     </div>
 
-    <label>Address / landmark
-      {{ form.junction_name }}
-    </label>
+    <div class="location-picker">
+      <label class="location-label">
+        <span class="lbl">📍 Pick your location</span>
+        <small class="hint">Choose the closest known landmark — coordinates fill in automatically.</small>
+        <input
+          type="text"
+          id="locationSearch"
+          class="location-search"
+          placeholder="🔍 Search e.g. Kariakoo, Ubungo Interchange, Kurasini Bridge…"
+          autocomplete="off"
+        />
+        <div id="locationSuggestions" class="location-suggestions" role="listbox" hidden></div>
+      </label>
+
+      <div class="location-cascading">
+        <label class="location-label">
+          <span class="lbl">District</span>
+          {{ form.district }}
+        </label>
+        <label class="location-label">
+          <span class="lbl">Ward (Kata)</span>
+          {{ form.ward }}
+        </label>
+      </div>
+
+      <label class="location-label">
+        <span class="lbl">Closest landmark / area</span>
+        <select id="id_location_picker" class="location-select">
+          <option value="">— First pick a district and ward —</option>
+        </select>
+        {{ form.location_id }}
+      </label>
+    </div>
 
     <label>Casualties
       {{ form.casualties }}
@@ -87,11 +117,423 @@
       {{ form.contact }}
     </label>
 
+    <div class="upload-section full">
+      <label>Photo evidence (optional)</label>
+      <div class="upload-dropzone" id="uploadDropzone">
+        <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none;">
+        <div class="upload-placeholder" id="uploadPlaceholder">
+          <div class="upload-icon">📷</div>
+          <div class="upload-text">Tap to upload a photo</div>
+          <div class="upload-hint">PNG, JPG or WebP · Max 5MB</div>
+        </div>
+        <div class="upload-preview" id="uploadPreview" style="display:none;">
+          <img id="previewImg" alt="Photo preview">
+          <div class="upload-preview-footer">
+            <span id="uploadStatus">Photo added</span>
+            <button type="button" id="removePhotoBtn" class="upload-remove-btn" title="Remove photo">✕</button>
+          </div>
+        </div>
+        <div class="upload-loading" id="uploadLoading" style="display:none;">
+          <div class="upload-spinner"></div>
+          <span>Uploading photo...</span>
+        </div>
+      </div>
+      <div class="upload-error" id="uploadError" style="display:none;"></div>
+    </div>
+    {{ form.photo_url }}
+
     <button type="submit" class="btn-primary full">Submit Report</button>
   </form>
 </section>
 
+<style>
+  /* ---------- Location picker (search + cascading dropdowns) ---------- */
+  .location-picker {
+    grid-column: span 2;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, #f8faff 0%, #eef4ff 100%);
+    border: 1px solid #d8e4fb;
+    border-radius: 12px;
+    margin-bottom: 0.5rem;
+  }
+  .location-picker .lbl {
+    display: block;
+    font-weight: 600;
+    color: #1a1a2e;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+  }
+  .location-picker .hint {
+    display: block;
+    color: #5a6b8a;
+    font-size: 0.82rem;
+    margin-bottom: 0.5rem;
+  }
+  .location-search {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    border: 2px solid #d1d9e8;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    background: white;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .location-search:focus {
+    outline: none;
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+  }
+  .location-suggestions {
+    position: relative;
+    background: white;
+    border: 1px solid #d1d9e8;
+    border-radius: 10px;
+    margin-top: 0.25rem;
+    max-height: 280px;
+    overflow-y: auto;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    z-index: 50;
+  }
+  .location-suggestions[hidden] { display: none; }
+  .location-suggestion {
+    padding: 0.6rem 0.85rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.1s;
+    font-size: 0.9rem;
+  }
+  .location-suggestion:hover,
+  .location-suggestion.active {
+    background: #eff6ff;
+  }
+  .location-suggestion .name { font-weight: 600; color: #1a1a2e; }
+  .location-suggestion .meta { color: #64748b; font-size: 0.78rem; margin-top: 2px; }
+  .location-suggestion .hotspot-badge {
+    display: inline-block;
+    background: #fee2e2;
+    color: #b91c1c;
+    font-size: 0.7rem;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    font-weight: 600;
+  }
+  .location-cascading {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+  }
+  .location-picker select,
+  .location-picker input[type="text"] {
+    width: 100%;
+    padding: 0.6rem 0.85rem;
+    border: 2px solid #d1d9e8;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: white;
+    transition: border-color 0.2s;
+  }
+  .location-picker select:focus,
+  .location-picker input:focus {
+    outline: none;
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+  }
+  @media (max-width: 600px) {
+    .location-cascading { grid-template-columns: 1fr; }
+  }
+  .location-picker .location-label { display: block; }
+  .location-picker .location-label .lbl { margin-bottom: 0.35rem; }
+
+  /* ---------- existing styles preserved below ---------- */
+  .location-group {
+    grid-column: span 2;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1rem;
+  }
+  .location-group label { margin: 0; }
+  .location-group select, .location-group input {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    border: 2px solid #d1d9e8;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: white;
+    transition: border-color 0.2s;
+  }
+  .location-group select:focus, .location-group input:focus {
+    outline: none;
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+  }
+  @media (max-width: 600px) {
+    .location-group {
+      grid-template-columns: 1fr;
+      grid-column: span 1;
+    }
+  }
+  .upload-section { margin-top: 0.5rem; }
+  .upload-dropzone {
+    position: relative;
+    border: 2px dashed #c5d0e0;
+    border-radius: 12px;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #f8faff;
+    min-height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .upload-dropzone:hover { border-color: #3B82F6; background: #f0f6ff; }
+  .upload-dropzone.has-image { border-color: #22C55E; background: #f0fdf4; }
+  .upload-dropzone.has-error { border-color: #EF4444; background: #fef2f2; }
+  .upload-placeholder {
+    text-align: center;
+    padding: 1.5rem;
+    pointer-events: none;
+  }
+  .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .upload-text { font-size: 1rem; font-weight: 600; color: #1a1a2e; margin-bottom: 0.25rem; }
+  .upload-hint { font-size: 0.8rem; color: #94a3b8; }
+  .upload-preview {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .upload-preview img {
+    width: 100%;
+    max-height: 220px;
+    object-fit: cover;
+  }
+  .upload-preview-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1rem;
+    background: #f0fdf4;
+    border-top: 1px solid #bbf7d0;
+  }
+  .upload-preview-footer #uploadStatus {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #16a34a;
+  }
+  .upload-remove-btn {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    transition: all 0.15s;
+  }
+  .upload-remove-btn:hover { color: #EF4444; background: #fef2f2; }
+  .upload-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    color: #3B82F6;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .upload-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #dbeafe;
+    border-top-color: #3B82F6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .upload-error {
+    font-size: 0.85rem;
+    color: #EF4444;
+    font-weight: 500;
+    margin-top: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    background: #fef2f2;
+    border-radius: 6px;
+    border: 1px solid #fecaca;
+  }
+  @media (max-width: 600px) {
+    .upload-dropzone { min-height: 110px; }
+    .upload-icon { font-size: 1.5rem; }
+    .upload-text { font-size: 0.9rem; }
+    .upload-preview img { max-height: 160px; }
+  }
+</style>
+
 <script>
+  // ====================================================================
+  //  LOCATION PICKER  (cascading + search + auto-fill coordinates)
+  // ====================================================================
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => document.querySelectorAll(sel);
+
+  const districtSel  = $('#id_district');
+  const wardSel      = $('#id_ward');
+  const locationPick = $('#id_location_picker');
+  const locationIdIn = $('#id_location_id');
+  const latInput     = $('#id_lat');
+  const lngInput     = $('#id_lng');
+  const junctionIn   = $('#id_junction_name');
+  const searchInput  = $('#locationSearch');
+  const suggestBox   = $('#locationSuggestions');
+
+  // ----- Cascading: District → Ward → Locations ----------------------
+  districtSel.addEventListener('change', async () => {
+    const district = districtSel.value;
+    wardSel.innerHTML = '<option value="">Loading…</option>';
+    locationPick.innerHTML = '<option value="">— First pick a district and ward —</option>';
+    if (!district) {
+      wardSel.innerHTML = '<option value="">Select district first…</option>';
+      return;
+    }
+    try {
+      const res = await fetch(`/api/locations/?district=${encodeURIComponent(district)}`);
+      const data = await res.json();
+      wardSel.innerHTML = '<option value="">Select ward…</option>' +
+        (data.wards || []).map(w => `<option value="${w.name}">${w.name}</option>`).join('');
+    } catch (err) {
+      wardSel.innerHTML = '<option value="">Failed to load wards</option>';
+      console.error('ward load failed', err);
+    }
+  });
+
+  wardSel.addEventListener('change', async () => {
+    const district = districtSel.value;
+    const ward = wardSel.value;
+    locationPick.innerHTML = '<option value="">Loading…</option>';
+    if (!district || !ward) {
+      locationPick.innerHTML = '<option value="">— First pick a district and ward —</option>';
+      return;
+    }
+    try {
+      const res = await fetch(`/api/locations/?district=${encodeURIComponent(district)}`);
+      const data = await res.json();
+      const wardObj = (data.wards || []).find(w => w.name === ward);
+      const locs = (wardObj && wardObj.locations) || [];
+      if (locs.length === 0) {
+        locationPick.innerHTML = '<option value="">— No known locations in this ward —</option>';
+        return;
+      }
+      locationPick.innerHTML = '<option value="">— Pick closest landmark —</option>' +
+        locs.map(l => {
+          const badge = l.accident_hotspot ? ' ⚠️' : '';
+          return `<option value="${l.name}">${l.name}${badge}</option>`;
+        }).join('');
+    } catch (err) {
+      locationPick.innerHTML = '<option value="">Failed to load</option>';
+      console.error('locations load failed', err);
+    }
+  });
+
+  // ----- Auto-fill lat / lng when user picks a location --------------
+  locationPick.addEventListener('change', () => {
+    const name = locationPick.value;
+    if (!name) { locationIdIn.value = ''; return; }
+    locationIdIn.value = name;
+    // Use the type-ahead search API (which returns full record w/ lat/lng)
+    fetch(`/api/locations/?q=${encodeURIComponent(name)}`)
+      .then(r => r.json())
+      .then(data => {
+        const match = (data.results || []).find(r =>
+          r.name.toLowerCase() === name.toLowerCase()
+        );
+        if (match) {
+          // Only auto-fill if lat/lng are empty (don't overwrite manual GPS)
+          if (!latInput.value) latInput.value = match.lat;
+          if (!lngInput.value) lngInput.value = match.lng;
+          if (junctionIn && !junctionIn.value) junctionIn.value = match.name;
+          // Visual feedback
+          showToast('success', '✅', `📍 ${match.name} — coordinates set (${match.lat}, ${match.lng})`);
+        }
+      })
+      .catch(err => console.error('autofill failed', err));
+  });
+
+  // ----- Type-ahead search -------------------------------------------
+  let searchTimer = null;
+  searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    const q = searchInput.value.trim();
+    if (q.length < 2) { suggestBox.hidden = true; return; }
+    searchTimer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/locations/?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        const results = data.results || [];
+        if (results.length === 0) {
+          suggestBox.innerHTML = '<div class="location-suggestion"><div class="meta">No matches. Try the dropdowns below.</div></div>';
+        } else {
+          suggestBox.innerHTML = results.slice(0, 12).map(r => `
+            <div class="location-suggestion" data-name="${r.name.replace(/"/g, '&quot;')}"
+                 data-lat="${r.lat}" data-lng="${r.lng}"
+                 data-district="${r.district}" data-ward="${r.ward}">
+              <div class="name">${r.name}${r.accident_hotspot ? '<span class="hotspot-badge">⚠ hotspot</span>' : ''}</div>
+              <div class="meta">${r.type} · ${r.ward}, ${r.district}</div>
+            </div>
+          `).join('');
+        }
+        suggestBox.hidden = false;
+      } catch (err) {
+        console.error('search failed', err);
+      }
+    }, 200);
+  });
+
+  suggestBox.addEventListener('click', (e) => {
+    const item = e.target.closest('.location-suggestion');
+    if (!item || !item.dataset.name) return;
+    const name     = item.dataset.name;
+    const lat      = item.dataset.lat;
+    const lng      = item.dataset.lng;
+    const district = item.dataset.district;
+    const ward     = item.dataset.ward;
+
+    // Fill the search box
+    searchInput.value = name;
+    suggestBox.hidden = true;
+    // Cascade: set district → ward → location
+    if (districtSel.value !== district) {
+      districtSel.value = district;
+      districtSel.dispatchEvent(new Event('change'));
+      // wait for wards to load before setting ward
+      setTimeout(() => {
+        wardSel.value = ward;
+        wardSel.dispatchEvent(new Event('change'));
+        setTimeout(() => { locationPick.value = name; locationPick.dispatchEvent(new Event('change')); }, 250);
+      }, 350);
+    } else if (wardSel.value !== ward) {
+      wardSel.value = ward;
+      wardSel.dispatchEvent(new Event('change'));
+      setTimeout(() => { locationPick.value = name; locationPick.dispatchEvent(new Event('change')); }, 250);
+    } else {
+      locationPick.value = name;
+      locationPick.dispatchEvent(new Event('change'));
+    }
+  });
+
+  // Close suggestions on outside click
+  document.addEventListener('click', (e) => {
+    if (!suggestBox.contains(e.target) && e.target !== searchInput) {
+      suggestBox.hidden = true;
+    }
+  });
+
+  // ====================================================================
+  //  GPS BUTTON  (kept as-is for the user who wants their exact spot)
+  // ====================================================================
   document.getElementById('gpsBtn').addEventListener('click', captureGPS);
 
   function captureGPS() {
@@ -177,5 +619,132 @@
     btn.style.color = '';
     btn.style.border = '';
   }
+
+  // ===== Photo Upload (direct to Cloudinary, no branding) =====
+  var dropzone = document.getElementById('uploadDropzone');
+  var fileInput = document.getElementById('fileInput');
+  var placeholder = document.getElementById('uploadPlaceholder');
+  var preview = document.getElementById('uploadPreview');
+  var previewImg = document.getElementById('previewImg');
+  var loading = document.getElementById('uploadLoading');
+  var statusEl = document.getElementById('uploadStatus');
+  var errorEl = document.getElementById('uploadError');
+  var removeBtn = document.getElementById('removePhotoBtn');
+  var photoUrlInput = document.getElementById('photo_url');
+
+  var ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  var MAX_SIZE = 5 * 1024 * 1024;
+
+  function showError(msg) {
+    errorEl.textContent = msg;
+    errorEl.style.display = 'block';
+    dropzone.classList.add('has-error');
+  }
+
+  function clearError() {
+    errorEl.textContent = '';
+    errorEl.style.display = 'none';
+    dropzone.classList.remove('has-error');
+  }
+
+  function validateFile(file) {
+    if (!file) return 'No file selected.';
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return 'Invalid file type. Only PNG, JPG, WebP and GIF are allowed.';
+    }
+    if (file.size > MAX_SIZE) {
+      return 'File is too large. Maximum size is 5MB.';
+    }
+    return null;
+  }
+
+  function showPreview(url) {
+    previewImg.src = url;
+    preview.style.display = 'flex';
+    placeholder.style.display = 'none';
+    loading.style.display = 'none';
+    dropzone.classList.add('has-image');
+    dropzone.classList.remove('has-error');
+    statusEl.textContent = '✅ Photo uploaded';
+  }
+
+  function resetUpload() {
+    photoUrlInput.value = '';
+    preview.style.display = 'none';
+    placeholder.style.display = 'block';
+    loading.style.display = 'none';
+    dropzone.classList.remove('has-image');
+    dropzone.classList.remove('has-error');
+    fileInput.value = '';
+    clearError();
+  }
+
+  async function uploadToCloudinary(file) {
+    clearError();
+    placeholder.style.display = 'none';
+    preview.style.display = 'none';
+    loading.style.display = 'flex';
+
+    var formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'darroeadsafety');
+
+    try {
+      var resp = await fetch('https://api.cloudinary.com/v1_1/roougsg4/image/upload', {
+        method: 'POST',
+        body: formData
+      });
+      var data = await resp.json();
+      if (!resp.ok) throw new Error(data.error && data.error.message ? data.error.message : 'Upload failed');
+      photoUrlInput.value = data.secure_url;
+      showPreview(data.secure_url);
+    } catch (err) {
+      loading.style.display = 'none';
+      placeholder.style.display = 'block';
+      showError('Upload failed: ' + err.message + '. Please try again.');
+    }
+  }
+
+  function handleFile(file) {
+    var err = validateFile(file);
+    if (err) { showError(err); return; }
+    var previewUrl = URL.createObjectURL(file);
+    showPreview(previewUrl);
+    previewImg.onload = function() { URL.revokeObjectURL(previewUrl); };
+    uploadToCloudinary(file);
+  }
+
+  // Click to upload
+  dropzone.addEventListener('click', function(e) {
+    if (e.target === removeBtn || removeBtn.contains(e.target)) return;
+    fileInput.click();
+  });
+
+  fileInput.addEventListener('change', function() {
+    if (fileInput.files && fileInput.files[0]) handleFile(fileInput.files[0]);
+  });
+
+  // Drag & drop
+  dropzone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    dropzone.style.borderColor = '#3B82F6';
+    dropzone.style.background = '#eff6ff';
+  });
+  dropzone.addEventListener('dragleave', function() {
+    dropzone.style.borderColor = '';
+    dropzone.style.background = '';
+  });
+  dropzone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    dropzone.style.borderColor = '';
+    dropzone.style.background = '';
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  });
+
+  // Remove photo
+  removeBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    resetUpload();
+  });
 </script>
 {% endblock %}

@@ -21,3 +21,4 @@ reportlab==4.2.5
 python-telegram-bot==21.7
 django-cors-headers==4.9.0
 factory-boy==3.3.3
+cloudinary==1.41.0

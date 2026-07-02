@@ -66,6 +66,9 @@
             {% else %}
               📍 {{ accident.lat|floatformat:4 }}, {{ accident.lng|floatformat:4 }}
             {% endif %}
+            {% if accident.district %}
+              <br><small style="color:#888;">{{ accident.district }}</small>
+            {% endif %}
           </td>
           <td>
             <span class="severity-badge severity-badge--{{ accident.severity }}">

@@ -12,6 +12,20 @@ from .authority_views import (  # noqa: F401
     api_authority_filter,
     authority,
 )
+from .editor_views import (  # noqa: F401
+    admin_set_role,
+    admin_users,
+    editor_accident_detail,
+    editor_queue,
+    editor_reject_accident,
+    editor_verify_accident,
+)
+from .locations_api import (  # noqa: F401
+    api_locations,
+    api_locations_districts,
+    api_locations_hotspots,
+    api_locations_wards,
+)
 from .pdf import (  # noqa: F401
     api_monthly_report,
 )
@@ -51,12 +65,4 @@ from .stats import (  # noqa: F401
 )
 from .telegram import (  # noqa: F401
     api_telegram_webhook,
-)
-from .editor_views import (  # noqa: F401
-    admin_set_role,
-    admin_users,
-    editor_accident_detail,
-    editor_queue,
-    editor_reject_accident,
-    editor_verify_accident,
 )

@@ -58,6 +58,15 @@ REPORTER_CHOICES = [
     ("media", "Media report"),
 ]
 
+DISTRICT_CHOICES = [
+    ("", "Select district"),
+    ("Ilala", "Ilala"),
+    ("Kinondoni", "Kinondoni"),
+    ("Temeke", "Temeke"),
+    ("Ubungo", "Ubungo"),
+    ("Kigamboni", "Kigamboni"),
+]
+
 # Dar es Salaam bounding box — input validation
 DAR_LAT_MIN, DAR_LAT_MAX = -7.5, -6.0
 DAR_LNG_MIN, DAR_LNG_MAX = 38.5, 39.7
@@ -307,6 +316,25 @@ class Accident(models.Model):
         db_index=True,
         help_text="Uber H3 hex cell ID at resolution 10 (~68m). Auto-set on save.",
     )
+    district = models.CharField(
+        max_length=60,
+        choices=DISTRICT_CHOICES,
+        blank=True,
+        db_index=True,
+        help_text="Dar es Salaam district where the accident occurred",
+    )
+    ward = models.CharField(
+        max_length=80,
+        blank=True,
+        db_index=True,
+        help_text="Ward (Kata) within the district. Auto-populated from location picker.",
+    )
+    location_id = models.CharField(
+        max_length=120,
+        blank=True,
+        db_index=True,
+        help_text="Canonical ID of a known location from accidents.locations (e.g. 'kigamboni-ferry-terminal').",
+    )
     junction_name = models.CharField(
         max_length=120,
         blank=True,
@@ -346,6 +374,11 @@ class Accident(models.Model):
     weather = models.CharField(max_length=60, blank=True)
     road_condition = models.CharField(max_length=60, blank=True)
     contact = models.CharField(max_length=120, blank=True)
+    photo_url = models.URLField(
+        max_length=500,
+        blank=True,
+        help_text="Cloudinary URL of uploaded accident photo",
+    )
     source_notes = models.TextField(
         blank=True, help_text="PRD §5: e.g. 'Reported via mobile form'"
     )
@@ -369,9 +402,9 @@ class Accident(models.Model):
 
     # Trust level — affects heatmap intensity
     TRUST_CHOICES = [
-        ("anonymous", "Anonymous"),        # No account — lowest weight
-        ("community", "Community User"),   # Logged-in user — medium weight
-        ("verified",  "Verified Report"),  # Editor/police verified — highest weight
+        ("anonymous", "Anonymous"),  # No account — lowest weight
+        ("community", "Community User"),  # Logged-in user — medium weight
+        ("verified", "Verified Report"),  # Editor/police verified — highest weight
     ]
     trust_level = models.CharField(
         max_length=20,
@@ -389,9 +422,9 @@ class Accident(models.Model):
 
     # Tracks the full verification lifecycle
     VERIFICATION_STATUS_CHOICES = [
-        ("pending",  "Pending Review"),    # default — not yet reviewed
-        ("verified", "Verified"),          # editor confirmed it is real
-        ("rejected", "Rejected"),          # editor determined it is invalid
+        ("pending", "Pending Review"),  # default — not yet reviewed
+        ("verified", "Verified"),  # editor confirmed it is real
+        ("rejected", "Rejected"),  # editor determined it is invalid
     ]
     verification_status = models.CharField(
         max_length=20,
@@ -467,9 +500,7 @@ class Accident(models.Model):
     @property
     def severity_weight(self):
         """Numeric weight for sorting — used in editor queue ordering."""
-        return {"minor": 1, "serious": 2, "critical": 3, "fatal": 4}.get(
-            self.severity, 1
-        )
+        return {"minor": 1, "serious": 2, "critical": 3, "fatal": 4}.get(self.severity, 1)
 
     def _compute_h3_cell(self) -> None:
         """Compute ``h3_cell`` from ``lat``/``lng`` at resolution 10 (~68m).
@@ -516,7 +547,7 @@ class AccidentUpvote(models.Model):
     """
     Records when a logged-in user confirms they witnessed or can verify
     an accident. One upvote per user per accident.
-    
+
     Upvotes increase the accident's trust score and heatmap intensity.
     They also help editors prioritise which reports to verify first.
     """

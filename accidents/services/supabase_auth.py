@@ -168,3 +168,94 @@ def get_or_create_django_user(jwt_payload: dict) -> tuple[User, UserProfile, boo
         logger.info(f"New user created: {email} [user role]")
     
     return user, profile, created
+
+
+# ── Email + Password Auth ─────────────────────────────────────────────────────
+
+def sign_in_with_email(email: str, password: str) -> dict | None:
+    """
+    Sign in with email and password via Supabase Auth.
+
+    Returns the session dict with access_token on success, None on failure.
+    """
+    try:
+        client = get_supabase_client()
+        result = client.auth.sign_in_with_password({
+            "email": email,
+            "password": password,
+        })
+        return {
+            "access_token": result.session.access_token,
+            "user": result.user,
+        }
+    except Exception as e:
+        logger.warning(f"Email/password sign-in failed for {email}: {e}")
+        return None
+
+
+def sign_up_with_email(email: str, password: str, full_name: str = "") -> dict | None:
+    """
+    Register a new user with email and password via Supabase Auth.
+
+    Returns the session dict with access_token on success, None on failure.
+    """
+    try:
+        client = get_supabase_client()
+        result = client.auth.sign_up({
+            "email": email,
+            "password": password,
+            "options": {
+                "data": {"full_name": full_name},
+            },
+        })
+        if result.session:
+            return {
+                "access_token": result.session.access_token,
+                "user": result.user,
+            }
+        # If email confirmation is required, result.session may be None
+        # but result.user will exist
+        if result.user:
+            return {"user": result.user, "confirmation_sent": True}
+        return None
+    except Exception as e:
+        logger.warning(f"Email/password sign-up failed for {email}: {e}")
+        return None
+
+
+def send_otp_email(email: str) -> bool:
+    """
+    Send a one-time password (OTP) to the user's email via Supabase Auth.
+    Returns True if sent successfully.
+    """
+    try:
+        client = get_supabase_client()
+        client.auth.sign_in_with_otp({
+            "email": email,
+        })
+        return True
+    except Exception as e:
+        logger.warning(f"Failed to send OTP to {email}: {e}")
+        return False
+
+
+def verify_otp(email: str, token: str) -> dict | None:
+    """
+    Verify an OTP token sent to the user's email.
+
+    Returns the session dict with access_token on success, None on failure.
+    """
+    try:
+        client = get_supabase_client()
+        result = client.auth.verify_otp({
+            "email": email,
+            "token": token,
+            "type": "email",
+        })
+        return {
+            "access_token": result.session.access_token,
+            "user": result.user,
+        }
+    except Exception as e:
+        logger.warning(f"OTP verification failed for {email}: {e}")
+        return None

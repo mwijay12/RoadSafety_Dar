@@ -206,7 +206,8 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_WEBHOOK_SECRET = os.getenv("TELEGRAM_WEBHOOK_SECRET", "")
 
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")  # 3k emails/mo free
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@roadsafety.local")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "roadsafetydar@gmail.com")
+CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "roadsafetydar@gmail.com")
 SITE_URL = os.getenv("SITE_URL", "http://localhost:8000")
 
 AFRICASTALKING_USERNAME = os.getenv("AFRICASTALKING_USERNAME", "sandbox")

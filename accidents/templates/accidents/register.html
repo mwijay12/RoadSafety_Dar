@@ -1,0 +1,167 @@
+{% extends "accidents/base.html" %}
+
+{% block title %}Create Account — Road Safety Dar es Salaam{% endblock %}
+
+{% block content %}
+<div class="register-container">
+
+  <div class="register-card">
+
+    <div class="register-brand">
+      <span class="register-icon">🚦</span>
+      <h1 class="register-title">Create Account</h1>
+      <p class="register-subtitle">Join Road Safety Dar to track reports and help make roads safer.</p>
+    </div>
+
+    <form id="register-form" onsubmit="return registerUser(event)">
+      <div class="form-group">
+        <label for="full-name-input">Full Name</label>
+        <input type="text" id="full-name-input" class="form-input" placeholder="John Doe" required>
+      </div>
+      <div class="form-group">
+        <label for="reg-email-input">Email</label>
+        <input type="email" id="reg-email-input" class="form-input" placeholder="you@example.com" required>
+      </div>
+      <div class="form-group">
+        <label for="reg-password-input">Password</label>
+        <input type="password" id="reg-password-input" class="form-input" placeholder="At least 6 characters" minlength="6" required>
+      </div>
+      <div id="register-error" class="form-error"></div>
+      <button type="submit" id="register-btn" class="btn-primary">Create Account</button>
+    </form>
+
+    <p class="register-switch">
+      Already have an account?
+      <a href="{% url 'login' %}">Sign in</a>
+    </p>
+
+    <div class="register-skip">
+      <a href="{% url 'dashboard' %}" class="register-skip-link">Continue without signing in →</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  async function registerUser(e) {
+    e.preventDefault();
+    const btn = document.getElementById('register-btn');
+    const errEl = document.getElementById('register-error');
+    errEl.textContent = '';
+    btn.disabled = true;
+    btn.textContent = 'Creating account...';
+
+    try {
+      const res = await fetch('/auth/register/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
+        body: JSON.stringify({
+          full_name: document.getElementById('full-name-input').value,
+          email: document.getElementById('reg-email-input').value,
+          password: document.getElementById('reg-password-input').value,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (data.confirmation_sent) {
+          errEl.style.color = '#2e7d32';
+          errEl.textContent = 'Check your email to confirm your account.';
+          btn.textContent = 'Done';
+        } else {
+          window.location.href = data.redirect || '/dashboard/';
+        }
+      } else {
+        errEl.textContent = data.error || 'Registration failed';
+        btn.disabled = false;
+        btn.textContent = 'Create Account';
+      }
+    } catch (err) {
+      errEl.textContent = 'Network error. Please try again.';
+      btn.disabled = false;
+      btn.textContent = 'Create Account';
+    }
+  }
+
+  function getCSRF() {
+    const value = `; ${document.cookie}`;
+    const parts = value.split('; csrftoken=');
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return '';
+  }
+</script>
+
+<style>
+  .register-container {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+  }
+  .register-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2.5rem;
+    max-width: 440px;
+    width: 100%;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    border: 1px solid #e2e8f0;
+    text-align: center;
+  }
+  .register-icon { font-size: 3rem; display: block; margin-bottom: 0.5rem; }
+  .register-title { color: var(--red); margin: 0 0 0.5rem; font-size: 1.8rem; }
+  .register-subtitle { color: #666; margin: 0 0 1.5rem; line-height: 1.5; }
+  .form-group {
+    text-align: left;
+    margin-bottom: 1rem;
+  }
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #2c3e50;
+    margin-bottom: 0.3rem;
+  }
+  .form-input {
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+    border: 2px solid #d0d7de;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+  }
+  .form-input:focus {
+    outline: none;
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(192,57,43,0.15);
+  }
+  .form-error {
+    color: var(--red);
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    min-height: 1.2em;
+  }
+  .btn-primary {
+    width: 100%;
+    padding: 0.85rem;
+    background: var(--red);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover { background: #a93226; }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+  .register-switch { margin-top: 1.2rem; font-size: 0.9rem; color: #666; }
+  .register-switch a { color: var(--red); font-weight: 600; text-decoration: none; }
+  .register-switch a:hover { text-decoration: underline; }
+  .register-skip { margin-top: 1.2rem; padding-top: 1.2rem; border-top: 1px solid #eee; }
+  .register-skip-link { color: var(--navy); font-weight: 600; text-decoration: none; }
+  .register-skip-link:hover { text-decoration: underline; }
+</style>
+{% endblock %}

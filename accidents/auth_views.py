@@ -20,6 +20,10 @@ from django.views.decorators.http import require_http_methods
 
 from accidents.services.supabase_auth import (
     get_or_create_django_user,
+    send_otp_email,
+    sign_in_with_email,
+    sign_up_with_email,
+    verify_otp,
     verify_supabase_jwt,
 )
 
@@ -46,6 +50,186 @@ def login_page(request):
         "next": next_url,
         "supabase_url": settings.SUPABASE_URL,
         "supabase_anon_key": settings.SUPABASE_ANON_KEY,
+    })
+
+
+# ── Register ──────────────────────────────────────────────────────────────────
+
+def register_view(request):
+    """
+    GET /auth/register/ → show registration form
+    POST /auth/register/ → create user via Supabase Auth
+    
+    Creates a new user with email + password.
+    On success, logs the user into Django session if email confirmation is off.
+    """
+    if request.user.is_authenticated:
+        return redirect(settings.LOGIN_REDIRECT_URL)
+
+    if request.method == "GET":
+        return render(request, "accidents/register.html")
+
+    # POST
+    import json
+    try:
+        body = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "error": "Invalid request body"}, status=400)
+
+    email = body.get("email", "").strip().lower()
+    password = body.get("password", "")
+    full_name = body.get("full_name", "").strip()
+
+    if not email or not password:
+        return JsonResponse({"success": False, "error": "Email and password are required"}, status=400)
+    if len(password) < 6:
+        return JsonResponse({"success": False, "error": "Password must be at least 6 characters"}, status=400)
+
+    result = sign_up_with_email(email, password, full_name)
+
+    if not result:
+        return JsonResponse({"success": False, "error": "Registration failed. Email may already be in use."}, status=400)
+
+    if result.get("confirmation_sent"):
+        return JsonResponse({
+            "success": True,
+            "confirmation_sent": True,
+            "message": "Check your email to confirm your account.",
+        })
+
+    access_token = result.get("access_token", "")
+    jwt_payload = verify_supabase_jwt(access_token)
+    if jwt_payload:
+        user, profile, created = get_or_create_django_user(jwt_payload)
+        login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+        return JsonResponse({
+            "success": True,
+            "redirect": settings.LOGIN_REDIRECT_URL,
+            "role": profile.role,
+            "name": profile.display_name,
+        })
+
+    return JsonResponse({"success": True, "message": "Account created. Please sign in."})
+
+
+# ── Email + Password Login ────────────────────────────────────────────────────
+
+@require_http_methods(["POST"])
+def email_login(request):
+    """
+    POST /auth/login/email/
+    
+    Authenticates with email + password via Supabase.
+    Creates Django session on success.
+    """
+    import json
+    try:
+        body = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "error": "Invalid request body"}, status=400)
+
+    email = body.get("email", "").strip().lower()
+    password = body.get("password", "")
+
+    if not email or not password:
+        return JsonResponse({"success": False, "error": "Email and password are required"}, status=400)
+
+    result = sign_in_with_email(email, password)
+    if not result:
+        return JsonResponse({"success": False, "error": "Invalid email or password"}, status=401)
+
+    access_token = result.get("access_token", "")
+    jwt_payload = verify_supabase_jwt(access_token)
+    if not jwt_payload:
+        return JsonResponse({"success": False, "error": "Authentication failed"}, status=401)
+
+    try:
+        user, profile, created = get_or_create_django_user(jwt_payload)
+    except Exception as e:
+        logger.error(f"Error creating user from email login: {e}")
+        return JsonResponse({"success": False, "error": f"Account setup failed: {str(e)}"}, status=500)
+
+    login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+    logger.info(f"User logged in via email: {user.email} [{profile.role}]")
+
+    return JsonResponse({
+        "success": True,
+        "redirect": settings.LOGIN_REDIRECT_URL,
+        "role": profile.role,
+        "name": profile.display_name,
+        "created": created,
+    })
+
+
+# ── Email OTP / Magic Link ───────────────────────────────────────────────────
+
+@require_http_methods(["POST"])
+def send_login_otp(request):
+    """
+    POST /auth/login/otp/send/
+    
+    Sends a one-time password to the user's email via Supabase.
+    """
+    import json
+    try:
+        body = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "error": "Invalid request body"}, status=400)
+
+    email = body.get("email", "").strip().lower()
+    if not email:
+        return JsonResponse({"success": False, "error": "Email is required"}, status=400)
+
+    sent = send_otp_email(email)
+    if not sent:
+        return JsonResponse({"success": False, "error": "Failed to send OTP. Check the email address."}, status=500)
+
+    return JsonResponse({"success": True, "message": "OTP sent to your email."})
+
+
+@require_http_methods(["POST"])
+def verify_login_otp(request):
+    """
+    POST /auth/login/otp/verify/
+    
+    Verifies the OTP sent to the user's email and creates Django session.
+    """
+    import json
+    try:
+        body = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "error": "Invalid request body"}, status=400)
+
+    email = body.get("email", "").strip().lower()
+    token = body.get("token", "").strip()
+
+    if not email or not token:
+        return JsonResponse({"success": False, "error": "Email and OTP token are required"}, status=400)
+
+    result = verify_otp(email, token)
+    if not result:
+        return JsonResponse({"success": False, "error": "Invalid or expired OTP"}, status=401)
+
+    access_token = result.get("access_token", "")
+    jwt_payload = verify_supabase_jwt(access_token)
+    if not jwt_payload:
+        return JsonResponse({"success": False, "error": "Authentication failed"}, status=401)
+
+    try:
+        user, profile, created = get_or_create_django_user(jwt_payload)
+    except Exception as e:
+        logger.error(f"Error creating user from OTP login: {e}")
+        return JsonResponse({"success": False, "error": f"Account setup failed: {str(e)}"}, status=500)
+
+    login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+    logger.info(f"User logged in via OTP: {user.email} [{profile.role}]")
+
+    return JsonResponse({
+        "success": True,
+        "redirect": settings.LOGIN_REDIRECT_URL,
+        "role": profile.role,
+        "name": profile.display_name,
+        "created": created,
     })
 
 

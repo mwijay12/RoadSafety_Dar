@@ -27,6 +27,9 @@ SUBMIT_FIELDS = [
     "severity",
     "vehicle_types",
     "reporter_type",
+    "district",
+    "ward",
+    "location_id",
     "casualties",
     "fatalities",
     "injuries",
@@ -35,6 +38,7 @@ SUBMIT_FIELDS = [
     "road_condition",
     "contact",
     "junction_name",
+    "photo_url",
 ]
 
 
@@ -85,6 +89,36 @@ class AccidentForm(forms.ModelForm):
             # Override reporter_type from authenticated user's profile role
             if user and user.is_authenticated:
                 data["reporter_type"] = user.profile.role
+            # --------------------------------------------------------------
+            # Auto-fill lat / lng / district / ward / junction_name from the
+            # location picker BEFORE the per-field validators run.  Done in
+            # __init__ so that clean_lat() and clean_lng() see the values.
+            # --------------------------------------------------------------
+            from .locations import find_location_by_name
+
+            loc_id = (data.get("location_id") or "").strip()
+            if loc_id:
+                loc = (
+                    find_location_by_name(loc_id)
+                    or find_location_by_name(loc_id.replace("-", " "))
+                )
+                if loc:
+                    def _is_blank(v: object) -> bool:
+                        if v is None:
+                            return True
+                        if isinstance(v, str):
+                            return not v.strip()
+                        return False
+                    if _is_blank(data.get("lat")):
+                        data["lat"] = loc["lat"]
+                    if _is_blank(data.get("lng")):
+                        data["lng"] = loc["lng"]
+                    if _is_blank(data.get("junction_name")):
+                        data["junction_name"] = loc["name"]
+                    if _is_blank(data.get("ward")):
+                        data["ward"] = loc.get("ward", "")
+                    if loc.get("district"):
+                        data["district"] = loc["district"]
             # Always pass data as keyword to avoid double-processing
             if args:
                 kwargs["data"] = data
@@ -112,9 +146,16 @@ class AccidentForm(forms.ModelForm):
                 attrs={"rows": 3, "placeholder": "What happened? (English or Swahili)"}
             ),
             "contact": forms.TextInput(attrs={"placeholder": "phone or email for follow-up"}),
-            "junction_name": forms.TextInput(attrs={"placeholder": "e.g. Ubungo Interchange"}),
+            "district": forms.Select(attrs={"id": "id_district", "class": "location-select"}),
+            "ward": forms.Select(
+                attrs={"id": "id_ward", "class": "location-select"},
+                choices=[("", "Select ward…")],
+            ),
+            "location_id": forms.HiddenInput(attrs={"id": "id_location_id"}),
+            "junction_name": forms.TextInput(attrs={"placeholder": "e.g. Mlimani City area", "id": "id_junction_name"}),
             "weather": forms.TextInput(attrs={"placeholder": "clear / rainy / drizzle"}),
             "road_condition": forms.TextInput(attrs={"placeholder": "good / wet / potholed"}),
+            "photo_url": forms.HiddenInput(attrs={"id": "photo_url"}),
         }
         error_messages = {
             "lat": {

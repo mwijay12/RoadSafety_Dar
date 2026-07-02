@@ -66,6 +66,7 @@ def api_accidents(request):
         "lng",
         "severity",
         "vehicle_types",
+        "district",
         "junction_name",
         "occurred_at",
         "casualties",
@@ -76,6 +77,7 @@ def api_accidents(request):
         "reported_at",
         "verification_status",
         "official_notes",
+        "photo_url",
     ).order_by("-occurred_at")
 
     data = []

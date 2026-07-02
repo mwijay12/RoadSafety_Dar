@@ -5,6 +5,10 @@ from . import auth_views, views
 urlpatterns = [
     # Auth routes
     path("auth/login/", auth_views.login_page, name="login"),
+    path("auth/register/", auth_views.register_view, name="register"),
+    path("auth/login/email/", auth_views.email_login, name="email_login"),
+    path("auth/login/otp/send/", auth_views.send_login_otp, name="send_login_otp"),
+    path("auth/login/otp/verify/", auth_views.verify_login_otp, name="verify_login_otp"),
     path("auth/google/", auth_views.google_oauth_redirect, name="google_oauth"),
     path("auth/callback/", auth_views.auth_callback, name="auth_callback"),
     path("auth/callback/process/", auth_views.process_auth_callback, name="process_auth_callback"),
@@ -64,6 +68,12 @@ urlpatterns = [
 
     # Prompt 4 — Spatial radius query API
     path("api/accidents/near/", views.api_accidents_near, name="api_accidents_near"),
+
+    # Prompt 5 — Hierarchical location picker API
+    path("api/locations/", views.api_locations, name="api_locations"),
+    path("api/locations/districts/", views.api_locations_districts, name="api_locations_districts"),
+    path("api/locations/wards/", views.api_locations_wards, name="api_locations_wards"),
+    path("api/locations/hotspots/", views.api_locations_hotspots, name="api_locations_hotspots"),
 ]
 
 # ===================== /api/v1/ versioned aliases (Prompt 7) =====================
@@ -85,6 +95,10 @@ _api_v1_patterns = [
     "api/v1/authority/filter/",
     "api/v1/authority/export/csv/",
     "api/v1/tts/",
+    "api/v1/locations/",
+    "api/v1/locations/districts/",
+    "api/v1/locations/wards/",
+    "api/v1/locations/hotspots/",
 ]
 
 # Map each v1 path to its corresponding view by swapping the old path prefix
@@ -104,6 +118,10 @@ _view_map = {
     "api/v1/authority/filter/": views.api_authority_filter,
     "api/v1/authority/export/csv/": views.api_authority_export_csv,
     "api/v1/tts/": views.api_tts,
+    "api/v1/locations/": views.api_locations,
+    "api/v1/locations/districts/": views.api_locations_districts,
+    "api/v1/locations/wards/": views.api_locations_wards,
+    "api/v1/locations/hotspots/": views.api_locations_hotspots,
 }
 
 for _path, _view in _view_map.items():
