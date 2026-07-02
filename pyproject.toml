@@ -16,19 +16,23 @@ license = { text = "MIT" }
 authors = [{ name = "Davie Byanmwijage (Mwijay)" }]
 dependencies = [
     "Django==5.0.6",
+    "psycopg2-binary==2.9.9",
+    "dj-database-url==2.1.0",
     "python-dotenv==1.0.1",
-    "dj-database-url==2.2.0",
-    "whitenoise==6.6.0",
-    "gunicorn==22.0.0",
-    "Faker==25.2.0",
-    "factory-boy==3.3.3",
-    "h3==4.5.0",
+    "whitenoise==6.7.0",
+    "gunicorn==21.2.0",
+    "h3==3.7.7",
+    "Faker==25.0.0",
+    "supabase==2.5.0",
+    "PyJWT==2.8.0",
+    "cryptography==42.0.5",
+    "django-redis==5.4.0",
+    "django-allauth==65.18.0",
+    "django-turnstile==0.1.3",
     "reportlab==4.2.5",
     "python-telegram-bot==21.7",
     "django-cors-headers==4.9.0",
-    "django-allauth==65.18.0",
-    "django-turnstile==0.1.3",
-    "psycopg2-binary==2.9.9",
+    "factory-boy==3.3.3",
 ]
 
 # ============================================================================
