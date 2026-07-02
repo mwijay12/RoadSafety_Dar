@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "python manage.py migrate && python manage.py collectstatic --noinput && DJANGO_ENV=prod gunicorn roadsafety.wsgi",
+    "startCommand": "python manage.py migrate && python manage.py collectstatic --noinput && DJANGO_ENV=prod gunicorn roadsafety.wsgi --bind 0.0.0.0:$PORT",
     "healthcheckPath": "/healthz",
     "healthcheckTimeout": 60,
     "restartPolicyType": "ON_FAILURE",

@@ -10,7 +10,7 @@ services:
     runtime: python
     plan: free
     buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput"
-    startCommand: "python manage.py migrate && DJANGO_ENV=prod gunicorn roadsafety.wsgi"
+    startCommand: "python manage.py migrate && DJANGO_ENV=prod gunicorn roadsafety.wsgi --bind 0.0.0.0:$PORT"
     envVars:
       - key: DJANGO_ENV
         value: "prod"
