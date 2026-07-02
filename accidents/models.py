@@ -475,11 +475,18 @@ class Accident(models.Model):
         """Compute ``h3_cell`` from ``lat``/``lng`` at resolution 10 (~68m).
 
         Gracefully no-ops if the ``h3`` package is not installed.
+        Compatible with both h3 v3.x (``geo_to_h3``) and v4.x
+        (``latlng_to_cell``).
         """
         try:
             import h3
 
-            self.h3_cell = h3.latlng_to_cell(self.lat, self.lng, 10)
+            if hasattr(h3, "latlng_to_cell"):
+                # h3 v4.x
+                self.h3_cell = h3.latlng_to_cell(self.lat, self.lng, 10)
+            else:
+                # h3 v3.x
+                self.h3_cell = h3.geo_to_h3(self.lat, self.lng, 10)
         except Exception:
             logger.debug("h3 computation skipped (package missing or invalid coords)")
 
@@ -501,7 +508,7 @@ class Accident(models.Model):
         for v in self.vehicle_types:
             if v not in dict(VEHICLE_CHOICES):
                 from django.core.exceptions import ValidationError
- 
+
                 raise ValidationError(f"unknown vehicle type: {v}")
 
 
