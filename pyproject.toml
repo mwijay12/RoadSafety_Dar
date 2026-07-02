@@ -10,7 +10,7 @@
 name = "roadsafety-dar"
 version = "1.2.0"
 description = "Spatial road-accident information management for Dar es Salaam (SDG 11.2)."
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.12"
 readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name = "Davie Byanmwijage (Mwijay)" }]

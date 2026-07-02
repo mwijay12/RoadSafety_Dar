@@ -1,14 +1,23 @@
 {
-  "builds": [
+  "version": 2,
+  "buildCommand": "cd landing && npm install --no-audit --no-fund && npm run build",
+  "outputDirectory": "landing/dist",
+  "framework": "vite",
+  "rewrites": [
     {
-      "src": "roadsafety/wsgi.py",
-      "use": "@vercel/python"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
-  "routes": [
+  "headers": [
     {
-      "src": "/(.*)",
-      "dest": "roadsafety/wsgi.py"
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     }
   ]
 }
