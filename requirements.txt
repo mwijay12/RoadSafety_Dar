@@ -70,3 +70,8 @@ django-cors-headers==4.9.0
 # Linux (apt install gdal-bin) — see the PostGIS migration script.
 psycopg2-binary==2.9.9
 # GDAL==3.9.1
+
+# --- Supabase Auth & JWT verification --------------------------------------
+supabase==2.5.0
+PyJWT==2.8.0
+cryptography==42.0.5

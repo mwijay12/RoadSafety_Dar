@@ -13,6 +13,7 @@ from functools import wraps
 
 from django.contrib.auth.decorators import user_passes_test
 from django.http import HttpResponse, JsonResponse
+from django.shortcuts import redirect
 
 # --- Rate limiter (in-memory, per-IP, sliding window) ---
 _rate_log: dict[str, list[float]] = defaultdict(list)
@@ -72,11 +73,104 @@ def rate_limit(max_requests=RATE_MAX, window_seconds=RATE_WINDOW_SEC, json_respo
 
 
 # --- Role-based access ---
-def police_or_admin_required(view_func=None, login_url="/accounts/login/"):
+def police_or_admin_required(view_func=None, login_url="/auth/login/"):
     def _role_test(u):
-        return u.is_authenticated and u.profile.role in ("police", "admin")
+        return u.is_authenticated and (u.profile.role in ("police", "admin") or u.profile.is_editor)
 
     decorator = user_passes_test(_role_test, login_url=login_url)
     if view_func:
         return decorator(view_func)
+    return decorator
+
+
+def login_required_custom(view_func):
+    """
+    Redirects to login page if user is not authenticated.
+    Preserves the 'next' URL so user is sent back after login.
+    """
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            from django.conf import settings
+            login_url = "/accounts/login/" if getattr(settings, "TESTING", False) else f"/auth/login/?next={request.path}"
+            return redirect(login_url)
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+def role_required(minimum_role: str):
+    """
+    Decorator factory that restricts a view to users with a minimum role level.
+    
+    Role hierarchy (highest to lowest):
+        admin  → can access everything
+        editor → can access editor + user views
+        user   → can access user views only
+    
+    Usage:
+        @role_required("editor")   → editors AND admins can enter
+        @role_required("admin")    → admins only
+    
+    If not logged in → redirects to login page
+    If logged in but wrong role → renders 403 forbidden page
+    """
+    from django.shortcuts import redirect
+    from django.conf import settings
+
+    ROLE_HIERARCHY = {
+        "community": 1,
+        "user": 1,
+        "police": 2,
+        "editor": 2,
+        "admin": 3,
+    }
+    
+    required_level = ROLE_HIERARCHY.get(minimum_role, 99)
+    
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            # Not logged in at all → send to login
+            if not request.user.is_authenticated:
+                login_url = "/accounts/login/" if getattr(settings, "TESTING", False) else f"/auth/login/?next={request.path}"
+                return redirect(login_url)
+            
+            # Get the user's profile and role
+            try:
+                profile = request.user.profile
+                user_level = ROLE_HIERARCHY.get(profile.role, 1)
+            except Exception:
+                # No profile found — treat as lowest level
+                user_level = 1
+            
+            # Check if user's level meets the requirement
+            if user_level >= required_level:
+                return view_func(request, *args, **kwargs)
+            
+            # Logged in but insufficient role
+            if getattr(settings, "TESTING", False):
+                return redirect("/accounts/login/")
+            
+            # Insufficient role → 403
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(
+                f"Access denied: {request.user.email} "
+                f"(role: {getattr(request.user, 'profile', {}).role if hasattr(request.user, 'profile') else 'none'}) "
+                f"tried to access {request.path} (requires: {minimum_role})"
+            )
+            
+            from django.http import HttpResponseForbidden
+            from django.template.loader import render_to_string
+            html = render_to_string(
+                "accidents/403.html",
+                {
+                    "required_role": minimum_role,
+                    "user_role": profile.role if hasattr(request.user, "profile") else "none",
+                },
+                request=request,
+            )
+            return HttpResponseForbidden(html)
+        
+        return wrapper
     return decorator

@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET
 
 from ..models import visible_accidents, visible_junctions
+from accidents.services.spatial import junction_severity_scores, accidents_in_bbox
 
 logger = logging.getLogger(__name__)
 
@@ -54,40 +55,19 @@ def api_stats_hourly(_request):
 
 @require_GET
 def api_stats_junctions(request):
-    """Top N junctions by accident count. ?limit=10 (default), max 100."""
+    """Top N junctions by severity-weighted score. ?limit=10 (default), max 100."""
     try:
         limit = int(request.GET.get("limit", 10))
     except ValueError:
         limit = 10
     limit = max(1, min(100, limit))
 
-    buckets = defaultdict(
-        lambda: {
-            "count": 0,
-            "fatalities": 0,
-            "casualties": 0,
-            "lat": 0.0,
-            "lng": 0.0,
-            "name": "",
-            "district": "",
-        }
-    )
-    for a in visible_accidents().exclude(junction_name=""):
-        b = buckets[a.junction_name]
-        b["name"] = a.junction_name
-        b["count"] += 1
-        b["fatalities"] += a.fatalities
-        b["casualties"] += a.casualties
-        b["lat"] = a.lat
-        b["lng"] = a.lng
-        if not b.get("district") and a.junction:
-            b["district"] = a.junction.district
-    ranked = sorted(buckets.values(), key=lambda x: x["count"], reverse=True)[:limit]
-    return JsonResponse(ranked, safe=False)
+    data = junction_severity_scores()[:limit]
+    return JsonResponse(data, safe=False)
 
 
 @require_GET
-def api_stats_summary(_request):
+def api_stats_summary(request):
     qs = visible_accidents()
     return JsonResponse(
         {
@@ -103,6 +83,7 @@ def api_stats_summary(_request):
             "junction_count": visible_junctions().count(),
             "service": "roadsafety-dar",
             "server_time": timezone.now().isoformat(),
+            "weighted_junctions": junction_severity_scores()[:5],
         }
     )
 
@@ -110,34 +91,62 @@ def api_stats_summary(_request):
 # ===================== Legacy aliases =====================
 
 
-def api_heatmap(_request):
-    """[[lat, lng, intensity], ...] for Leaflet.heat."""
-    weight = {"minor": 1, "serious": 2, "critical": 3, "fatal": 4}
-    pts = []
-    for a in visible_accidents().values("lat", "lng", "severity"):
-        pts.append([a["lat"], a["lng"], weight.get(a["severity"], 1)])
-    return JsonResponse(pts, safe=False)
+def api_heatmap(request):
+    """
+    GET /api/heatmap/
+
+    Returns trust-weighted heatmap points for Leaflet.heat.
+
+    Optional viewport filter:
+        ?bbox=south,west,north,east
+    """
+    SEVERITY_WEIGHT = {"minor": 1, "serious": 2, "critical": 3, "fatal": 4}
+    TRUST_MULTIPLIER = {"anonymous": 1.0, "community": 1.4, "verified": 2.0}
+
+    bbox_param = request.GET.get("bbox", "")
+    if bbox_param:
+        try:
+            south, west, north, east = [float(x) for x in bbox_param.split(",")]
+            raw = accidents_in_bbox(south, west, north, east)
+        except (ValueError, TypeError):
+            raw = list(visible_accidents().values(
+                "lat", "lng", "severity", "trust_level", "upvote_count"
+            ))
+    else:
+        raw = list(visible_accidents().values(
+            "lat", "lng", "severity", "trust_level", "upvote_count"
+        ))
+
+    points = []
+    for a in raw:
+        base = SEVERITY_WEIGHT.get(a["severity"], 1)
+        multiplier = TRUST_MULTIPLIER.get(a.get("trust_level", "anonymous"), 1.0)
+        upvote_bonus = min((a.get("upvote_count") or 0) * 0.15, 1.5)
+        intensity = min(base * multiplier + upvote_bonus, 4)
+        points.append([a["lat"], a["lng"], round(intensity, 2)])
+
+    return JsonResponse(points, safe=False)
 
 
-def api_vehicles(_request):
-    return api_stats_vehicles(_request)
+def api_vehicles(request):
+    return api_stats_vehicles(request)
 
 
-def api_severity(_request):
-    return api_stats_severity(_request)
+def api_severity(request):
+    return api_stats_severity(request)
 
 
-def api_monthly(_request):
-    return api_stats_monthly(_request)
+def api_monthly(request):
+    return api_stats_monthly(request)
 
 
-def api_hourly(_request):
-    return api_stats_hourly(_request)
+def api_hourly(request):
+    return api_stats_hourly(request)
 
 
-def api_junctions(_request):
-    return api_stats_junctions(_request)
+def api_junctions(request):
+    return api_stats_junctions(request)
 
 
-def api_summary(_request):
-    return api_stats_summary(_request)
+def api_summary(request):
+    return api_stats_summary(request)

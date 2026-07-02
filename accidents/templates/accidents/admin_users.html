@@ -1,0 +1,157 @@
+<!-- accidents/templates/accidents/admin_users.html -->
+{% extends "accidents/base.html" %}
+
+{% block title %}User Management — Road Safety Dar es Salaam{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+
+  <div class="page-header">
+    <div>
+      <h1>👥 User Management</h1>
+      <p class="page-subtitle">
+        {{ total_users }} registered user{{ total_users|pluralize }}.
+        Assign roles to promote community members to editors/officers.
+      </p>
+    </div>
+    <a href="/authority/" class="btn-secondary">← Authority Dashboard</a>
+  </div>
+
+  <!-- Django Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Role explanation -->
+  <div class="role-legend">
+    <div class="role-legend__item">
+      <span class="role-badge role-badge--user">Member</span>
+      <span>Can submit reports, track own submissions, upvote incidents</span>
+    </div>
+    <div class="role-legend__item">
+      <span class="role-badge role-badge--editor">Officer</span>
+      <span>Everything above + verify/reject reports, access authority dashboard</span>
+    </div>
+    <div class="role-legend__item">
+      <span class="role-badge role-badge--admin">Admin</span>
+      <span>Everything above + assign roles, access Django admin, delete records</span>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  <div class="table-wrapper">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Current Role</th>
+          <th>Reports Submitted</th>
+          <th>Reports Actioned</th>
+          <th>Change Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in profile_data %}
+        <tr>
+          <td>
+            <strong>{{ item.profile.display_name }}</strong><br>
+            <small style="color:#666">{{ item.profile.user.email }}</small><br>
+            <small style="color:#888; font-size:0.75rem;">Joined {{ item.profile.user.date_joined|date:"d M Y" }}</small>
+          </td>
+          <td>
+            <span class="role-badge role-badge--{{ item.profile.role }}">
+              {% if item.profile.role == "admin" %}Admin
+              {% elif item.profile.role == "editor" or item.profile.role == "police" %}Officer
+              {% else %}Member
+              {% endif %}
+            </span>
+          </td>
+          <td>📝 {{ item.submitted_count }}</td>
+          <td>
+            {% if item.profile.role == "editor" or item.profile.role == "police" or item.profile.role == "admin" %}
+              🛡️ {{ item.verified_count }} verified
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td>
+            <form method="POST" action="{% url 'admin_set_role' item.profile.user.id %}" class="role-form">
+              {% csrf_token %}
+              <select name="role" onchange="this.form.submit()" class="role-select" {% if item.profile.user == user %}disabled title="You cannot demote yourself"{% endif %}>
+                {% for code, label in role_choices %}
+                  <option value="{{ code }}" {% if item.profile.role == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<style>
+  .admin-container { max-width: 1000px; margin: 0 auto; padding: 2rem 1rem; }
+  .page-header { display: flex; justify-content: space-between; align-items: flex-start;
+                 flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
+  .page-header h1 { margin: 0 0 0.4rem; color: var(--red); }
+  .page-subtitle { color: #666; margin: 0; }
+
+  /* Alerts */
+  .alert { padding: 0.85rem 1.25rem; border-radius: 8px; margin-bottom: 1.5rem;
+           font-weight: 500; }
+  .alert-success { background: #d4edda; color: #1f9d55; border: 1px solid #c3e6cb; }
+  .alert-warning  { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+  .alert-error    { background: #f8d7da; color: #842029; border: 1px solid #f5c6cb; }
+
+  /* Role legend */
+  .role-legend { display: flex; gap: 1.5rem; background: #f8f9fa; border-radius: 10px;
+                 padding: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+  .role-legend__item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+
+  /* Table styles */
+  .table-wrapper { overflow-x: auto; border-radius: 12px;
+                   box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .users-table { width: 100%; border-collapse: collapse; background: white; }
+  .users-table th { background: var(--navy); color: white; padding: 0.85rem 1rem;
+                    text-align: left; font-size: 0.85rem; text-transform: uppercase;
+                    letter-spacing: 0.05em; }
+  .users-table td { padding: 0.85rem 1rem; border-bottom: 1px solid #f0f0f0;
+                    vertical-align: middle; }
+  tr:hover { background: #f8f9fa; }
+
+  .role-badge {
+    padding: 0.15rem 0.4rem;
+    border-radius: 12px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-block;
+  }
+  .role-badge--admin   { background: #c0392b; color: white; }
+  .role-badge--editor  { background: #f4d35e; color: #2c3e50; }
+  .role-badge--police  { background: #f4d35e; color: #2c3e50; }
+  .role-badge--user    { background: #1f9d55; color: white; }
+  .role-badge--community { background: #1f9d55; color: white; }
+
+  .role-select {
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    background: white;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .role-select:focus { outline: none; border-color: var(--navy); }
+
+  .btn-secondary { background: #e2e8f0; color: var(--navy); padding: 0.5rem 1rem;
+                   border-radius: 8px; text-decoration: none; font-weight: 600;
+                   font-size: 0.9rem; transition: background 0.2s; }
+  .btn-secondary:hover { background: #cbd5e1; }
+</style>
+{% endblock %}

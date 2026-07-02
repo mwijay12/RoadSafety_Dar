@@ -1,0 +1,295 @@
+<!-- accidents/templates/accidents/editor_accident_detail.html -->
+{% extends "accidents/base.html" %}
+
+{% block title %}Review Report #{{ accident.id }} — Road Safety Dar{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+
+  <!-- Back + Header -->
+  <div class="page-header">
+    <div>
+      <a href="/editor/queue/" class="back-link">← Back to Queue</a>
+      <h1>
+        Report #{{ accident.id }}
+        <span class="severity-badge severity-badge--{{ accident.severity }}">
+          {{ accident.severity|capfirst }}
+        </span>
+        {% if accident.verification_status == "verified" %}
+          <span class="status-pill status-pill--verified">✅ Verified</span>
+        {% elif accident.verification_status == "rejected" %}
+          <span class="status-pill status-pill--rejected">❌ Rejected</span>
+        {% else %}
+          <span class="status-pill status-pill--pending">⏳ Pending</span>
+        {% endif %}
+      </h1>
+    </div>
+  </div>
+
+  <!-- Django Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="detail-grid">
+
+    <!-- Left: Full accident info -->
+    <div class="detail-info">
+
+      <div class="info-card">
+        <h3>📍 Location</h3>
+        <p><strong>Junction:</strong> {{ accident.junction_name|default:"Not specified" }}</p>
+        <p><strong>Address:</strong> {{ accident.address|default:"Not specified" }}</p>
+        <p><strong>Coordinates:</strong> {{ accident.lat }}, {{ accident.lng }}</p>
+        <!-- Mini map -->
+        <div id="mini-map" style="height:200px;border-radius:8px;margin-top:0.75rem;z-index:1;"></div>
+      </div>
+
+      <div class="info-card">
+        <h3>💥 Incident Details</h3>
+        <p><strong>Occurred:</strong> {{ accident.occurred_at|date:"d M Y H:i" }}</p>
+        <p><strong>Reported:</strong> {{ accident.reported_at|date:"d M Y H:i" }}</p>
+        <p><strong>Vehicle types:</strong> {{ accident.vehicle_types|join:", " }}</p>
+        <p><strong>Casualties:</strong> {{ accident.casualties }}</p>
+        <p><strong>Fatalities:</strong>
+          <span {% if accident.fatalities > 0 %}class="text-red"{% endif %}>
+            {{ accident.fatalities }}
+          </span>
+        </p>
+        <p><strong>Injuries:</strong> {{ accident.injuries }}</p>
+        <p><strong>Weather:</strong> {{ accident.weather|default:"Not recorded" }}</p>
+        <p><strong>Road condition:</strong> {{ accident.road_condition|default:"Not recorded" }}</p>
+      </div>
+
+      {% if accident.description %}
+      <div class="info-card">
+        <h3>📝 Description</h3>
+        <p class="description-text">"{{ accident.description }}"</p>
+      </div>
+      {% endif %}
+
+      <div class="info-card">
+        <h3>👤 Submission Info</h3>
+        <p><strong>Trust level:</strong>
+          <span class="trust-badge trust-badge--{{ accident.trust_level }}">
+            {{ accident.trust_level|capfirst }}
+          </span>
+        </p>
+        {% if accident.submitted_by %}
+        <p><strong>Submitted by:</strong>
+          {{ accident.submitted_by.first_name|default:accident.submitted_by.email }}
+          ({{ accident.submitted_by.email }})
+        </p>
+        {% else %}
+        <p><strong>Submitted by:</strong> Anonymous</p>
+        {% endif %}
+        <p><strong>Community confirmations:</strong>
+          👍 {{ upvote_count }}
+        </p>
+        {% if upvoters %}
+        <details style="margin-top:0.5rem">
+          <summary style="cursor:pointer;color:var(--navy);">
+            See {{ upvote_count }} confirming user{{ upvote_count|pluralize }}
+          </summary>
+          <ul style="margin-top:0.5rem;padding-left:1.5rem">
+            {% for upvote in upvoters %}
+            <li style="font-size:0.85rem;color:#666;">
+              {{ upvote.user.first_name|default:upvote.user.email }}
+              — {{ upvote.created_at|date:"d M H:i" }}
+            </li>
+            {% endfor %}
+          </ul>
+        </details>
+        {% endif %}
+      </div>
+
+      {% if accident.verification_status != "pending" %}
+      <div class="info-card">
+        <h3>🛡️ Verification Record</h3>
+        <p><strong>Status:</strong> {{ accident.verification_status|capfirst }}</p>
+        {% if accident.verified_by %}
+        <p><strong>Actioned by:</strong>
+          {{ accident.verified_by.first_name|default:accident.verified_by.email }}
+        </p>
+        {% endif %}
+        {% if accident.verified_at %}
+        <p><strong>Actioned at:</strong> {{ accident.verified_at|date:"d M Y H:i" }}</p>
+        {% endif %}
+        {% if accident.official_notes %}
+        <p><strong>Official notes:</strong> {{ accident.official_notes }}</p>
+        {% endif %}
+        {% if accident.rejection_reason %}
+        <p><strong>Rejection reason:</strong>
+          <span class="text-red">{{ accident.rejection_reason }}</span>
+        </p>
+        {% endif %}
+      </div>
+      {% endif %}
+
+    </div>
+
+    <!-- Right: Action panel -->
+    <div class="detail-actions">
+
+      {% if can_verify %}
+      <!-- Verify Form -->
+      <div class="action-card action-card--verify">
+        <h3>✅ Verify This Report</h3>
+        <p>Confirming this report means it is a genuine incident.
+           It will gain full heatmap weight and be flagged as verified.</p>
+        <form method="POST" action="/editor/accidents/{{ accident.id }}/verify/">
+          {% csrf_token %}
+          <label for="official_notes">Official Notes (optional)</label>
+          <textarea
+            id="official_notes"
+            name="official_notes"
+            rows="4"
+            placeholder="Add any official remarks, e.g. 'Confirmed by CCTV footage at Ubungo interchange.'"
+            class="form-textarea"
+          ></textarea>
+          <button type="submit" class="btn-verify btn-verify--full">
+            ✅ Verify Report
+          </button>
+        </form>
+      </div>
+
+      <!-- Reject Form -->
+      <div class="action-card action-card--reject">
+        <h3>❌ Reject This Report</h3>
+        <p>Reject if this is a duplicate, spam, or cannot be confirmed.
+           The report stays in the system for audit purposes.</p>
+        <form
+          method="POST"
+          action="/editor/accidents/{{ accident.id }}/reject/"
+          onsubmit="return confirmReject()"
+        >
+          {% csrf_token %}
+          <label for="rejection_reason">Rejection Reason (required)</label>
+          <textarea
+            id="rejection_reason"
+            name="rejection_reason"
+            rows="3"
+            placeholder="e.g. Duplicate of report #45. / Location does not match any known incident."
+            class="form-textarea"
+            required
+          ></textarea>
+          <button type="submit" class="btn-reject btn-reject--full">
+            ❌ Reject Report
+          </button>
+        </form>
+      </div>
+
+      {% else %}
+      <!-- Already actioned -->
+      <div class="action-card">
+        <p style="text-align:center;color:#888;padding:1rem">
+          This report has already been
+          <strong>{{ accident.verification_status }}</strong>
+          and cannot be changed here.<br><br>
+          To change the status, use the
+          <a href="/admin/accidents/accident/{{ accident.id }}/change/">
+            Django admin panel
+          </a>.
+        </p>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Leaflet mini map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const map = L.map('mini-map').setView([{{ accident.lat }}, {{ accident.lng }}], 16);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+  L.marker([{{ accident.lat }}, {{ accident.lng }}])
+    .addTo(map)
+    .bindPopup('Accident #{{ accident.id }}')
+    .openPopup();
+
+  function confirmReject() {
+    const reason = document.getElementById('rejection_reason').value.trim();
+    if (!reason) { alert('Please enter a rejection reason.'); return false; }
+    return confirm(`Reject this report?\n\nReason: "${reason}"`);
+  }
+</script>
+
+<style>
+  .detail-container { max-width: 1100px; margin: 0 auto; padding: 2rem 1rem; }
+  .back-link { color: var(--navy); text-decoration: none; font-size: 0.9rem;
+               display: block; margin-bottom: 0.5rem; }
+  .back-link:hover { text-decoration: underline; }
+  .page-header h1 { display: flex; align-items: center; gap: 0.75rem;
+                    flex-wrap: wrap; color: var(--navy); margin: 0 0 1.5rem; }
+
+  .detail-grid { display: grid; grid-template-columns: 1fr 380px;
+                 gap: 1.5rem; align-items: start; }
+  @media (max-width: 768px) { .detail-grid { grid-template-columns: 1fr; } }
+
+  .info-card { background: white; border-radius: 12px; padding: 1.25rem;
+               box-shadow: 0 2px 8px rgba(0,0,0,0.07); margin-bottom: 1rem; }
+  .info-card h3 { margin: 0 0 0.75rem; color: var(--navy); font-size: 1rem; }
+  .info-card p  { margin: 0.4rem 0; font-size: 0.9rem; color: #444; }
+  .description-text { color: #555; font-style: italic; line-height: 1.6; }
+  .text-red { color: var(--red); font-weight: 700; }
+
+  /* Alerts */
+  .alert { padding: 0.85rem 1.25rem; border-radius: 8px; margin-bottom: 1rem;
+           font-weight: 500; }
+  .alert-success { background: #d4edda; color: #1f9d55; border: 1px solid #c3e6cb; }
+  .alert-warning  { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+  .alert-error    { background: #f8d7da; color: #842029; border: 1px solid #f5c6cb; }
+
+  .action-card { background: white; border-radius: 12px; padding: 1.5rem;
+                 box-shadow: 0 2px 8px rgba(0,0,0,0.07); margin-bottom: 1rem; }
+  .action-card h3 { margin: 0 0 0.5rem; }
+  .action-card p  { color: #666; font-size: 0.88rem; margin-bottom: 1rem;
+                    line-height: 1.5; }
+  .action-card--verify { border-top: 4px solid #1f9d55; }
+  .action-card--reject  { border-top: 4px solid var(--red); }
+
+  label { display: block; font-weight: 600; font-size: 0.85rem;
+          color: var(--navy); margin-bottom: 0.4rem; }
+  .form-textarea { width: 100%; padding: 0.6rem; border: 1px solid #ddd;
+                   border-radius: 8px; font-family: inherit; font-size: 0.9rem;
+                   resize: vertical; margin-bottom: 0.75rem; }
+  .form-textarea:focus { outline: none; border-color: var(--navy); }
+
+  .btn-verify--full { width: 100%; padding: 0.7rem; background: #1f9d55;
+                      color: white; border: none; border-radius: 8px;
+                      font-weight: 700; font-size: 1rem; cursor: pointer;
+                      transition: background 0.2s; }
+  .btn-verify--full:hover { background: #17803f; }
+  .btn-reject--full { width: 100%; padding: 0.7rem; background: white;
+                      color: var(--red); border: 2px solid var(--red);
+                      border-radius: 8px; font-weight: 700; font-size: 1rem;
+                      cursor: pointer; transition: all 0.2s; }
+  .btn-reject--full:hover { background: var(--red); color: white; }
+
+  .status-pill { padding: 0.25rem 0.75rem; border-radius: 20px;
+                 font-size: 0.85rem; font-weight: 600; }
+  .status-pill--verified { background: #d4edda; color: #1f9d55; }
+  .status-pill--rejected  { background: #f8d7da; color: #842029; }
+  .status-pill--pending   { background: #e2e8f0; color: #64748b; }
+
+  .severity-badge { padding: 0.25rem 0.7rem; border-radius: 20px;
+                    font-size: 0.85rem; font-weight: 700; }
+  .severity-badge--minor    { background: #d4edda; color: #1f9d55; }
+  .severity-badge--serious  { background: #fff3cd; color: #856404; }
+  .severity-badge--critical { background: #ffe0cc; color: #7d3d1a; }
+  .severity-badge--fatal    { background: #f8d7da; color: #842029; }
+
+  .trust-badge { padding: 0.15rem 0.5rem; border-radius: 10px;
+                 font-size: 0.78rem; font-weight: 700; }
+  .trust-badge--anonymous { background: #e2e8f0; color: #64748b; }
+  .trust-badge--community { background: #d4edda; color: #1f9d55; }
+  .trust-badge--verified  { background: #dbeafe; color: #1d4ed8; }
+</style>
+{% endblock %}

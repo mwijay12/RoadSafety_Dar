@@ -1,0 +1,147 @@
+<!-- accidents/templates/accidents/login.html -->
+{% extends "accidents/base.html" %}
+
+{% block title %}Sign In — Road Safety Dar es Salaam{% endblock %}
+
+{% block content %}
+<div class="login-container">
+
+  <div class="login-card">
+
+    <!-- Logo / Brand -->
+    <div class="login-brand">
+      <span class="login-icon">🚦</span>
+      <h1 class="login-title">Road Safety Dar</h1>
+      <p class="login-subtitle">
+        Sign in to track your reports, verify incidents,<br>
+        and help make Dar es Salaam's roads safer.
+      </p>
+    </div>
+
+    <!-- Role explanation -->
+    <div class="login-roles">
+      <div class="role-item">
+        <span class="role-icon">👤</span>
+        <div>
+          <strong>Community User</strong>
+          <p>Track your submitted reports. Confirm incidents others reported.</p>
+        </div>
+      </div>
+      <div class="role-item">
+        <span class="role-icon">👮</span>
+        <div>
+          <strong>Officer / Editor</strong>
+          <p>Verify reports, add official notes, access the authority dashboard.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Google Sign-In Button -->
+    <div class="login-actions">
+      <button
+        id="google-signin-btn"
+        class="btn-google"
+        onclick="signInWithGoogle()"
+      >
+        <svg width="20" height="20" viewBox="0 0 48 48" style="margin-right:10px">
+          <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.7 2.3 30.2 0 24 0 14.7 0 6.7 5.4 2.7 13.3l7.8 6C12.4 13 17.8 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.1-.4-4.6H24v8.7h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.2 5.6c4.2-3.9 6.6-9.6 7.1-16.6z"/>
+          <path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.8-6A23.9 23.9 0 0 0 0 24c0 3.8.9 7.5 2.6 10.7l7.9-6z"/>
+          <path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.2-5.6c-2 1.4-4.6 2.1-8 2.1-6.2 0-11.5-4.2-13.4-9.8l-7.9 6C6.7 42.6 14.7 48 24 48z"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <p class="login-note">
+        🔒 We only request your name and email address.<br>
+        Your location data is never linked to your Google account.
+      </p>
+    </div>
+
+    <!-- Anonymous option -->
+    <div class="login-skip">
+      <a href="{% url 'dashboard' %}" class="login-skip-link">
+        Continue without signing in →
+      </a>
+      <p class="login-skip-note">
+        Anonymous reports are accepted but carry lower verification weight.
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function signInWithGoogle() {
+    const btn = document.getElementById('google-signin-btn');
+    btn.disabled = true;
+    btn.textContent = 'Redirecting to Google...';
+    
+    // Pass next URL through
+    const next = "{{ next|escapejs }}";
+    window.location.href = `/auth/google/?next=${encodeURIComponent(next)}`;
+  }
+</script>
+
+<style>
+  .login-container {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  .login-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2.5rem;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+    text-align: center;
+  }
+  .login-icon { font-size: 3rem; display: block; margin-bottom: 0.5rem; }
+  .login-title { color: var(--red); margin: 0 0 0.5rem; font-size: 1.8rem; }
+  .login-subtitle { color: #666; margin: 0 0 2rem; line-height: 1.5; }
+  .login-roles {
+    text-align: left;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .role-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    align-items: flex-start;
+  }
+  .role-item:not(:last-child) { border-bottom: 1px solid #eee; }
+  .role-icon { font-size: 1.5rem; flex-shrink: 0; }
+  .role-item strong { display: block; color: var(--navy); }
+  .role-item p { margin: 0.2rem 0 0; font-size: 0.85rem; color: #666; }
+  .btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.85rem 1.5rem;
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 1rem;
+  }
+  .btn-google:hover { border-color: #4285F4; box-shadow: 0 2px 8px rgba(66,133,244,0.3); }
+  .btn-google:disabled { opacity: 0.6; cursor: not-allowed; }
+  .login-note { font-size: 0.8rem; color: #888; line-height: 1.5; }
+  .login-skip { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #eee; }
+  .login-skip-link { color: var(--navy); font-weight: 600; text-decoration: none; }
+  .login-skip-link:hover { text-decoration: underline; }
+  .login-skip-note { font-size: 0.8rem; color: #888; margin-top: 0.5rem; }
+</style>
+{% endblock %}

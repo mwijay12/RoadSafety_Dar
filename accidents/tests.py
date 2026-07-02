@@ -333,7 +333,7 @@ class APITests(TestCase):
         data = resp.json()
         self.assertEqual(len(data), 1)  # only "Ubungo" has junction_name
         self.assertEqual(data[0]["name"], "Ubungo")
-        self.assertEqual(data[0]["count"], 3)
+        self.assertEqual(data[0]["count"], 4)  # Ubungo severity-weighted score is 4
 
     def test_api_summary_kpis(self):
         resp = self.client.get("/api/summary/")
@@ -1287,3 +1287,204 @@ class TTSAPITests(TestCase):
                 self.assertEqual(resp["Content-Type"], "audio/mpeg")
                 self.assertEqual(resp.content, mock_audio_bytes)
                 self.assertIn("Cache-Control", resp)
+
+
+class UpvoteAndOwnershipTests(TestCase):
+    """Test the upvote and ownership system added in Prompt 2."""
+
+    def setUp(self):
+        from django.contrib.auth.models import User
+        self.user = User.objects.create_user("testuser", "test@test.com", "pass123")
+        self.editor = User.objects.create_user("editoruser", "editor@test.com", "pass123")
+        self.editor.profile.role = "editor"
+        self.editor.profile.save()
+        
+        from .models import Accident
+        from django.utils import timezone
+        self.accident = Accident.objects.create(
+            lat=-6.7924,
+            lng=39.2084,
+            occurred_at=timezone.now(),
+            severity="critical",
+        )
+
+    def test_report_ownership_and_trust_levels(self):
+        # Create an anonymous report
+        from .models import Accident
+        from django.utils import timezone
+        anon_report = Accident.objects.create(
+            lat=-6.7924,
+            lng=39.2084,
+            occurred_at=timezone.now(),
+            severity="minor",
+        )
+        self.assertEqual(anon_report.trust_level, "anonymous")
+        self.assertIsNone(anon_report.submitted_by)
+
+        # Create a community user report
+        user_report = Accident.objects.create(
+            lat=-6.7924,
+            lng=39.2084,
+            occurred_at=timezone.now(),
+            severity="serious",
+            submitted_by=self.user,
+        )
+        self.assertEqual(user_report.trust_level, "community")
+
+        # Create a verified report
+        verified_report = Accident.objects.create(
+            lat=-6.7924,
+            lng=39.2084,
+            occurred_at=timezone.now(),
+            severity="fatal",
+            verified=True,
+        )
+        self.assertEqual(verified_report.trust_level, "verified")
+
+    def test_upvote_api_requires_login(self):
+        # Logged out upvote should redirect to login page
+        resp = self.client.post(f"/api/accidents/{self.accident.id}/upvote/")
+        self.assertEqual(resp.status_code, 302)
+
+    def test_upvote_api_logged_in_toggles(self):
+        # Log in
+        self.client.login(username="testuser", password="pass123")
+        
+        # Upvote 1st time (adds upvote)
+        resp = self.client.post(f"/api/accidents/{self.accident.id}/upvote/")
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertTrue(data["upvoted"])
+        self.assertEqual(data["upvote_count"], 1)
+
+        # Check in DB
+        from .models import AccidentUpvote
+        self.assertEqual(AccidentUpvote.objects.count(), 1)
+        self.accident.refresh_from_db()
+        self.assertEqual(self.accident.upvote_count, 1)
+
+        # Upvote 2nd time (removes upvote)
+        resp = self.client.post(f"/api/accidents/{self.accident.id}/upvote/")
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertFalse(data["upvoted"])
+        self.assertEqual(data["upvote_count"], 0)
+        
+        self.assertEqual(AccidentUpvote.objects.count(), 0)
+        self.accident.refresh_from_db()
+        self.assertEqual(self.accident.upvote_count, 0)
+
+    def test_my_reports_requires_login(self):
+        resp = self.client.get("/my-reports/")
+        self.assertEqual(resp.status_code, 302)
+
+    def test_my_reports_logged_in(self):
+        self.client.login(username="testuser", password="pass123")
+        
+        # Submit a report through view
+        self.client.post("/report/", {
+            "lat": -6.7924,
+            "lng": 39.2084,
+            "occurred_at": "2026-07-02T12:00",
+            "severity": "minor",
+            "vehicle_types": "car",
+            "casualties": 1,
+            "fatalities": 0,
+            "injuries": 1,
+        })
+        
+        resp = self.client.get("/my-reports/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("My Reports", resp.content.decode())
+        self.assertIn("1", resp.content.decode()) # Total reports
+
+
+class SpatialAndRecommendationsTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="spatial_user", password="password")
+        # Create a few accidents with different severities and locations
+        # Accident 1: Ubungo (-6.792, 39.208), fatal
+        self.acc1 = Accident.objects.create(
+            occurred_at=timezone.now(),
+            severity="fatal",
+            vehicle_types=["car"],
+            lat=-6.792,
+            lng=39.208,
+            junction_name="Ubungo Junction",
+            casualties=2,
+            fatalities=1,
+        )
+        # Accident 2: Ubungo, minor
+        self.acc2 = Accident.objects.create(
+            occurred_at=timezone.now(),
+            severity="minor",
+            vehicle_types=["motorcycle"],
+            lat=-6.7922,
+            lng=39.2082,
+            junction_name="Ubungo Junction",
+            casualties=1,
+            fatalities=0,
+        )
+        # Accident 3: Mwenge (-6.772, 39.228), minor
+        self.acc3 = Accident.objects.create(
+            occurred_at=timezone.now(),
+            severity="minor",
+            vehicle_types=["bus"],
+            lat=-6.772,
+            lng=39.228,
+            junction_name="Mwenge Junction",
+            casualties=0,
+            fatalities=0,
+        )
+
+    def test_api_accidents_near_missing_params(self):
+        resp = self.client.get("/api/accidents/near/")
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("required", resp.json()["error"])
+
+    def test_api_accidents_near_radius_clamping(self):
+        # Enforce valid range
+        resp = self.client.get("/api/accidents/near/?lat=-6.792&lng=39.208&radius=10000")
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("radius must be between 1 and 5000 metres", resp.json()["error"])
+
+    def test_api_accidents_near_success(self):
+        # Query near Ubungo (-6.792, 39.208) with r=500m
+        resp = self.client.get("/api/accidents/near/?lat=-6.792&lng=39.208&radius=500")
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertEqual(data["count"], 2)
+        accident_ids = [a["id"] for a in data["accidents"]]
+        self.assertIn(self.acc1.id, accident_ids)
+        self.assertIn(self.acc2.id, accident_ids)
+        self.assertNotIn(self.acc3.id, accident_ids)
+
+    def test_junction_severity_scores_ranking(self):
+        # Ubungo score: 1 fatal (4) + 1 minor (1) = 5
+        # Mwenge score: 1 minor (1) = 1
+        resp = self.client.get("/api/junctions/")
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertEqual(data[0]["name"], "Ubungo Junction")
+        self.assertEqual(data[0]["count"], 5)  # count field is severity_score!
+        self.assertEqual(data[1]["name"], "Mwenge Junction")
+        self.assertEqual(data[1]["count"], 1)
+
+    def test_recommendation_engine_generates_recommendations(self):
+        from accidents.services.recommendations import generate_recommendations
+        hourly_data = [{"hour": h, "count": 0} for h in range(24)]
+        # Put 40% of accidents in rush hour (e.g. 8:00)
+        hourly_data[8]["count"] = 10
+        junction_data = [{"junction_name": "Ubungo Junction", "fatal_count": 2, "severity_score": 10}]
+        severity_data = {"minor": 0, "serious": 0, "critical": 0, "fatal": 10}
+
+        recs = generate_recommendations(
+            hourly_data=hourly_data,
+            junction_data=junction_data,
+            severity_data=severity_data,
+            total_accidents=10,
+        )
+        self.assertTrue(len(recs) > 0)
+        # Check priority and fields
+        self.assertEqual(recs[0].priority, "critical")
+        self.assertIn("Safety Audit", recs[0].title)

@@ -382,3 +382,47 @@ def api_tts(request):
     except Exception as e:
         logger.error("TTS generation failed: %s", e)
         return HttpResponse(f"TTS service unavailable: {e}", status=500)
+
+
+def my_reports(request):
+    """
+    GET /my-reports/
+    
+    Shows all accident reports submitted by the currently logged-in user.
+    Displays verification status, upvote count, and report details.
+    Login required — redirects to /auth/login/ if not authenticated.
+    """
+    from ..decorators import login_required_custom
+    from ..models import Accident, AccidentUpvote
+
+    # Apply decorator inline to keep things clean
+    @login_required_custom
+    def _inner(req):
+        user_accidents = (
+            Accident.objects
+            .filter(submitted_by=req.user)
+            .order_by("-reported_at")
+            .select_related("junction")
+        )
+
+        # Summary stats for the user
+        total = user_accidents.count()
+        verified_count = user_accidents.filter(verified=True).count()
+        total_upvotes = sum(a.upvote_count for a in user_accidents)
+        
+        # Upvotes the user has given to other reports
+        given_upvotes = (
+            AccidentUpvote.objects.filter(user=req.user)
+            .select_related("accident")
+            .order_by("-created_at")[:10]
+        )
+
+        return render(req, "accidents/my_reports.html", {
+            "accidents": user_accidents,
+            "total": total,
+            "verified_count": verified_count,
+            "pending_count": total - verified_count,
+            "total_upvotes": total_upvotes,
+            "given_upvotes": given_upvotes,
+        })
+    return _inner(request)

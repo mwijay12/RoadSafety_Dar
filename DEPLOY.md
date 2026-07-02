@@ -1,18 +1,40 @@
-# 🚀 Deploy RoadSafety Dar to Railway.app (FREE)
+# 🚀 Deploy RoadSafety Dar
 
-Railway is **the best free Django host** in 2026 — real Python support, persistent storage, automatic deploys from Git.
+You can deploy this Django application using **Railway.app (recommended)** or **Vercel + Supabase**.
 
-## Why NOT Vercel
+---
 
-Vercel is for Next.js / serverless functions. Django needs:
-- ❌ Persistent filesystem (SQLite database file)
-- ❌ Long-running WSGI process (gunicorn)
-- ❌ Background workers
-- ❌ WebSockets (future use)
+## Option 1: Vercel + Supabase (Free & Fully Serverless)
 
-Vercel forces you into a serverless pattern that breaks Django. **Use Railway instead.**
+If you deploy to Vercel, Django's default SQLite database won't work properly because Vercel uses a read-only serverless filesystem. To fix this, we use **Supabase** to host a free, persistent PostgreSQL database.
 
-## Step-by-Step Deployment
+### Step-by-Step Vercel + Supabase Setup:
+
+1. **Create a Database on Supabase**:
+   * Go to [supabase.com](https://supabase.com) and create a free project.
+   * Note down your project database password.
+   * Go to **Project Settings** -> **Database** -> **Connection string** (select **URI**).
+   * Copy the URL (e.g. `postgresql://postgres.[REF]:[PASSWORD]@aws-0-[REG].pooler.supabase.com:5432/postgres`).
+
+2. **Configure Vercel Environment Variables**:
+   Go to your project settings in the Vercel Dashboard and add:
+   * `DATABASE_URL` = (Paste your Supabase URI connection string)
+   * `DJANGO_SETTINGS_MODULE` = `roadsafety.settings.prod` (or set `DJANGO_ENV` = `prod`)
+   * `DJANGO_SECRET_KEY` = (generate using `python -c "import secrets;print(secrets.token_urlsafe(60))"`)
+
+3. **Run Migrations & Seed data locally on Supabase**:
+   Since Vercel is serverless and doesn't run backend commands automatically, run these from your local terminal:
+   * Temporary: Put your Supabase URI as `DATABASE_URL` in your local `.env`.
+   * Run migrations: `python manage.py migrate`
+   * Seed mock data: `python manage.py seed_accidents --count 50`
+   * Create admin: `python manage.py createsuperuser`
+   * Restore: Change `DATABASE_URL` in `.env` back to `sqlite:///db.sqlite3`.
+
+4. **Deploy**: Push/deploy to Vercel. The application will connect directly to Supabase!
+
+---
+
+## Option 2: Deploy to Railway.app (FREE)
 
 ### 1. Sign up at https://railway.app
 - Click "Login" → "GitHub"

@@ -12,27 +12,84 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
 
-from ..decorators import police_or_admin_required
+from ..decorators import police_or_admin_required, role_required
 from ..models import SEVERITY_CHOICES, SEVERITY_WEIGHT, VEHICLE_CHOICES, Accident
 
 logger = logging.getLogger(__name__)
 
 
-@login_required
-@police_or_admin_required
+@role_required("editor")
 def authority(request):
-    return render(
-        request,
-        "accidents/authority.html",
-        {
-            "sev_choices": SEVERITY_CHOICES,
-            "veh_choices": VEHICLE_CHOICES,
-        },
+    """
+    GET /authority/
+
+    Authority dashboard with:
+      - Hourly risk bar chart data
+      - Server-generated infrastructure recommendations
+      - Pending verification count
+      - Junction severity scores (top 5)
+    """
+    from accidents.services.recommendations import generate_recommendations
+    from accidents.services.spatial import junction_severity_scores
+
+    # Hourly data for the bar chart
+    from django.db.models import Count
+    hourly_qs = (
+        Accident.objects
+        .values("occurred_at__hour")
+        .annotate(count=Count("id"))
+        .order_by("occurred_at__hour")
+    )
+    hourly_data = [
+        {"hour": row["occurred_at__hour"], "count": row["count"]}
+        for row in hourly_qs
+    ]
+    # Fill in missing hours with 0
+    hour_map = {h["hour"]: h["count"] for h in hourly_data}
+    hourly_full = [
+        {"hour": h, "count": hour_map.get(h, 0)}
+        for h in range(24)
+    ]
+
+    # Severity distribution
+    severity_data = {
+        "minor":    Accident.objects.filter(severity="minor").count(),
+        "serious":  Accident.objects.filter(severity="serious").count(),
+        "critical": Accident.objects.filter(severity="critical").count(),
+        "fatal":    Accident.objects.filter(severity="fatal").count(),
+    }
+    total_accidents = sum(severity_data.values())
+
+    # Junction scores (top 5 for authority view)
+    junction_data = junction_severity_scores()[:5]
+
+    # Generate server-side recommendations
+    recommendations = generate_recommendations(
+        hourly_data=hourly_full,
+        junction_data=junction_data,
+        severity_data=severity_data,
+        total_accidents=total_accidents,
     )
 
+    # Pending count for the queue banner
+    pending_count = Accident.objects.filter(
+        verification_status="pending"
+    ).count()
 
-@login_required
-@police_or_admin_required
+    return render(request, "accidents/authority.html", {
+        "sev_choices": SEVERITY_CHOICES,
+        "veh_choices": VEHICLE_CHOICES,
+        "hourly_data": hourly_full,
+        "hourly_json": hourly_full,       # for Chart.js
+        "severity_data": severity_data,
+        "junction_data": junction_data,
+        "recommendations": recommendations,
+        "total_accidents": total_accidents,
+        "pending_count": pending_count,
+    })
+
+
+@role_required("editor")
 def api_authority_filter(request):
     """GET /api/authority/filter/ — filtered KPI bundle for authority dashboard."""
     qs = Accident.objects.all()
@@ -105,8 +162,7 @@ def api_authority_filter(request):
     )
 
 
-@login_required
-@police_or_admin_required
+@role_required("editor")
 def api_authority_export_csv(request):
     """GET /api/authority/export/csv/ — filtered CSV download."""
     qs = Accident.objects.all()

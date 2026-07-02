@@ -3,9 +3,113 @@
 {% load static %}
 {% block title %}Public Dashboard — Road Safety Dar{% endblock %}
 
-{% block extra_head %}{% endblock %}
+{% block extra_head %}
+<style>
+  .popup-card { min-width: 220px; max-width: 280px; }
+  .popup-header {
+    padding: 0.5rem 0.75rem;
+    background: #f8f9fa;
+    border-radius: 6px 6px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .popup-verified { font-size: 0.75rem; color: #1f9d55; margin-left: auto; }
+  .popup-my-badge {
+    font-size: 0.72rem;
+    background: #2c3e50;
+    color: white;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+  }
+  .popup-body p { margin: 0.3rem 0; font-size: 0.87rem; color: #444; }
+  .popup-footer { margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px solid #eee; }
+  .popup-upvote-btn {
+    width: 100%;
+    padding: 0.4rem 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #444;
+    transition: all 0.2s;
+  }
+  .popup-upvote-btn:hover { border-color: #1f9d55; color: #1f9d55; }
+  .popup-upvote-btn.upvoted { background: #d4edda; border-color: #1f9d55; color: #1f9d55; }
+  .popup-upvote-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .popup-login-hint {
+    display: block;
+    text-align: center;
+    font-size: 0.82rem;
+    color: #888;
+    text-decoration: none;
+    padding: 0.3rem;
+  }
+  .popup-login-hint:hover { color: var(--navy); text-decoration: underline; }
+</style>
+{% endblock %}
 
 {% block content %}
+{% if not user.is_authenticated %}
+<div class="anonymous-banner">
+  <span class="anonymous-banner__icon">🔔</span>
+  <div class="anonymous-banner__text">
+    <strong>Want to track your reports?</strong>
+    <span>Sign in with Google to follow your submissions and confirm incidents near you.</span>
+  </div>
+  <a href="/auth/login/?next=/dashboard/" class="anonymous-banner__btn">
+    Sign In — It's Free
+  </a>
+  <button
+    class="anonymous-banner__close"
+    onclick="this.parentElement.style.display='none'"
+    aria-label="Dismiss"
+  >✕</button>
+</div>
+{% endif %}
+
+<style>
+  .anonymous-banner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    color: white;
+    padding: 0.85rem 1.25rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .anonymous-banner__icon { font-size: 1.4rem; flex-shrink: 0; }
+  .anonymous-banner__text { flex: 1; min-width: 200px; }
+  .anonymous-banner__text strong { display: block; margin-bottom: 0.2rem; }
+  .anonymous-banner__text span { font-size: 0.87rem; opacity: 0.85; }
+  .anonymous-banner__btn {
+    background: #f4d35e;
+    color: #2c3e50;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .anonymous-banner__close {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0.2rem;
+    flex-shrink: 0;
+  }
+  .anonymous-banner__close:hover { color: white; }
+</style>
+
 <section class="hero">
   <div>
     <h1>{% trans "Road Safety" %} <span class="accent">{% trans "Dar es Salaam" %}</span></h1>
@@ -126,7 +230,7 @@
 </section>
 
 <!-- Time-of-Day Filter Control (v1.2.2) -->
-<section class="map-controls">
+<section class="map-controls" style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
   <label for="hour-filter" class="filter-label">{% trans "Filter Map by Hour:" %}</label>
   <select id="hour-filter" class="filter-select" aria-label="{% trans 'Select hour of day to filter accidents' %}">
     <option value="all">{% trans "All Hours (24h)" %}</option>
@@ -141,10 +245,23 @@
     {% endfor %}
   </select>
   <span id="hour-stats" class="filter-stats"></span>
+  <button id="nearMeBtn" class="btn-secondary" style="margin-left:auto; display:inline-flex; align-items:center; gap:0.5rem; border-radius:6px; font-weight:700; padding:0.4rem 1rem; border:none; cursor:pointer;">
+    📍 Find Accidents Near Me
+  </button>
 </section>
 
-<section class="map-wrap">
+<section class="map-wrap" style="position:relative;">
   <div id="map" role="region" aria-label="{% trans 'Accident hotspot map of Dar es Salaam' %}"></div>
+  
+  <div id="nearMePanel" style="display:none; position:absolute; top:10px; right:10px; z-index:1000; background:white; padding:1rem; border-radius:8px; box-shadow:0 2px 12px rgba(0,0,0,0.15); width:320px; max-height:400px; overflow-y:auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:0.5rem; margin-bottom:0.5rem;">
+      <strong style="color:var(--navy);">📍 Accidents Near Me</strong>
+      <button onclick="document.getElementById('nearMePanel').style.display='none'" style="background:none; border:none; cursor:pointer; font-size:1.1rem; color:#888;">✕</button>
+    </div>
+    <div id="nearMeList">
+      <p class="muted" style="font-size:0.85rem; margin:0;">Finding location...</p>
+    </div>
+  </div>
 </section>
 
 <section class="charts-grid">
@@ -187,6 +304,86 @@
 
 {% block scripts %}
 <script>
+  const isLoggedIn = {{ user.is_authenticated|lower }};
+  const userId = "{{ user.id|default:'' }}";
+
+  function buildPopup(a) {
+    const color = sevColor[a.severity] || '#999';
+    const upvoteBtn = isLoggedIn
+      ? `<button
+           onclick="toggleUpvote(${a.id}, this)"
+           class="popup-upvote-btn ${a.user_has_upvoted ? 'upvoted' : ''}"
+           data-upvoted="${a.user_has_upvoted}"
+         >
+           ${a.user_has_upvoted ? '✅' : '👍'}
+           ${a.upvote_count} saw this
+         </button>`
+      : `<a href="/auth/login/" class="popup-login-hint">
+           👍 Sign in to confirm
+         </a>`;
+
+    const myBadge = a.submitted_by_me
+      ? `<span class="popup-my-badge">📌 My Report</span>`
+      : '';
+
+    const occurredDate = new Date(a.occurred_at).toLocaleDateString('en-TZ', {
+      day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
+    });
+
+    return `
+      <div class="popup-card">
+        <div class="popup-header" style="border-left: 4px solid ${color}">
+          <strong style="color:${color}">${a.severity.toUpperCase()}</strong>
+          ${myBadge}
+          ${a.verified ? '<span class="popup-verified">✅ Verified</span>' : ''}
+        </div>
+        <div class="popup-body">
+          <p>📍 ${a.junction_name || a.address || 'Unknown location'}</p>
+          <p>🚗 ${Array.isArray(a.vehicle_types) ? a.vehicle_types.join(', ') : a.vehicle_types || 'Unknown'}</p>
+          <p>👥 ${a.casualties} casualties
+             ${a.fatalities > 0 ? `· <strong style="color:#c0392b">${a.fatalities} fatal</strong>` : ''}
+          </p>
+          <p>🕐 ${occurredDate}</p>
+        </div>
+        <div class="popup-footer">
+          ${upvoteBtn}
+        </div>
+      </div>
+    `;
+  }
+
+  function toggleUpvote(accidentId, btn) {
+    if (!isLoggedIn) {
+      window.location.href = '/auth/login/';
+      return;
+    }
+    const wasUpvoted = btn.dataset.upvoted === 'true';
+    btn.disabled = true;
+    const csrfToken = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('csrftoken='))
+      ?.split('=')[1] || '';
+    
+    fetch(`/api/accidents/${accidentId}/upvote/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken,
+        'Content-Type': 'application/json',
+      },
+    })
+    .then(res => res.json())
+    .then(data => {
+      btn.dataset.upvoted = data.upvoted;
+      btn.innerHTML = `${data.upvoted ? '✅' : '👍'} ${data.upvote_count} saw this`;
+      btn.className = `popup-upvote-btn ${data.upvoted ? 'upvoted' : ''}`;
+      btn.disabled = false;
+    })
+    .catch(() => {
+      btn.disabled = false;
+      alert('Could not save your confirmation. Please try again.');
+    });
+  }
+
   // ===== Map (Severity-weighted) =====
   const map = L.map('map').setView({{ center|safe }}, 12);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -226,7 +423,16 @@
         }
 
         // Prepare heatmap points: [lat, lng, intensity]
-        const points = rows.map(a => [a.lat, a.lng, SEV_WEIGHT[a.severity] || 0.25]);
+        const points = rows.map(a => {
+          const sevWeight = { minor: 1, serious: 2, critical: 3, fatal: 4 };
+          const trustMult = { anonymous: 1.0, community: 1.4, verified: 2.0 };
+          const base = sevWeight[a.severity] || 1;
+          const mult = trustMult[a.trust_level] || 1.0;
+          const upvotes = a.upvote_count || 0;
+          const bonus = Math.min(upvotes * 0.15, 1.5);
+          const intensity = Math.min(base * mult + bonus, 4);
+          return [a.lat, a.lng, intensity / 4.0];
+        });
         
         // Add new heatmap layer
         heatLayer = L.heatLayer(points, {
@@ -244,12 +450,7 @@
             iconSize: [14, 14]
           });
           const m = L.marker([a.lat, a.lng], { icon });
-          m.bindPopup(`
-            <b style="color:${color}">${a.severity.toUpperCase()}</b><br>
-            ${a.vehicle_type || (a.vehicle_types && a.vehicle_types[0]) || 'Unknown'} · ${a.casualties} casualties<br>
-            ${new Date(a.occurred_at).toLocaleString()}<br>
-            <small>${a.address || a.junction_name || ''}</small>
-          `);
+          m.bindPopup(buildPopup(a));
           markerCluster.addLayer(m);
         });
         map.addLayer(markerCluster);
@@ -266,6 +467,88 @@
         if (statsEl) statsEl.textContent = 'Error loading data';
       });
   }
+
+  // Viewport-based heatmap query
+  function updateHeatmapViewport() {
+    const bounds = map.getBounds();
+    const south = bounds.getSouth();
+    const west = bounds.getWest();
+    const north = bounds.getNorth();
+    const east = bounds.getEast();
+
+    fetch(`/api/heatmap/?bbox=${south},${west},${north},${east}`)
+      .then(r => r.json())
+      .then(points => {
+        if (heatLayer) {
+          const adjustedPoints = points.map(p => [p[0], p[1], p[2] / 4.0]);
+          heatLayer.setLatLngs(adjustedPoints);
+        }
+      })
+      .catch(err => console.error('BBox heatmap error:', err));
+  }
+
+  // Hook moveend to dynamic viewport heatmap updates
+  map.on('moveend', updateHeatmapViewport);
+
+  // Near Me Click Handler
+  document.getElementById('nearMeBtn').addEventListener('click', () => {
+    const panel = document.getElementById('nearMePanel');
+    const list = document.getElementById('nearMeList');
+
+    panel.style.display = 'block';
+    list.innerHTML = '<p class="muted" style="font-size:0.85rem; margin:0;">⏳ Getting current coordinates...</p>';
+
+    if (!navigator.geolocation) {
+      list.innerHTML = '<p class="text-danger" style="font-size:0.85rem; margin:0;">❌ Geolocation is not supported by your browser.</p>';
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        list.innerHTML = '<p class="muted" style="font-size:0.85rem; margin:0;">⏳ Querying nearby hotspots...</p>';
+
+        fetch(`/api/accidents/near/?lat=${lat}&lng=${lng}&radius=2000`)
+          .then(r => r.json())
+          .then(data => {
+            if (!data.accidents || data.accidents.length === 0) {
+              list.innerHTML = '<p class="muted" style="font-size:0.85rem; margin:0;">✅ No accidents found within 2km.</p>';
+              return;
+            }
+
+            list.innerHTML = data.accidents.map(a => {
+              const date = a.occurred_at ? new Date(a.occurred_at).toLocaleDateString('en-TZ', {day:'numeric', month:'short'}) : '';
+              const dist = a.distance_m >= 1000 ? `${(a.distance_m / 1000).toFixed(1)}km` : `${Math.round(a.distance_m)}m`;
+              const c = sevColor[a.severity] || '#666';
+              return `<div style="padding:0.6rem 0; border-bottom:1px solid #f0f0f0; display:flex; justify-content:space-between; align-items:start; gap:0.5rem;">
+                <div>
+                  <span style="font-size:0.75rem; font-weight:700; color:white; background:${c}; padding:0.1rem 0.4rem; border-radius:4px; text-transform:uppercase;">${a.severity}</span>
+                  <div style="font-size:0.85rem; font-weight:600; color:var(--navy); margin-top:0.2rem;">${a.junction_name || 'Address not specified'}</div>
+                  <div style="font-size:0.75rem; color:#888;">${date} · ${a.casualties} casualties</div>
+                </div>
+                <div style="font-size:0.8rem; font-weight:700; color:#3182ce; white-space:nowrap;">${dist}</div>
+              </div>`;
+            }).join('');
+
+            map.setView([lat, lng], 14);
+            L.circle([lat, lng], {
+              color: '#3182ce',
+              fillColor: '#3182ce',
+              fillOpacity: 0.15,
+              radius: 2000
+            }).addTo(map);
+          })
+          .catch(err => {
+            list.innerHTML = `<p class="text-danger" style="font-size:0.85rem; margin:0;">❌ Error fetching search results.</p>`;
+          });
+      },
+      (error) => {
+        list.innerHTML = `<p class="text-danger" style="font-size:0.85rem; margin:0;">❌ Geolocation error: ${error.message}</p>`;
+      }
+    );
+  });
 
   // Initial load with all hours
   loadMapData('all');

@@ -1,0 +1,342 @@
+<!-- accidents/templates/accidents/editor_queue.html -->
+{% extends "accidents/base.html" %}
+
+{% block title %}Verification Queue — Road Safety Dar es Salaam{% endblock %}
+
+{% block content %}
+<div class="editor-container">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1>🛡️ Verification Queue</h1>
+      <p class="page-subtitle">
+        Welcome, {{ editor_name }}. Review and verify accident reports
+        submitted by the community.
+      </p>
+    </div>
+    <a href="/authority/" class="btn-secondary">← Authority Dashboard</a>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="stats-row">
+    <div class="stat-card stat-card--red">
+      <span class="stat-number">{{ pending_count }}</span>
+      <span class="stat-label">Pending Review</span>
+    </div>
+    <div class="stat-card stat-card--gold">
+      <span class="stat-number">{{ high_priority_count }}</span>
+      <span class="stat-label">High Priority</span>
+    </div>
+    <div class="stat-card stat-card--green">
+      <span class="stat-number">{{ verified_today }}</span>
+      <span class="stat-label">Verified Today</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-number">{{ rejected_today }}</span>
+      <span class="stat-label">Rejected Today</span>
+    </div>
+  </div>
+
+  <!-- Django Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Pending Queue -->
+  {% if pending %}
+  <div class="section-header">
+    <h2>📋 Pending Reports</h2>
+    <p>Sorted by severity and community confirmations. Fatal and critical incidents appear first.</p>
+  </div>
+
+  <div class="queue-list">
+    {% for accident in pending %}
+    <div class="queue-card {% if accident.severity == 'fatal' %}queue-card--fatal
+                            {% elif accident.severity == 'critical' %}queue-card--critical
+                            {% elif accident.upvote_count >= 2 %}queue-card--priority
+                            {% endif %}">
+
+      <!-- Priority flag -->
+      {% if accident.severity in 'fatal,critical' or accident.upvote_count >= 2 %}
+      <div class="priority-flag">
+        {% if accident.severity == 'fatal' %}🔴 FATAL
+        {% elif accident.severity == 'critical' %}🟠 CRITICAL
+        {% elif accident.upvote_count >= 2 %}⭐ {{ accident.upvote_count }} CONFIRMATIONS
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <div class="queue-card__body">
+        <!-- Left: Info -->
+        <div class="queue-info">
+          <div class="queue-meta">
+            <span class="severity-badge severity-badge--{{ accident.severity }}">
+              {{ accident.severity|capfirst }}
+            </span>
+            <span class="queue-id">#{{ accident.id }}</span>
+            <span class="queue-date">
+              {{ accident.occurred_at|date:"d M Y H:i" }}
+            </span>
+          </div>
+
+          <div class="queue-location">
+            📍 {{ accident.junction_name|default:accident.address|default:"Location not specified" }}
+          </div>
+
+          <div class="queue-details">
+            <span>🚗 {{ accident.vehicle_types|join:", " }}</span>
+            <span>👥 {{ accident.casualties }} casualty{{ accident.casualties|pluralize:"y,ies" }}</span>
+            {% if accident.fatalities > 0 %}
+            <span class="text-red">💀 {{ accident.fatalities }} fatal</span>
+            {% endif %}
+            <span>👍 {{ accident.upvote_count }} confirmation{{ accident.upvote_count|pluralize }}</span>
+          </div>
+
+          {% if accident.submitted_by %}
+          <div class="queue-submitter">
+            Reported by:
+            <strong>{{ accident.submitted_by.first_name|default:accident.submitted_by.email }}</strong>
+            <span class="trust-badge trust-badge--community">Community</span>
+          </div>
+          {% else %}
+          <div class="queue-submitter">
+            Reported by: <span class="trust-badge trust-badge--anonymous">Anonymous</span>
+          </div>
+          {% endif %}
+
+          {% if accident.description %}
+          <div class="queue-description">
+            "{{ accident.description|truncatechars:120 }}"
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Right: Actions -->
+        <div class="queue-actions">
+          <a
+            href="/editor/accidents/{{ accident.id }}/"
+            class="btn-review"
+          >
+            📄 Review Full Report
+          </a>
+
+          <!-- Quick Verify Form -->
+          <form
+            method="POST"
+            action="/editor/accidents/{{ accident.id }}/verify/"
+            class="quick-verify-form"
+          >
+            {% csrf_token %}
+            <textarea
+              name="official_notes"
+              placeholder="Official notes (optional)..."
+              class="quick-notes"
+              rows="2"
+            ></textarea>
+            <button type="submit" class="btn-verify">
+              ✅ Verify
+            </button>
+          </form>
+
+          <!-- Quick Reject Form -->
+          <form
+            method="POST"
+            action="/editor/accidents/{{ accident.id }}/reject/"
+            class="quick-reject-form"
+            onsubmit="return confirmReject(this)"
+          >
+            {% csrf_token %}
+            <input
+              type="text"
+              name="rejection_reason"
+              placeholder="Rejection reason (required)..."
+              class="quick-reason"
+            >
+            <button type="submit" class="btn-reject">
+              ❌ Reject
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <!-- Empty queue -->
+  <div class="empty-state">
+    <span class="empty-icon">✅</span>
+    <h2>Queue is clear!</h2>
+    <p>All accident reports have been reviewed.<br>
+       Great work keeping the data accurate.</p>
+    <a href="/authority/" class="btn-primary">← Back to Dashboard</a>
+  </div>
+  {% endif %}
+
+  <!-- Recently Verified -->
+  {% if recently_verified %}
+  <div class="section-header" style="margin-top:2.5rem">
+    <h2>📝 Recently Verified</h2>
+  </div>
+  <div class="verified-list">
+    {% for acc in recently_verified %}
+    <div class="verified-item">
+      <span class="severity-dot severity-dot--{{ acc.severity }}"></span>
+      <div class="verified-info">
+        <strong>#{{ acc.id }} — {{ acc.severity|capfirst }}</strong>
+        {% if acc.junction_name %} at {{ acc.junction_name }}{% endif %}
+        <small>
+          Verified by {{ acc.verified_by.first_name|default:acc.verified_by.email }}
+          on {{ acc.verified_at|date:"d M Y H:i" }}
+        </small>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+  function confirmReject(form) {
+    const reason = form.querySelector('[name="rejection_reason"]').value.trim();
+    if (!reason) {
+      alert('Please enter a rejection reason before submitting.');
+      return false;
+    }
+    return confirm(
+      `Are you sure you want to reject this report?\n\nReason: "${reason}"\n\n` +
+      `The report will be marked as rejected and removed from the queue.`
+    );
+  }
+</script>
+
+<style>
+  .editor-container { max-width: 1100px; margin: 0 auto; padding: 2rem 1rem; }
+  .page-header { display: flex; justify-content: space-between; align-items: flex-start;
+                 flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
+  .page-header h1 { margin: 0 0 0.4rem; color: var(--red); }
+  .page-subtitle { color: #666; margin: 0; }
+
+  /* Stats */
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr));
+               gap: 1rem; margin-bottom: 2rem; }
+  .stat-card { background: white; border-radius: 12px; padding: 1.25rem;
+               text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+               border-top: 4px solid #ccc; }
+  .stat-card--red   { border-top-color: var(--red); }
+  .stat-card--gold  { border-top-color: var(--gold); }
+  .stat-card--green { border-top-color: #1f9d55; }
+  .stat-number { display: block; font-size: 2.2rem; font-weight: 700; color: var(--navy); }
+  .stat-label  { font-size: 0.78rem; color: #888; text-transform: uppercase;
+                 letter-spacing: 0.05em; }
+
+  /* Alerts */
+  .alert { padding: 0.85rem 1.25rem; border-radius: 8px; margin-bottom: 1rem;
+           font-weight: 500; }
+  .alert-success { background: #d4edda; color: #1f9d55; border: 1px solid #c3e6cb; }
+  .alert-warning  { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+  .alert-error    { background: #f8d7da; color: #842029; border: 1px solid #f5c6cb; }
+
+  /* Queue cards */
+  .queue-list { display: flex; flex-direction: column; gap: 1rem; }
+  .queue-card { background: white; border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                border-left: 5px solid #ddd; overflow: hidden; }
+  .queue-card--fatal    { border-left-color: #c0392b; }
+  .queue-card--critical { border-left-color: #ee964b; }
+  .queue-card--priority { border-left-color: #f4d35e; }
+
+  .priority-flag { background: #fff3cd; color: #856404; padding: 0.4rem 1rem;
+                   font-size: 0.82rem; font-weight: 700; letter-spacing: 0.05em; }
+  .queue-card--fatal .priority-flag    { background: #f8d7da; color: #842029; }
+  .queue-card--critical .priority-flag { background: #ffe0cc; color: #7d3d1a; }
+
+  .queue-card__body { display: flex; gap: 1.5rem; padding: 1.25rem;
+                      flex-wrap: wrap; }
+  .queue-info { flex: 1; min-width: 280px; }
+  .queue-meta { display: flex; align-items: center; gap: 0.75rem;
+                flex-wrap: wrap; margin-bottom: 0.6rem; }
+  .queue-id   { color: #888; font-size: 0.85rem; }
+  .queue-date { color: #888; font-size: 0.85rem; }
+  .queue-location { font-weight: 600; color: var(--navy); margin-bottom: 0.5rem; }
+  .queue-details { display: flex; gap: 1rem; flex-wrap: wrap;
+                   font-size: 0.87rem; color: #555; margin-bottom: 0.5rem; }
+  .text-red { color: var(--red); font-weight: 700; }
+  .queue-submitter { font-size: 0.85rem; color: #666; margin-bottom: 0.4rem; }
+  .queue-description { font-size: 0.85rem; color: #888; font-style: italic;
+                       border-left: 3px solid #eee; padding-left: 0.75rem;
+                       margin-top: 0.5rem; }
+
+  /* Trust badges */
+  .trust-badge { padding: 0.15rem 0.5rem; border-radius: 10px;
+                 font-size: 0.72rem; font-weight: 700; }
+  .trust-badge--community { background: #d4edda; color: #1f9d55; }
+  .trust-badge--anonymous { background: #e2e8f0; color: #64748b; }
+
+  /* Severity badges */
+  .severity-badge { padding: 0.25rem 0.6rem; border-radius: 20px;
+                    font-size: 0.78rem; font-weight: 700; }
+  .severity-badge--minor    { background: #d4edda; color: #1f9d55; }
+  .severity-badge--serious  { background: #fff3cd; color: #856404; }
+  .severity-badge--critical { background: #ffe0cc; color: #7d3d1a; }
+  .severity-badge--fatal    { background: #f8d7da; color: #842029; }
+
+  /* Action column */
+  .queue-actions { display: flex; flex-direction: column; gap: 0.75rem;
+                   min-width: 220px; }
+  .btn-review { display: block; background: var(--navy); color: white;
+                padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+                font-weight: 600; text-align: center; font-size: 0.9rem;
+                transition: background 0.2s; }
+  .btn-review:hover { background: #1a252f; }
+
+  .quick-notes, .quick-reason {
+    width: 100%; padding: 0.4rem 0.6rem; border: 1px solid #ddd;
+    border-radius: 6px; font-size: 0.85rem; font-family: inherit;
+    resize: vertical;
+  }
+  .btn-verify { width: 100%; padding: 0.5rem; background: #1f9d55; color: white;
+                border: none; border-radius: 6px; font-weight: 700;
+                cursor: pointer; font-size: 0.9rem; transition: background 0.2s; }
+  .btn-verify:hover { background: #17803f; }
+  .btn-reject { width: 100%; padding: 0.5rem; background: white; color: #c0392b;
+                border: 2px solid #c0392b; border-radius: 6px; font-weight: 700;
+                cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  .btn-reject:hover { background: #c0392b; color: white; }
+
+  /* Recently verified */
+  .verified-list { display: flex; flex-direction: column; gap: 0.6rem; }
+  .verified-item { display: flex; align-items: center; gap: 0.75rem;
+                   background: white; padding: 0.75rem 1rem;
+                   border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .severity-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .severity-dot--minor    { background: #1f9d55; }
+  .severity-dot--serious  { background: #f4d35e; }
+  .severity-dot--critical { background: #ee964b; }
+  .severity-dot--fatal    { background: #c0392b; }
+  .verified-info { flex: 1; }
+  .verified-info strong { display: block; color: var(--navy); font-size: 0.9rem; }
+  .verified-info small   { color: #888; font-size: 0.8rem; }
+
+  /* Empty state */
+  .empty-state { text-align: center; padding: 4rem 2rem; background: white;
+                 border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .empty-icon { font-size: 3.5rem; display: block; margin-bottom: 1rem; }
+  .empty-state h2 { color: var(--navy); }
+  .empty-state p  { color: #666; margin-bottom: 1.5rem; }
+
+  .section-header { margin-bottom: 1rem; }
+  .section-header h2 { color: var(--navy); margin: 0 0 0.3rem; }
+  .section-header p  { color: #666; margin: 0; font-size: 0.9rem; }
+
+  .btn-secondary { background: #e2e8f0; color: var(--navy); padding: 0.5rem 1rem;
+                   border-radius: 8px; text-decoration: none; font-weight: 600;
+                   font-size: 0.9rem; transition: background 0.2s; }
+  .btn-secondary:hover { background: #cbd5e1; }
+</style>
+{% endblock %}

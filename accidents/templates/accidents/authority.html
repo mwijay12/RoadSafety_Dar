@@ -6,6 +6,11 @@
 
 <div class="action-bar">
   <a href="{% url 'report' %}" class="btn-primary">+ Report New</a>
+  {% if pending_count > 0 %}
+    <a href="{% url 'editor_queue' %}" class="btn-warning" style="background:#f4d35e; color:#2c3e50; font-weight:700; text-decoration:none; padding:0.6rem 1.2rem; border-radius:8px; display:inline-flex; align-items:center; gap:0.5rem;">
+      🔔 {{ pending_count }} pending report{{ pending_count|pluralize }}
+    </a>
+  {% endif %}
   <button class="btn-secondary" id="exportBtn">Export CSV</button>
   <span class="live-indicator" id="liveDot"><span class="dot"></span> Live</span>
 </div>
@@ -81,8 +86,30 @@
     </div>
     <hr style="margin:var(--space-4) 0;border:0;border-top:1px solid rgba(26,31,46,0.08);">
     <h3 style="margin:0 0 var(--space-3);font-size:var(--text-base);color:var(--indigo-deep);text-transform:uppercase;letter-spacing:0.04em;">Recommendations</h3>
-    <div id="recommendations">
-      <p class="muted">Loading…</p>
+    <div id="recommendations-sidebar" style="display:flex; flex-direction:column; gap:1rem;">
+      {% if recommendations %}
+        {% for rec in recommendations %}
+          <div class="reco-card {{ rec.priority_css_class }}" style="background:white; border-radius:10px; padding:1rem; box-shadow:0 1px 4px rgba(0,0,0,0.05); border-left:4px solid {% if rec.priority == 'critical' %}#c0392b{% elif rec.priority == 'high' %}#e67e22{% elif rec.priority == 'medium' %}#d4a017{% else %}#2d8659{% endif %};">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.4rem;">
+              <strong style="font-size:0.92rem; color:var(--navy);">{{ rec.icon }} {{ rec.title }}</strong>
+              <span class="sev-badge" style="background:{% if rec.priority == 'critical' %}#c0392b{% elif rec.priority == 'high' %}#e67e22{% elif rec.priority == 'medium' %}#d4a017{% else %}#2d8659{% endif %}; color:white; font-size:0.65rem; padding:0.15rem 0.4rem; border-radius:12px; font-weight:700; text-transform:uppercase;">
+                {{ rec.priority }}
+              </span>
+            </div>
+            <p style="font-size:0.82rem; color:#555; margin:0 0 0.5rem; line-height:1.45;">{{ rec.description }}</p>
+            <div style="font-size:0.75rem; color:#888; font-style:italic;">
+              <strong>Trigger:</strong> {{ rec.evidence }}
+            </div>
+            {% if rec.affected_hours %}
+              <div style="font-size:0.75rem; color:#888; margin-top:0.25rem;">
+                <strong>Affected hours:</strong> {{ rec.affected_hours }}
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="muted">No recommendations available.</p>
+      {% endif %}
     </div>
   </div>
 </div>
@@ -92,7 +119,6 @@
 {% block scripts %}
 <script>
 const FILTER_API = "{% url 'api_authority_filter' %}";
-const RECOMMEND_API = "{% url 'api_recommendations' %}";
 const EXPORT_URL = "{% url 'api_authority_export_csv' %}";
 
 function getFilters() {
@@ -184,35 +210,7 @@ function renderJunctions(data) {
   }).join('');
 }
 
-function renderRecommendations(data) {
-  const el = document.getElementById('recommendations');
-  if (!data.recommendations || data.recommendations.length === 0) {
-    el.innerHTML = '<p class="muted">No recommendations available.</p>';
-    return;
-  }
-  el.innerHTML = data.recommendations.map(r => {
-    const level = r.risk_level || 'LOW';
-    const badgeColor = level === 'HIGH' ? '#c0392b' : level === 'MEDIUM' ? '#e67e22' : '#2d8659';
-    return `<div class="reco-card">
-      <div class="reco-header">
-        <strong>${r.junction}</strong>
-        <span class="sev-badge" style="background:${badgeColor};">${level}</span>
-      </div>
-      <div class="reco-stats">${r.incidents} incidents · ${r.fatalities} deaths · ${r.casualties} casualties</div>
-      <ul class="reco-actions">${r.actions.map(a => `<li>${a}</li>`).join('')}</ul>
-    </div>`;
-  }).join('');
-  if (data.ai_narrative) {
-    const cleanText = data.ai_narrative.replace(/[*#`_\-]/g, '').trim();
-    el.innerHTML += `<div class="reco-ai">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-2);">
-        <strong>AI Analysis</strong>
-        <button id="ttsPlayBtn" class="btn-ghost btn-small" style="min-height:36px; padding:var(--space-1) var(--space-3); border-radius:12px; margin:0;" onclick="speakText(this, ${JSON.stringify(cleanText)})">🔊 Read Aloud</button>
-      </div>
-      <div>${data.ai_narrative.replace(/\n/g, '<br>')}</div>
-    </div>`;
-  }
-}
+
 
 let currentAudio = null;
 function speakText(btn, text) {
@@ -258,14 +256,7 @@ function fetchData() {
     });
 }
 
-function fetchRecommendations() {
-  fetch(RECOMMEND_API)
-    .then(r => r.json())
-    .then(renderRecommendations)
-    .catch(() => {
-      document.getElementById('recommendations').innerHTML = '<p class="muted">Failed to load recommendations.</p>';
-    });
-}
+
 
 document.getElementById('filterApply').addEventListener('click', fetchData);
 document.getElementById('filterReset').addEventListener('click', function() {
@@ -283,6 +274,5 @@ document.getElementById('exportBtn').addEventListener('click', function() {
 
 loadFiltersFromURL();
 fetchData();
-fetchRecommendations();
 </script>
 {% endblock %}

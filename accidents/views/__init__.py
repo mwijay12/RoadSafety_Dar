@@ -24,11 +24,14 @@ from .public import (  # noqa: F401
     api_recommendations,
     api_tts,
     dashboard,
+    my_reports,
     offline_page,
 )
 from .reports import (  # noqa: F401
     api_accidents,
     api_accidents_create,
+    api_accidents_near,
+    api_upvote,
     report_form,
 )
 from .stats import (  # noqa: F401
@@ -48,4 +51,12 @@ from .stats import (  # noqa: F401
 )
 from .telegram import (  # noqa: F401
     api_telegram_webhook,
+)
+from .editor_views import (  # noqa: F401
+    admin_set_role,
+    admin_users,
+    editor_accident_detail,
+    editor_queue,
+    editor_reject_accident,
+    editor_verify_accident,
 )

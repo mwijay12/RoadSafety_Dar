@@ -50,7 +50,13 @@
       {{ form.lng }}
     </label>
 
-    <button type="button" id="gpsBtn" class="btn-secondary">📍 Use my current location</button>
+    <div class="gps-section" style="grid-column: span 2; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem;">
+      <button type="button" id="gpsBtn" class="btn-secondary" style="transition: all 0.2s;">📍 Use My Current Location</button>
+      <div id="gps-toast" class="gps-toast" role="alert" aria-live="polite" style="display: none; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.9rem; font-weight: 500;">
+        <span id="gps-toast-icon">📍</span>
+        <span id="gps-toast-msg">Location captured</span>
+      </div>
+    </div>
 
     <label>Address / landmark
       {{ form.junction_name }}
@@ -86,12 +92,90 @@
 </section>
 
 <script>
-  document.getElementById('gpsBtn').addEventListener('click', () => {
-    if (!navigator.geolocation) { alert('Geolocation not supported'); return; }
-    navigator.geolocation.getCurrentPosition(p => {
-      document.getElementById('lat').value = p.coords.latitude.toFixed(6);
-      document.getElementById('lng').value = p.coords.longitude.toFixed(6);
-    }, err => alert('GPS error: ' + err.message));
-  });
+  document.getElementById('gpsBtn').addEventListener('click', captureGPS);
+
+  function captureGPS() {
+    const btn = document.getElementById('gpsBtn');
+    const toast = document.getElementById('gps-toast');
+    const toastMsg = document.getElementById('gps-toast-msg');
+    const toastIcon = document.getElementById('gps-toast-icon');
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Getting location...';
+
+    if (!navigator.geolocation) {
+      showToast('error', '❌', 'Geolocation is not supported by your browser.');
+      resetBtn();
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        const accuracy = Math.round(position.coords.accuracy);
+
+        const latField = document.getElementById('id_lat') || document.querySelector('[name="lat"]');
+        const lngField = document.getElementById('id_lng') || document.querySelector('[name="lng"]');
+
+        if (latField) latField.value = lat.toFixed(6);
+        if (lngField) lngField.value = lng.toFixed(6);
+
+        showToast('success', '✅', `Location captured — accuracy ±${accuracy}m`);
+        btn.textContent = `✅ Location Set (±${accuracy}m)`;
+        btn.style.background = '#d4edda';
+        btn.style.color = '#1f9d55';
+        btn.style.border = '2px solid #1f9d55';
+        btn.disabled = false;
+      },
+      function(error) {
+        const messages = {
+          1: 'Location access denied. Please allow location in browser settings.',
+          2: 'Location unavailable. Please enter coordinates manually.',
+          3: 'Location request timed out. Please try again.',
+        };
+        showToast('error', '❌', messages[error.code] || 'Location error. Try again.');
+        resetBtn();
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000,
+      }
+    );
+  }
+
+  function showToast(type, icon, message) {
+    const toast = document.getElementById('gps-toast');
+    const toastMsg = document.getElementById('gps-toast-msg');
+    const toastIcon = document.getElementById('gps-toast-icon');
+
+    toastIcon.textContent = icon;
+    toastMsg.textContent = message;
+    toast.style.display = 'flex';
+
+    if (type === 'success') {
+      toast.style.background = '#d4edda';
+      toast.style.color = '#1f9d55';
+      toast.style.border = '1px solid #c3e6cb';
+    } else {
+      toast.style.background = '#f8d7da';
+      toast.style.color = '#842029';
+      toast.style.border = '1px solid #f5c6cb';
+    }
+
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, type === 'error' ? 6000 : 4000);
+  }
+
+  function resetBtn() {
+    const btn = document.getElementById('gpsBtn');
+    btn.disabled = false;
+    btn.textContent = '📍 Use My Current Location';
+    btn.style.background = '';
+    btn.style.color = '';
+    btn.style.border = '';
+  }
 </script>
 {% endblock %}

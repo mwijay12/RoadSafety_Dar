@@ -336,7 +336,7 @@ cp .env.example .env
 | `DJANGO_ENV` | `dev` | **YES** (`prod`) | – |
 | `DEBUG` | `True` | YES (set `False`) | – |
 | `ALLOWED_HOSTS` | `localhost,127.0.0.1` | YES (your domain) | – |
-| `DATABASE_URL` | `sqlite:///db.sqlite3` | YES for PostGIS | – |
+| `DATABASE_URL` | `postgresql://...` (Supabase Postgres) | **YES** | Supabase Connection URI |
 
 See `.env.example` for the full list (26 variables covering Sentry, Redis, Resend, Cloudflare, Telegram, etc.).
 
@@ -1082,7 +1082,7 @@ Then open: **http://127.0.0.1:8000/**
 | `DJANGO_SECRET_KEY` | Cryptographic signing key (CHANGE for prod) |
 | `DEBUG` | `True` for dev, `False` for prod |
 | `ALLOWED_HOSTS` | Comma-separated list of allowed domains |
-| `DATABASE_URL` | `sqlite:///db.sqlite3` (dev) or `postgis://…` (prod) |
+| `DATABASE_URL` | Supabase PostgreSQL (`postgresql://...`) or SQLite |
 
 ### 🛠️ Most-used commands
 

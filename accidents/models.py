@@ -134,10 +134,13 @@ class Junction(models.Model):
 
 
 ROLE_CHOICES = [
-    ("community", "Community Member"),
-    ("police", "Police / TPF"),
-    ("admin", "Administrator"),
+    ("admin", "Admin"),
+    ("editor", "Editor (Officer/TANROADS)"),
+    ("user", "Community User"),
+    ("police", "Police / TPF"),  # for backward compatibility
+    ("community", "Community Member"),  # for backward compatibility
 ]
+
 
 AUDIT_ACTION_CHOICES = [
     ("verify", "Verified"),
@@ -189,9 +192,47 @@ class UserProfile(models.Model):
         default=True,
         help_text="Receive email alerts for fatal/critical incidents and daily digests",
     )
+    supabase_uid = models.CharField(
+        max_length=100,
+        unique=True,
+        null=True,
+        blank=True,
+        help_text="Supabase Auth user UUID — auto-set on first Google login",
+    )
+    avatar_url = models.URLField(
+        max_length=500,
+        null=True,
+        blank=True,
+        help_text="Google profile picture — auto-set on login",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "User Profile"
+        verbose_name_plural = "User Profiles"
 
     def __str__(self):
         return f"{self.user.username} ({self.get_role_display()})"
+
+    @property
+    def is_admin(self):
+        return self.role == "admin"
+
+    @property
+    def is_editor(self):
+        return self.role in ("admin", "editor", "police")
+
+    @property
+    def is_community_user(self):
+        return self.role in ("user", "community")
+
+    @property
+    def display_name(self):
+        """Return first name, or email prefix if no name set."""
+        if self.user.first_name:
+            return self.user.first_name
+        return self.user.email.split("@")[0]
 
 
 @receiver(post_save, sender=User)
@@ -316,6 +357,81 @@ class Accident(models.Model):
         help_text="Demo/seed record — hidden from public when demo data is toggled off",
     )
 
+    # Who submitted this report (null for anonymous)
+    submitted_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="submitted_accidents",
+        help_text="Django user who submitted this report. Null = anonymous.",
+    )
+
+    # Trust level — affects heatmap intensity
+    TRUST_CHOICES = [
+        ("anonymous", "Anonymous"),        # No account — lowest weight
+        ("community", "Community User"),   # Logged-in user — medium weight
+        ("verified",  "Verified Report"),  # Editor/police verified — highest weight
+    ]
+    trust_level = models.CharField(
+        max_length=20,
+        choices=TRUST_CHOICES,
+        default="anonymous",
+        db_index=True,
+        help_text="Trust level affects heatmap intensity weight.",
+    )
+
+    # Cached upvote counter — updated when upvotes are added/removed
+    upvote_count = models.PositiveIntegerField(
+        default=0,
+        help_text="Number of users who confirmed they saw this incident.",
+    )
+
+    # Tracks the full verification lifecycle
+    VERIFICATION_STATUS_CHOICES = [
+        ("pending",  "Pending Review"),    # default — not yet reviewed
+        ("verified", "Verified"),          # editor confirmed it is real
+        ("rejected", "Rejected"),          # editor determined it is invalid
+    ]
+    verification_status = models.CharField(
+        max_length=20,
+        choices=VERIFICATION_STATUS_CHOICES,
+        default="pending",
+        db_index=True,
+        help_text="Current verification status of this accident report.",
+    )
+
+    # Official notes added by editor after reviewing
+    official_notes = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Official notes added by verifying officer. Visible to public.",
+    )
+
+    # Reason provided when rejecting a report
+    rejection_reason = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Reason for rejection — shown to the original submitter.",
+    )
+
+    # Which editor verified/rejected this report
+    verified_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="verified_accidents",
+        help_text="Editor who verified or rejected this report.",
+    )
+
+    # When the verification action happened
+    verified_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp of when verification action was taken.",
+    )
+
     class Meta:
         ordering = ["-occurred_at"]
         indexes = [
@@ -327,9 +443,33 @@ class Accident(models.Model):
         return f"{self.get_severity_display()} @ {self.occurred_at:%Y-%m-%d %H:%M}"
 
     def save(self, *args, **kwargs):
+        # Sync verification_status with legacy 'verified' bool and trust_level
+        if self.verified and self.verification_status != "verified":
+            self.verification_status = "verified"
+
+        if self.verification_status == "verified":
+            self.verified = True
+            self.trust_level = "verified"
+        elif self.verification_status == "rejected":
+            self.verified = False
+        else:
+            # pending
+            self.verified = False
+            if self.submitted_by is not None:
+                self.trust_level = "community"
+            else:
+                self.trust_level = "anonymous"
+
         if not self.h3_cell:
             self._compute_h3_cell()
         super().save(*args, **kwargs)
+
+    @property
+    def severity_weight(self):
+        """Numeric weight for sorting — used in editor queue ordering."""
+        return {"minor": 1, "serious": 2, "critical": 3, "fatal": 4}.get(
+            self.severity, 1
+        )
 
     def _compute_h3_cell(self) -> None:
         """Compute ``h3_cell`` from ``lat``/``lng`` at resolution 10 (~68m).
@@ -361,5 +501,39 @@ class Accident(models.Model):
         for v in self.vehicle_types:
             if v not in dict(VEHICLE_CHOICES):
                 from django.core.exceptions import ValidationError
-
+ 
                 raise ValidationError(f"unknown vehicle type: {v}")
+
+
+class AccidentUpvote(models.Model):
+    """
+    Records when a logged-in user confirms they witnessed or can verify
+    an accident. One upvote per user per accident.
+    
+    Upvotes increase the accident's trust score and heatmap intensity.
+    They also help editors prioritise which reports to verify first.
+    """
+
+    accident = models.ForeignKey(
+        Accident,
+        on_delete=models.CASCADE,
+        related_name="upvotes",
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="upvoted_accidents",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Accident Upvote"
+        verbose_name_plural = "Accident Upvotes"
+        # ONE upvote per user per accident — enforced at DB level
+        unique_together = [("accident", "user")]
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user.email} → Accident #{self.accident.id}"

@@ -11,6 +11,7 @@ Features:
 from django.contrib import admin
 from django.db.models import Sum
 from django.urls import reverse
+from django.utils import timezone
 
 from .models import Accident, AuditLog, Junction, SiteSettings, UserProfile
 
@@ -124,27 +125,33 @@ class AccidentAdmin(admin.ModelAdmin):
 
     @admin.action(description="Mark selected as verified")
     def mark_verified(self, request, queryset):
-        count = queryset.update(verified=True)
         for a in queryset:
+            a.verification_status = "verified"
+            a.verified_by = request.user
+            a.verified_at = timezone.now()
+            a.save()
             AuditLog.objects.create(
                 accident=a,
                 user=request.user,
                 action="verify",
                 description="Verified via admin action",
             )
-        self.message_user(request, f"{count} incident(s) marked as verified.")
+        self.message_user(request, f"{queryset.count()} incident(s) marked as verified.")
 
     @admin.action(description="Mark selected as unverified")
     def mark_unverified(self, request, queryset):
-        count = queryset.update(verified=False)
         for a in queryset:
+            a.verification_status = "pending"
+            a.verified_by = None
+            a.verified_at = None
+            a.save()
             AuditLog.objects.create(
                 accident=a,
                 user=request.user,
                 action="unverify",
                 description="Unverified via admin action",
             )
-        self.message_user(request, f"{count} incident(s) marked as unverified.")
+        self.message_user(request, f"{queryset.count()} incident(s) marked as unverified.")
 
     @admin.action(description="Set severity to Fatal")
     def set_severity_fatal(self, request, queryset):
@@ -236,9 +243,16 @@ class JunctionAdmin(admin.ModelAdmin):
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "role", "phone", "email_notifications")
+    list_display = ("user_email", "role", "phone", "supabase_uid", "email_notifications", "created_at")
     list_filter = ("role", "email_notifications")
-    search_fields = ("user__username", "user__email", "phone")
+    search_fields = ("user__username", "user__email", "phone", "supabase_uid")
+    list_editable = ["role"]   # Admin can change roles directly from list view
+    readonly_fields = ["supabase_uid", "created_at", "updated_at"]
+    
+    def user_email(self, obj):
+        return obj.user.email
+    user_email.short_description = "Email"
+    user_email.admin_order_field = "user__email"
 
 
 @admin.register(SiteSettings)
@@ -319,3 +333,7 @@ def kpi_index(request, extra_context=None):
 
 
 admin.site.index = kpi_index
+
+
+
+

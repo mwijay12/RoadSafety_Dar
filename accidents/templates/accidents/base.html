@@ -19,6 +19,66 @@
 
   {% block head_extra %}{% endblock %}
   {% block extra_head %}{% endblock %}
+  <style>
+    .nav-user-menu {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: 0.5rem;
+    }
+    .nav-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid #f4d35e;
+    }
+    .nav-avatar-placeholder {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #f4d35e;
+      color: #2c3e50;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+    .nav-username {
+      color: white;
+      font-weight: 500;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .role-badge {
+      padding: 0.15rem 0.4rem;
+      border-radius: 12px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: inline-block;
+    }
+    .role-badge--admin   { background: #c0392b; color: white; }
+    .role-badge--editor  { background: #f4d35e; color: #2c3e50; }
+    .role-badge--police  { background: #f4d35e; color: #2c3e50; }
+    .role-badge--user    { background: #1f9d55; color: white; }
+    .role-badge--community { background: #1f9d55; color: white; }
+    .btn-signin {
+      background: white;
+      color: #2c3e50;
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 0.85rem;
+      margin-left: 0.5rem;
+      transition: background 0.2s;
+    }
+    .btn-signin:hover { background: #f4d35e; }
+  </style>
 </head>
 <body>
   <header class="topbar">
@@ -30,14 +90,33 @@
       <a href="{% url 'dashboard' %}">Dashboard</a>
       <a href="{% url 'report' %}">Report</a>
       {% if user.is_authenticated %}
-        {% if user.profile.role == "police" or user.profile.role == "admin" %}
+        <a href="{% url 'my_reports' %}">My Reports</a>
+        {% if user.profile.is_editor %}
+          <a href="{% url 'editor_queue' %}">Queue</a>
           <a href="{% url 'authority' %}">Authority</a>
         {% endif %}
-        <span class="auth-name">{{ user.username }}</span>
-        <a href="{% url 'account_logout' %}">Logout</a>
+        {% if user.profile.role == "admin" %}
+          <a href="{% url 'admin_users' %}">Users</a>
+        {% endif %}
+        <div class="nav-user-menu">
+          {% if user.profile.avatar_url %}
+            <img src="{{ user.profile.avatar_url }}" alt="{{ user.profile.display_name }}" class="nav-avatar">
+          {% else %}
+            <span class="nav-avatar-placeholder">
+              {{ user.profile.display_name|first|upper }}
+            </span>
+          {% endif %}
+          <span class="nav-username">{{ user.profile.display_name }}</span>
+          <span class="role-badge role-badge--{{ user.profile.role }}">
+            {% if user.profile.role == "admin" %}Admin
+            {% elif user.profile.role == "editor" or user.profile.role == "police" %}Officer
+            {% else %}Member
+            {% endif %}
+          </span>
+          <a href="{% url 'logout' %}" style="color: #ff9999 !important; font-weight: 600;">Sign Out</a>
+        </div>
       {% else %}
-        <a href="{% url 'account_login' %}">Sign In</a>
-        <a href="{% url 'account_signup' %}">Sign Up</a>
+        <a href="{% url 'login' %}" class="btn-signin">Sign In</a>
       {% endif %}
     </nav>
   </header>

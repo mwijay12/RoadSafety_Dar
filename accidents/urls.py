@@ -1,8 +1,15 @@
 from django.urls import path
 
-from . import views
+from . import auth_views, views
 
 urlpatterns = [
+    # Auth routes
+    path("auth/login/", auth_views.login_page, name="login"),
+    path("auth/google/", auth_views.google_oauth_redirect, name="google_oauth"),
+    path("auth/callback/", auth_views.auth_callback, name="auth_callback"),
+    path("auth/callback/process/", auth_views.process_auth_callback, name="process_auth_callback"),
+    path("auth/logout/", auth_views.logout_view, name="logout"),
+
     # HTML pages
     path("dashboard/", views.dashboard, name="dashboard"),
     path("report/", views.report_form, name="report"),
@@ -42,6 +49,21 @@ urlpatterns = [
     path("api/docs/", views.api_docs, name="api_docs"),
     # v1.4 — TTS Endpoint
     path("api/tts/", views.api_tts, name="api_tts"),
+
+    # Prompt 2 — My Reports & Upvotes
+    path("my-reports/", views.my_reports, name="my_reports"),
+    path("api/accidents/<int:accident_id>/upvote/", views.api_upvote, name="api_upvote"),
+
+    # Prompt 3 — Editor Queue & Admin Panel
+    path("editor/queue/", views.editor_queue, name="editor_queue"),
+    path("editor/accidents/<int:accident_id>/", views.editor_accident_detail, name="editor_accident_detail"),
+    path("editor/accidents/<int:accident_id>/verify/", views.editor_verify_accident, name="editor_verify_accident"),
+    path("editor/accidents/<int:accident_id>/reject/", views.editor_reject_accident, name="editor_reject_accident"),
+    path("admin-panel/users/", views.admin_users, name="admin_users"),
+    path("admin-panel/users/<int:user_id>/set-role/", views.admin_set_role, name="admin_set_role"),
+
+    # Prompt 4 — Spatial radius query API
+    path("api/accidents/near/", views.api_accidents_near, name="api_accidents_near"),
 ]
 
 # ===================== /api/v1/ versioned aliases (Prompt 7) =====================

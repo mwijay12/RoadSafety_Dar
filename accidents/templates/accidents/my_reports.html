@@ -1,0 +1,214 @@
+<!-- accidents/templates/accidents/my_reports.html -->
+{% extends "accidents/base.html" %}
+
+{% block title %}My Reports — Road Safety Dar es Salaam{% endblock %}
+
+{% block content %}
+<div class="my-reports-container">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1>📋 My Reports</h1>
+      <p class="page-subtitle">
+        Track the accident reports you have submitted to Road Safety Dar.
+      </p>
+    </div>
+    <a href="/report/" class="btn-primary">+ Report New Accident</a>
+  </div>
+
+  <!-- Summary Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <span class="stat-number">{{ total }}</span>
+      <span class="stat-label">Reports Submitted</span>
+    </div>
+    <div class="stat-card stat-card--green">
+      <span class="stat-number">{{ verified_count }}</span>
+      <span class="stat-label">Verified by Officers</span>
+    </div>
+    <div class="stat-card stat-card--gold">
+      <span class="stat-number">{{ pending_count }}</span>
+      <span class="stat-label">Awaiting Verification</span>
+    </div>
+    <div class="stat-card stat-card--navy">
+      <span class="stat-number">{{ total_upvotes }}</span>
+      <span class="stat-label">Community Confirmations</span>
+    </div>
+  </div>
+
+  <!-- Reports Table -->
+  {% if accidents %}
+  <div class="reports-table-wrapper">
+    <table class="reports-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Location</th>
+          <th>Severity</th>
+          <th>Status</th>
+          <th>Confirmations</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for accident in accidents %}
+        <tr class="report-row report-row--{{ accident.severity }}">
+          <td class="report-date">
+            {{ accident.occurred_at|date:"d M Y" }}<br>
+            <small>{{ accident.occurred_at|time:"H:i" }}</small>
+          </td>
+          <td class="report-location">
+            {% if accident.junction_name %}
+              📍 {{ accident.junction_name }}
+            {% elif accident.address %}
+              📍 {{ accident.address|truncatechars:40 }}
+            {% else %}
+              📍 {{ accident.lat|floatformat:4 }}, {{ accident.lng|floatformat:4 }}
+            {% endif %}
+          </td>
+          <td>
+            <span class="severity-badge severity-badge--{{ accident.severity }}">
+              {{ accident.severity|capfirst }}
+            </span>
+          </td>
+          <td>
+            {% if accident.verified %}
+              <span class="status-badge status-badge--verified">
+                ✅ Verified
+              </span>
+            {% else %}
+              <span class="status-badge status-badge--pending">
+                ⏳ Pending
+              </span>
+            {% endif %}
+          </td>
+          <td class="report-upvotes">
+            👍 {{ accident.upvote_count }}
+            <small>confirmation{{ accident.upvote_count|pluralize }}</small>
+          </td>
+          <td>
+            <a
+              href="/dashboard/?highlight={{ accident.id }}"
+              class="btn-small"
+              title="View on map"
+            >
+              🗺 View on Map
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+  <!-- Empty state -->
+  <div class="empty-state">
+    <span class="empty-icon">📭</span>
+    <h2>No reports yet</h2>
+    <p>You haven't submitted any accident reports yet.<br>
+       Help make Dar es Salaam safer by reporting an incident.</p>
+    <a href="/report/" class="btn-primary">Report Your First Accident</a>
+  </div>
+  {% endif %}
+
+  <!-- Reports I Confirmed (Upvotes given) -->
+  {% if given_upvotes %}
+  <div class="section-header" style="margin-top: 2.5rem;">
+    <h2>👍 Incidents I Confirmed</h2>
+    <p>Reports from other community members that you confirmed seeing.</p>
+  </div>
+  <div class="confirmed-list">
+    {% for upvote in given_upvotes %}
+    <div class="confirmed-item">
+      <span class="severity-dot severity-dot--{{ upvote.accident.severity }}"></span>
+      <div class="confirmed-info">
+        <strong>{{ upvote.accident.severity|capfirst }} incident</strong>
+        {% if upvote.accident.junction_name %}
+          at {{ upvote.accident.junction_name }}
+        {% endif %}
+        <small>Confirmed {{ upvote.created_at|date:"d M Y" }}</small>
+      </div>
+      <a href="/dashboard/" class="btn-small">View</a>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div>
+
+<style>
+  .my-reports-container { max-width: 1000px; margin: 0 auto; padding: 2rem 1rem; }
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between;
+                 flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
+  .page-header h1 { margin: 0 0 0.5rem; color: var(--red); }
+  .page-subtitle { color: #666; margin: 0; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+               gap: 1rem; margin-bottom: 2rem; }
+  .stat-card { background: white; border-radius: 12px; padding: 1.25rem;
+               text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+               border-top: 4px solid var(--red); }
+  .stat-card--green  { border-top-color: #1f9d55; }
+  .stat-card--gold   { border-top-color: #f4d35e; }
+  .stat-card--navy   { border-top-color: #2c3e50; }
+  .stat-number { display: block; font-size: 2rem; font-weight: 700; color: var(--navy); }
+  .stat-label  { font-size: 0.8rem; color: #888; text-transform: uppercase;
+                 letter-spacing: 0.05em; }
+
+  .reports-table-wrapper { overflow-x: auto; border-radius: 12px;
+                           box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .reports-table { width: 100%; border-collapse: collapse; background: white; }
+  .reports-table th { background: var(--navy); color: white; padding: 0.85rem 1rem;
+                      text-align: left; font-size: 0.85rem; text-transform: uppercase;
+                      letter-spacing: 0.05em; }
+  .reports-table td { padding: 0.85rem 1rem; border-bottom: 1px solid #f0f0f0;
+                      vertical-align: middle; }
+  .report-row:hover { background: #f8f9fa; }
+  .report-date small { color: #888; }
+
+  .severity-badge { padding: 0.25rem 0.6rem; border-radius: 20px;
+                    font-size: 0.78rem; font-weight: 700; }
+  .severity-badge--minor    { background: #d4edda; color: #1f9d55; }
+  .severity-badge--serious  { background: #fff3cd; color: #856404; }
+  .severity-badge--critical { background: #ffe0cc; color: #c0562b; }
+  .severity-badge--fatal    { background: #f8d7da; color: #842029; }
+
+  .status-badge { padding: 0.25rem 0.6rem; border-radius: 20px;
+                  font-size: 0.78rem; font-weight: 600; }
+  .status-badge--verified { background: #d4edda; color: #1f9d55; }
+  .status-badge--pending  { background: #e2e8f0; color: #64748b; }
+
+  .report-upvotes { color: var(--navy); font-weight: 600; }
+  .report-upvotes small { display: block; color: #888; font-weight: 400;
+                          font-size: 0.78rem; }
+
+  .btn-small { background: #f0f0f0; color: var(--navy); padding: 0.3rem 0.7rem;
+               border-radius: 6px; text-decoration: none; font-size: 0.82rem;
+               font-weight: 600; white-space: nowrap; transition: background 0.2s; }
+  .btn-small:hover { background: var(--gold); }
+
+  .empty-state { text-align: center; padding: 4rem 2rem; background: white;
+                 border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .empty-icon  { font-size: 3.5rem; display: block; margin-bottom: 1rem; }
+  .empty-state h2 { color: var(--navy); }
+  .empty-state p  { color: #666; margin-bottom: 1.5rem; }
+
+  .section-header h2 { color: var(--navy); margin: 0 0 0.3rem; }
+  .section-header p  { color: #666; margin: 0 0 1rem; }
+
+  .confirmed-list { display: flex; flex-direction: column; gap: 0.75rem; }
+  .confirmed-item { display: flex; align-items: center; gap: 1rem; background: white;
+                    padding: 0.85rem 1.25rem; border-radius: 10px;
+                    box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+  .severity-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .severity-dot--minor    { background: #1f9d55; }
+  .severity-dot--serious  { background: #f4d35e; }
+  .severity-dot--critical { background: #ee964b; }
+  .severity-dot--fatal    { background: #c0392b; }
+  .confirmed-info { flex: 1; }
+  .confirmed-info strong { display: block; color: var(--navy); }
+  .confirmed-info small   { color: #888; font-size: 0.82rem; }
+</style>
+{% endblock %}

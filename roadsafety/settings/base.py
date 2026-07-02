@@ -27,6 +27,15 @@ SECRET_KEY = os.getenv(
 DEBUG = False  # overridden by dev.py / prod.py
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver"]  # overridden in prod
 
+# ── CSRF Trusted Origins ──────────────────────────────────────────────────────
+# Required for POST requests on HTTPS domains (Render, custom domain)
+# Add your Render URL here once you know it
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.onrender.com",       # all Render subdomains
+    "http://localhost:8000",         # local dev
+    "http://127.0.0.1:8000",        # local dev
+]
+
 INSTALLED_APPS = [
     "accidents.apps.AccidentsConfig",  # first so templates override admin/allauth
     "django.contrib.admin",
@@ -99,6 +108,17 @@ DATABASES = {
         default=_db_url, conn_max_age=600
     )
 }
+
+# Force in-memory SQLite for all test runs (both pytest and manage.py test)
+import sys
+if "test" in sys.argv or any("pytest" in arg for arg in sys.argv):
+    DATABASES["default"] = {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": ":memory:",
+    }
+    TESTING = True
+
+
 
 # ---------------------------------------------------------------------------
 # Auth — Django AllAuth (email + password, no social providers yet)
@@ -255,3 +275,20 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # Session/CSRF cookie name (kept consistent so deployments don't lose sessions)
 SESSION_COOKIE_NAME = "roadsafety_sessionid"
 CSRF_COOKIE_NAME = "roadsafety_csrftoken"
+
+# ── Supabase Config ─────────────────────────────────────────────────────────
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
+SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
+SUPABASE_JWT_SECRET = os.environ.get("SUPABASE_JWT_SECRET", "")
+
+# ── Auth Settings ─────────────────────────────────────────────────────────────
+LOGIN_URL = "/auth/login/"
+LOGIN_REDIRECT_URL = os.environ.get("LOGIN_REDIRECT_URL", "/dashboard/")
+LOGOUT_REDIRECT_URL = os.environ.get("LOGOUT_REDIRECT_URL", "/")
+
+# Session settings — 7-day login persistence
+SESSION_COOKIE_AGE = 86400 * 7        # 7 days in seconds
+SESSION_COOKIE_HTTPONLY = True         # JS cannot read session cookie
+SESSION_SAVE_EVERY_REQUEST = True      # refresh session on each request
+

@@ -1,0 +1,20 @@
+<!-- accidents/templates/accidents/403.html -->
+{% extends "accidents/base.html" %}
+
+{% block title %}Access Denied — Road Safety Dar es Salaam{% endblock %}
+
+{% block content %}
+<div style="text-align:center; padding: 4rem 2rem;">
+  <div style="font-size:4rem; margin-bottom:1rem;">🚫</div>
+  <h1 style="color: var(--red) !important;">Access Denied</h1>
+  <p style="color: #666; font-size: 1.1rem; max-width: 400px; margin: 0 auto 2rem;">
+    This page requires <strong>{{ required_role }}</strong> access.<br>
+    Your current role is <strong>{{ user_role }}</strong>.
+  </p>
+  <p style="color: #888; margin-bottom: 2rem;">
+    If you are a police officer or TANROADS engineer,<br>
+    contact the administrator to upgrade your account.
+  </p>
+  <a href="/dashboard/" class="btn-primary">← Back to Dashboard</a>
+</div>
+{% endblock %}
