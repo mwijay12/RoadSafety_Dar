@@ -13,6 +13,7 @@ if django_env not in {"dev", "prod"}:
     django_env = "prod"
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", f"roadsafety.settings.{django_env}")
 application = get_wsgi_application()
+app = application
 
 # Expose version info at WSGI level for deployment scripts
 from roadsafety.version import version_info  # noqa: E402
