@@ -16,12 +16,15 @@ from django.urls import include, path
 from django.views.generic import RedirectView
 
 
+from django.conf import settings
+
 def pwa_manifest(_request):
     """
     Serve the PWA manifest.json with the correct Content-Type.
     This file defines the Progressive Web App properties like name, icons, and display mode.
     """
-    with open("accidents/static/manifest.json") as f:
+    path = settings.BASE_DIR / "accidents" / "static" / "manifest.json"
+    with open(path) as f:
         return JsonResponse(json.load(f))
 
 
@@ -30,7 +33,8 @@ def pwa_sw(_request):
     Serve the service worker (sw.js). It must be at the root scope for proper PWA functionality.
     The service worker enables offline capabilities, caching, and background synchronization.
     """
-    with open("accidents/static/sw.js") as f:
+    path = settings.BASE_DIR / "accidents" / "static" / "sw.js"
+    with open(path) as f:
         return HttpResponse(f.read(), content_type="application/javascript")
 
 

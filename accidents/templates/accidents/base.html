@@ -55,6 +55,15 @@
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="{% static 'js/featured_stat_card.js' %}" defer></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('PWA: SW registered', reg.scope))
+          .catch(err => console.warn('PWA: SW registration failed', err));
+      });
+    }
+  </script>
   {% block scripts %}{% endblock %}
   {% block extra_scripts %}{% endblock %}
 </body>

@@ -68,5 +68,5 @@ django-cors-headers==4.9.0
 # --- Production-only (PostGIS) --------------------------------------------
 # Uncomment for production spatial queries. GDAL is a system package on
 # Linux (apt install gdal-bin) — see the PostGIS migration script.
-# psycopg2-binary==2.9.9
+psycopg2-binary==2.9.9
 # GDAL==3.9.1

@@ -361,13 +361,6 @@
 {% block extra_scripts %}
 <script>
 (function() {
-  // ===== Service Worker Registration =====
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('PWA: SW registered', reg.scope))
-      .catch(err => console.warn('PWA: SW registration failed', err));
-  }
-
   // ===== Count-Up Animation =====
   function animateCountUp(el, target, duration) {
     duration = duration || 800;

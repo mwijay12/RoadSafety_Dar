@@ -1,11 +1,19 @@
-const CACHE_NAME = "roadsafety-v1.3";
-const STATIC_CACHE = "roadsafety-static-v1.3";
+const CACHE_NAME = "roadsafety-v1.4";
+const STATIC_CACHE = "roadsafety-static-v1.4";
 const API_TIMEOUT_MS = 3000;
 
 const STATIC_ASSETS = [
   "/static/css/app.css",
   "/static/manifest.json",
   "/static/icons/favicon.svg",
+  "/static/js/featured_stat_card.js",
+  "/static/img/accident-icon.png",
+  "/static/img/accident-protection.png",
+  "/static/img/add-report.png",
+  "/static/img/map-icon-2.png",
+  "/static/img/map-icon.png",
+  "/static/img/sign-in.png",
+  "/static/img/stone-hazard.png",
   "/dashboard/",
   "/report/",
   "/authority/",
@@ -14,7 +22,7 @@ const STATIC_ASSETS = [
 ];
 
 self.addEventListener("install", (event) => {
-  console.log("[SW] Installing v1.3");
+  console.log("[SW] Installing v1.4");
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
       return cache.addAll(STATIC_ASSETS).catch((err) => {
