@@ -58,6 +58,7 @@ fixable = ["ALL"]
 "**/test_*.py" = ["S"]
 "**/*_test.py" = ["S"]
 "conftest.py" = ["S"]
+"**/management/commands/seed_accidents.py" = ["S311"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["accidents", "roadsafety"]

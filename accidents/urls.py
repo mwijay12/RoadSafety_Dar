@@ -1,4 +1,5 @@
 from django.urls import path
+
 from . import views
 
 urlpatterns = [
@@ -7,7 +8,6 @@ urlpatterns = [
     path("report/", views.report_form, name="report"),
     path("authority/", views.authority, name="authority"),
     path("offline/", views.offline_page, name="offline"),
-
     # JSON API (PRD §6)
     path("api/accidents", views.api_accidents, name="api_accidents"),
     path("api/accidents/", views.api_accidents_create, name="api_accidents_create"),
@@ -17,7 +17,6 @@ urlpatterns = [
     path("api/stats/hourly", views.api_stats_hourly, name="api_stats_hourly"),
     path("api/stats/junctions", views.api_stats_junctions, name="api_stats_junctions"),
     path("api/stats/summary", views.api_stats_summary, name="api_stats_summary"),
-
     # Legacy aliases (so old dashboard.html keeps working)
     path("api/heatmap/", views.api_heatmap, name="api_heatmap"),
     path("api/severity/", views.api_severity, name="api_severity"),
@@ -26,22 +25,21 @@ urlpatterns = [
     path("api/hourly/", views.api_hourly, name="api_hourly"),
     path("api/junctions/", views.api_junctions, name="api_junctions"),
     path("api/summary/", views.api_summary, name="api_summary"),
-
     # v1.1 new features
     path("api/export.csv", views.api_export_csv, name="api_export_csv"),
     path("api/recommendations/", views.api_recommendations, name="api_recommendations"),
-
     # v1.2 new features
     path("api/report/monthly.pdf", views.api_monthly_report, name="api_monthly_report"),
     path("api/telegram/webhook/", views.api_telegram_webhook, name="api_telegram_webhook"),
-
     # v1.3 — Authority dashboard endpoints
     path("api/authority/filter/", views.api_authority_filter, name="api_authority_filter"),
-    path("api/authority/export/csv/", views.api_authority_export_csv, name="api_authority_export_csv"),
-
+    path(
+        "api/authority/export/csv/",
+        views.api_authority_export_csv,
+        name="api_authority_export_csv",
+    ),
     # v1.3 — API docs
     path("api/docs/", views.api_docs, name="api_docs"),
-
     # v1.4 — TTS Endpoint
     path("api/tts/", views.api_tts, name="api_tts"),
 ]

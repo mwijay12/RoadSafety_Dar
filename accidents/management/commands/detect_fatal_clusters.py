@@ -10,13 +10,14 @@ Usage:
     python manage.py detect_fatal_clusters --days 7 --min-fatal 3
     python manage.py detect_fatal_clusters --email admin@example.com
 """
+
 import logging
 from collections import defaultdict
 from datetime import timedelta
 
 from django.conf import settings
-from django.core.management.base import BaseCommand
 from django.core.mail import send_mail
+from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from accidents.models import Accident
@@ -67,9 +68,7 @@ class Command(BaseCommand):
 
         # Filter to clusters
         clusters = {
-            name: data
-            for name, data in junction_counts.items()
-            if data["count"] >= min_fatal
+            name: data for name, data in junction_counts.items() if data["count"] >= min_fatal
         }
 
         self.stdout.write(
@@ -82,9 +81,7 @@ class Command(BaseCommand):
         )
 
         if not clusters:
-            self.stdout.write(
-                self.style.SUCCESS("✅ No fatal clusters detected. All clear.")
-            )
+            self.stdout.write(self.style.SUCCESS("✅ No fatal clusters detected. All clear."))
             return
 
         # Report each cluster
@@ -107,9 +104,7 @@ class Command(BaseCommand):
 
         # Optional email notification
         if email_to:
-            subject = (
-                f"[RoadSafety Dar] {len(clusters)} fatal cluster(s) detected in last {days}d"
-            )
+            subject = f"[RoadSafety Dar] {len(clusters)} fatal cluster(s) detected in last {days}d"
             body_lines = [
                 f"Fatal cluster alert — {timezone.now():%Y-%m-%d %H:%M}",
                 "",
@@ -118,9 +113,7 @@ class Command(BaseCommand):
                 "",
             ]
             for junction, data in clusters.items():
-                body_lines.append(
-                    f"- {junction}: {data['count']} fatal accidents"
-                )
+                body_lines.append(f"- {junction}: {data['count']} fatal accidents")
             body_lines += [
                 "",
                 "Recommended action: deploy traffic police, install speed camera,",
@@ -132,19 +125,13 @@ class Command(BaseCommand):
                 send_mail(
                     subject=subject,
                     message="\n".join(body_lines),
-                    from_email=getattr(
-                        settings, "DEFAULT_FROM_EMAIL", "noreply@roadsafety.local"
-                    ),
+                    from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@roadsafety.local"),
                     recipient_list=[email_to],
                     fail_silently=False,
                 )
-                self.stdout.write(
-                    self.style.SUCCESS(f"\n📧 Email alert sent to {email_to}")
-                )
+                self.stdout.write(self.style.SUCCESS(f"\n📧 Email alert sent to {email_to}"))
             except Exception as e:
-                self.stdout.write(
-                    self.style.WARNING(f"\n⚠ Email send failed: {e}")
-                )
+                self.stdout.write(self.style.WARNING(f"\n⚠ Email send failed: {e}"))
 
         # Exit with non-zero status code if clusters found (useful for cron)
         if clusters:

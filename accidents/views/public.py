@@ -1,21 +1,19 @@
 """
 Public HTML pages + CSV export + recommendation engine.
 """
+
 import csv
 import json
 import logging
 from collections import Counter, defaultdict
 
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
-from django.db.models import Sum
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 
-from ..decorators import police_or_admin_required
-from ..models import Accident, Junction, visible_accidents, visible_junctions
+from ..models import visible_accidents, visible_junctions
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +55,12 @@ def api_docs(request):
         ("GET", "/api/report/monthly.pdf", "None", "Monthly PDF report (?month=YYYY-MM)"),
         ("POST", "/api/telegram/webhook", "None", "Telegram bot webhook"),
         ("GET", "/api/authority/filter", "Police/Admin", "Filtered KPI for authority dashboard"),
-        ("GET", "/api/authority/export/csv", "Police/Admin", "Filtered CSV export for authorities"),
+        (
+            "GET",
+            "/api/authority/export/csv",
+            "Police/Admin",
+            "Filtered CSV export for authorities",
+        ),
     ]
     return render(request, "accidents/api_docs.html", {"endpoints": endpoints})
 
@@ -71,9 +74,21 @@ def api_export_csv(_request):
 
     writer = csv.writer(response)
     field_order = [
-        "id", "occurred_at", "severity", "vehicle_types",
-        "junction_name", "lat", "lng", "casualties", "fatalities", "injuries",
-        "weather", "road_condition", "reporter_type", "verified", "description",
+        "id",
+        "occurred_at",
+        "severity",
+        "vehicle_types",
+        "junction_name",
+        "lat",
+        "lng",
+        "casualties",
+        "fatalities",
+        "injuries",
+        "weather",
+        "road_condition",
+        "reporter_type",
+        "verified",
+        "description",
     ]
     writer.writerow(field_order)
 
@@ -103,6 +118,7 @@ def api_export_csv(_request):
 
 # ===================== Recommendation Engine =====================
 
+
 def _build_recommendation_engine_context():
     """Aggregate stats used by the AI recommender (and the rule engine fallback)."""
     qs = visible_accidents()
@@ -110,17 +126,23 @@ def _build_recommendation_engine_context():
     if total == 0:
         return None
 
-    junction_buckets = defaultdict(lambda: {
-        "count": 0, "fatalities": 0, "casualties": 0,
-        "vehicle_types": Counter(), "hourly": Counter(), "name": "",
-    })
+    junction_buckets = defaultdict(
+        lambda: {
+            "count": 0,
+            "fatalities": 0,
+            "casualties": 0,
+            "vehicle_types": Counter(),
+            "hourly": Counter(),
+            "name": "",
+        }
+    )
     for a in qs.exclude(junction_name=""):
         b = junction_buckets[a.junction_name]
         b["name"] = a.junction_name
         b["count"] += 1
         b["fatalities"] += a.fatalities
         b["casualties"] += a.casualties
-        for v in (a.vehicle_types or []):
+        for v in a.vehicle_types or []:
             b["vehicle_types"][v] += 1
         b["hourly"][a.occurred_at.hour] += 1
 
@@ -147,9 +169,7 @@ def _rule_based_recommendations(ctx):
     if ctx is None:
         return recs
 
-    top_junctions = sorted(
-        ctx["junction_buckets"].values(), key=lambda b: -b["count"]
-    )[:3]
+    top_junctions = sorted(ctx["junction_buckets"].values(), key=lambda b: -b["count"])[:3]
     for b in top_junctions:
         peak_h = sorted(b["hourly"].items(), key=lambda x: -x[1])[:1]
         peak_hour = peak_h[0][0] if peak_h else None
@@ -158,7 +178,9 @@ def _rule_based_recommendations(ctx):
 
         actions = []
         if b["fatalities"] >= 3:
-            actions.append(f"⚠ {b['fatalities']} fatalities recorded — install speed camera immediately")
+            actions.append(
+                f"⚠ {b['fatalities']} fatalities recorded — install speed camera immediately"
+            )
         if peak_hour is not None:
             actions.append(
                 f"Deploy traffic police between {peak_hour:02d}:00–{(peak_hour+2)%24:02d}:00 "
@@ -173,17 +195,21 @@ def _rule_based_recommendations(ctx):
         actions.append("Improve road signage and reflective markings")
         actions.append("Coordinate with TANROADS for engineering review")
 
-        recs.append({
-            "junction": b["name"],
-            "incidents": b["count"],
-            "fatalities": b["fatalities"],
-            "casualties": b["casualties"],
-            "peak_hour": peak_hour,
-            "top_vehicle": vehicle,
-            "risk_level": "HIGH" if b["fatalities"] >= 3 else ("MEDIUM" if b["count"] >= 5 else "LOW"),
-            "actions": actions,
-            "source": "rule-engine",
-        })
+        recs.append(
+            {
+                "junction": b["name"],
+                "incidents": b["count"],
+                "fatalities": b["fatalities"],
+                "casualties": b["casualties"],
+                "peak_hour": peak_hour,
+                "top_vehicle": vehicle,
+                "risk_level": "HIGH"
+                if b["fatalities"] >= 3
+                else ("MEDIUM" if b["count"] >= 5 else "LOW"),
+                "actions": actions,
+                "source": "rule-engine",
+            }
+        )
 
     return recs
 
@@ -193,9 +219,7 @@ def _ai_recommendations(ctx):
     if ctx is None:
         return []
 
-    top_junctions = sorted(
-        ctx["junction_buckets"].values(), key=lambda b: -b["count"]
-    )[:3]
+    top_junctions = sorted(ctx["junction_buckets"].values(), key=lambda b: -b["count"])[:3]
     if not top_junctions:
         return []
 
@@ -218,46 +242,56 @@ def _ai_recommendations(ctx):
     # 1. Groq (Primary)
     # 2. OpenRouter (Secondary / Legacy)
     providers = []
-    
+
     import os
+
     groq_key = getattr(settings, "GROQ_API_KEY", None) or os.environ.get("GROQ_API_KEY")
     if groq_key:
-        providers.append({
-            "name": "Groq",
-            "url": getattr(settings, "GROQ_API_BASE", None) or "https://api.groq.com/openai/v1/chat/completions",
-            "key": groq_key,
-            "model": getattr(settings, "GROQ_MODEL", None) or "llama-3.3-70b-versatile"
-        })
-        
-    openrouter_key = getattr(settings, "OPENROUTER_API_KEY", None) or os.environ.get("OPENROUTER_API_KEY")
-    if openrouter_key:
-        providers.append({
-            "name": "OpenRouter",
-            "url": "https://openrouter.ai/api/v1/chat/completions",
-            "key": openrouter_key,
-            "model": getattr(settings, "OPENROUTER_MODEL", None) or "minimax/minimax-m3"
-        })
+        providers.append(
+            {
+                "name": "Groq",
+                "url": getattr(settings, "GROQ_API_BASE", None)
+                or "https://api.groq.com/openai/v1/chat/completions",
+                "key": groq_key,
+                "model": getattr(settings, "GROQ_MODEL", None) or "llama-3.3-70b-versatile",
+            }
+        )
 
-    import urllib.request
-    
+    openrouter_key = getattr(settings, "OPENROUTER_API_KEY", None) or os.environ.get(
+        "OPENROUTER_API_KEY"
+    )
+    if openrouter_key:
+        providers.append(
+            {
+                "name": "OpenRouter",
+                "url": "https://openrouter.ai/api/v1/chat/completions",
+                "key": openrouter_key,
+                "model": getattr(settings, "OPENROUTER_MODEL", None) or "minimax/minimax-m3",
+            }
+        )
+
+    import urllib.request  # noqa: S310
+
     for provider in providers:
         try:
             logger.info("Attempting AI recommendations via %s...", provider["name"])
-            
+
             url = provider["url"]
             if "chat/completions" not in url:
                 url = url.rstrip("/") + "/chat/completions"
-                
-            body = json.dumps({
-                "model": provider["model"],
-                "messages": [
-                    {"role": "system", "content": "You are a road safety expert."},
-                    {"role": "user", "content": prompt},
-                ],
-                "max_tokens": 400,
-            }).encode()
 
-            req = urllib.request.Request(
+            body = json.dumps(
+                {
+                    "model": provider["model"],
+                    "messages": [
+                        {"role": "system", "content": "You are a road safety expert."},
+                        {"role": "user", "content": prompt},
+                    ],
+                    "max_tokens": 400,
+                }
+            ).encode()
+
+            req = urllib.request.Request(  # noqa: S310
                 url,
                 data=body,
                 headers={
@@ -265,9 +299,9 @@ def _ai_recommendations(ctx):
                     "Content-Type": "application/json",
                 },
             )
-            with urllib.request.urlopen(req, timeout=12) as r:
+            with urllib.request.urlopen(req, timeout=12) as r:  # noqa: S310
                 data = json.loads(r.read())
-            
+
             content = data["choices"][0]["message"]["content"].strip()
             if content:
                 logger.info("AI recommendations successfully generated via %s", provider["name"])
@@ -275,7 +309,9 @@ def _ai_recommendations(ctx):
         except Exception as e:
             logger.warning("AI recommendation via %s failed: %s", provider["name"], e)
 
-    logger.warning("All AI providers failed or none configured. Using rule-based fallback narrative.")
+    logger.warning(
+        "All AI providers failed or none configured. Using rule-based fallback narrative."
+    )
     fallback_lines = []
     for r in _rule_based_recommendations(ctx):
         actions_str = ", ".join(r["actions"][:2])
@@ -289,11 +325,14 @@ def api_recommendations(_request):
     ctx = _build_recommendation_engine_context()
     recs = _rule_based_recommendations(ctx)
     ai = _ai_recommendations(ctx)
-    return JsonResponse({
-        "recommendations": recs,
-        "ai_narrative": ai[0]["ai_narrative"] if ai else None,
-        "generated_at": timezone.now().isoformat(),
-    }, safe=False)
+    return JsonResponse(
+        {
+            "recommendations": recs,
+            "ai_narrative": ai[0]["ai_narrative"] if ai else None,
+            "generated_at": timezone.now().isoformat(),
+        },
+        safe=False,
+    )
 
 
 @require_GET
@@ -311,29 +350,29 @@ def api_tts(request):
         return HttpResponse("ElevenLabs API key not configured.", status=503)
 
     try:
-        import urllib.request
+        import urllib.request  # noqa: S310
+
         # Rachel voice ID: 21m00Tcm4TlvDq8ikWAM
         url = "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM"
-        body = json.dumps({
-            "text": text,
-            "model_id": "eleven_monolingual_v1",
-            "voice_settings": {
-                "stability": 0.5,
-                "similarity_boost": 0.75
+        body = json.dumps(
+            {
+                "text": text,
+                "model_id": "eleven_monolingual_v1",
+                "voice_settings": {"stability": 0.5, "similarity_boost": 0.75},
             }
-        }).encode()
+        ).encode()
 
-        req = urllib.request.Request(
+        req = urllib.request.Request(  # noqa: S310
             url,
             data=body,
             headers={
                 "xi-api-key": api_key,
                 "Content-Type": "application/json",
-                "accept": "audio/mpeg"
+                "accept": "audio/mpeg",
             },
-            method="POST"
+            method="POST",
         )
-        with urllib.request.urlopen(req, timeout=15) as r:
+        with urllib.request.urlopen(req, timeout=15) as r:  # noqa: S310
             audio_data = r.read()
 
         response = HttpResponse(audio_data, content_type="audio/mpeg")
@@ -343,4 +382,3 @@ def api_tts(request):
     except Exception as e:
         logger.error("TTS generation failed: %s", e)
         return HttpResponse(f"TTS service unavailable: {e}", status=500)
-

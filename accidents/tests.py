@@ -2,15 +2,17 @@
 Tests for accidents app — covers models, views, and new v1.1 features.
 Run with: python manage.py test accidents
 """
-from datetime import datetime, timedelta
+
+from datetime import timedelta
 
 from django.contrib.auth.models import User
 from django.core import mail
-from django.test import TestCase, Client
+from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import Accident, Junction, VEHICLE_CHOICES, SEVERITY_CHOICES
+from .models import Accident, Junction
+
 
 class ModelTests(TestCase):
     """Test Accident + Junction model constraints and validation."""
@@ -24,7 +26,8 @@ class ModelTests(TestCase):
 
     def test_create_accident_minimal(self):
         a = Accident.objects.create(
-            lat=-6.7924, lng=39.2083,
+            lat=-6.7924,
+            lng=39.2083,
             occurred_at=timezone.now(),
             severity="minor",
             vehicle_types=["car"],
@@ -34,14 +37,17 @@ class ModelTests(TestCase):
 
     def test_create_accident_with_all_fields(self):
         a = Accident.objects.create(
-            lat=-6.7924, lng=39.2083,
+            lat=-6.7924,
+            lng=39.2083,
             junction=self.junction,
             junction_name="Test Junction",
             occurred_at=timezone.now(),
             severity="fatal",
             vehicle_types=["bus", "motorcycle"],
             reporter_type="police",
-            casualties=3, fatalities=1, injuries=2,
+            casualties=3,
+            fatalities=1,
+            injuries=2,
             description="Daladala hit bodaboda",
             weather="rainy",
             road_condition="wet",
@@ -54,32 +60,40 @@ class ModelTests(TestCase):
 
     def test_validation_fatalities_exceed_casualties(self):
         from django.core.exceptions import ValidationError
+
         a = Accident(
-            lat=-6.7924, lng=39.2083,
+            lat=-6.7924,
+            lng=39.2083,
             occurred_at=timezone.now(),
             severity="fatal",
             vehicle_types=["car"],
-            casualties=1, fatalities=2,
+            casualties=1,
+            fatalities=2,
         )
         with self.assertRaises(ValidationError):
             a.full_clean()
 
     def test_validation_injuries_exceed_casualties(self):
         from django.core.exceptions import ValidationError
+
         a = Accident(
-            lat=-6.7924, lng=39.2083,
+            lat=-6.7924,
+            lng=39.2083,
             occurred_at=timezone.now(),
             severity="serious",
             vehicle_types=["car"],
-            casualties=1, injuries=5,
+            casualties=1,
+            injuries=5,
         )
         with self.assertRaises(ValidationError):
             a.full_clean()
 
     def test_validation_empty_vehicle_types(self):
         from django.core.exceptions import ValidationError
+
         a = Accident(
-            lat=-6.7924, lng=39.2083,
+            lat=-6.7924,
+            lng=39.2083,
             occurred_at=timezone.now(),
             severity="minor",
             vehicle_types=[],
@@ -89,8 +103,10 @@ class ModelTests(TestCase):
 
     def test_validation_invalid_vehicle_type(self):
         from django.core.exceptions import ValidationError
+
         a = Accident(
-            lat=-6.7924, lng=39.2083,
+            lat=-6.7924,
+            lng=39.2083,
             occurred_at=timezone.now(),
             severity="minor",
             vehicle_types=["spaceship"],
@@ -100,6 +116,7 @@ class ModelTests(TestCase):
 
     def test_validation_lat_outside_dar(self):
         from django.core.exceptions import ValidationError
+
         a = Accident(
             lat=10.0,  # outside Dar
             lng=39.2083,
@@ -112,6 +129,7 @@ class ModelTests(TestCase):
 
     def test_validation_lng_outside_dar(self):
         from django.core.exceptions import ValidationError
+
         a = Accident(
             lat=-6.7924,
             lng=10.0,  # outside Dar
@@ -124,7 +142,8 @@ class ModelTests(TestCase):
 
     def test_str_method(self):
         a = Accident.objects.create(
-            lat=-6.7924, lng=39.2083,
+            lat=-6.7924,
+            lng=39.2083,
             occurred_at=timezone.now(),
             severity="fatal",
             vehicle_types=["car"],
@@ -138,6 +157,7 @@ class ModelTests(TestCase):
 
     def test_junction_unique_name(self):
         from django.db import IntegrityError
+
         with self.assertRaises(IntegrityError):
             Junction.objects.create(name="Test Junction", lat=-6.7, lng=39.2)
 
@@ -149,7 +169,8 @@ class DashboardViewTests(TestCase):
         self.client = Client()
         for i in range(3):
             Accident.objects.create(
-                lat=-6.7924 + i * 0.01, lng=39.2083,
+                lat=-6.7924 + i * 0.01,
+                lng=39.2083,
                 occurred_at=timezone.now() - timedelta(days=i),
                 severity=["minor", "serious", "fatal"][i],
                 vehicle_types=["car"],
@@ -174,6 +195,7 @@ class ReportFormTests(TestCase):
         self.client = Client()
         # Reset rate limiter between tests
         from accidents.decorators import _rate_log
+
         _rate_log.clear()
         # Create a logged-in community user for form POST tests
         self.user = User.objects.create_user("reporter1", "r@test.com", "pass1234")
@@ -188,40 +210,50 @@ class ReportFormTests(TestCase):
         self.assertTemplateUsed(resp, "accidents/report.html")
 
     def test_post_anonymous_redirects_to_login(self):
-        resp = self.client.post(reverse("report"), {
-            "severity": "minor",
-            "vehicle_type": "car",
-            "lat": -6.7924,
-            "lng": 39.2083,
-        })
+        resp = self.client.post(
+            reverse("report"),
+            {
+                "severity": "minor",
+                "vehicle_type": "car",
+                "lat": -6.7924,
+                "lng": 39.2083,
+            },
+        )
         self.assertEqual(resp.status_code, 302)
         self.assertIn("/accounts/login/", resp.url)
 
     def test_post_valid_form_redirects(self):
         self._login()
-        resp = self.client.post(reverse("report"), {
-            "severity": "minor",
-            "vehicle_type": "car",
-            "lat": -6.7924,
-            "lng": 39.2083,
-            "occurred_at": "2026-07-01T10:00",
-            "casualties": 0,
-            "fatalities": 0,
-            "injuries": 0,
-        })
+        resp = self.client.post(
+            reverse("report"),
+            {
+                "severity": "minor",
+                "vehicle_type": "car",
+                "lat": -6.7924,
+                "lng": 39.2083,
+                "occurred_at": "2026-07-01T10:00",
+                "casualties": 0,
+                "fatalities": 0,
+                "injuries": 0,
+            },
+        )
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Accident.objects.count(), 1)
 
     def test_post_invalid_lat_shows_error(self):
         self._login()
         from accidents.decorators import _rate_log
+
         _rate_log.clear()
-        resp = self.client.post(reverse("report"), {
-            "severity": "minor",
-            "vehicle_type": "car",
-            "lat": "not-a-number",
-            "lng": 39.2083,
-        })
+        resp = self.client.post(
+            reverse("report"),
+            {
+                "severity": "minor",
+                "vehicle_type": "car",
+                "lat": "not-a-number",
+                "lng": 39.2083,
+            },
+        )
         self.assertEqual(resp.status_code, 200)  # re-render form with error
         self.assertContains(resp, "error", status_code=200)
         self.assertEqual(Accident.objects.count(), 0)
@@ -229,13 +261,17 @@ class ReportFormTests(TestCase):
     def test_post_outside_dar_bbox(self):
         self._login()
         from accidents.decorators import _rate_log
+
         _rate_log.clear()
-        resp = self.client.post(reverse("report"), {
-            "severity": "minor",
-            "vehicle_type": "car",
-            "lat": 10.0,
-            "lng": 39.2083,
-        })
+        resp = self.client.post(
+            reverse("report"),
+            {
+                "severity": "minor",
+                "vehicle_type": "car",
+                "lat": 10.0,
+                "lng": 39.2083,
+            },
+        )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(Accident.objects.count(), 0)
 
@@ -247,10 +283,13 @@ class APITests(TestCase):
         self.client = Client()
         for i in range(5):
             Accident.objects.create(
-                lat=-6.7924 + i * 0.005, lng=39.2083,
+                lat=-6.7924 + i * 0.005,
+                lng=39.2083,
                 occurred_at=timezone.now() - timedelta(days=i, hours=i),
                 severity=["minor", "minor", "serious", "fatal", "critical"][i],
-                vehicle_types=[["car"], ["motorcycle"], ["bus"], ["car", "pedestrian"], ["truck"]][i],
+                vehicle_types=[["car"], ["motorcycle"], ["bus"], ["car", "pedestrian"], ["truck"]][
+                    i
+                ],
                 junction_name="Ubungo" if i < 3 else "",
                 casualties=i,
                 fatalities=1 if i == 3 else 0,
@@ -307,7 +346,7 @@ class APITests(TestCase):
 
     def test_api_rate_limit(self):
         # Submit 6 times rapidly — 6th should be 429
-        for i in range(5):
+        for _ in range(5):
             self.client.post(
                 "/api/accidents/",
                 data='{"severity":"minor","lat":-6.79,"lng":39.21,"vehicle_types":["car"]}',
@@ -323,18 +362,22 @@ class APITests(TestCase):
 
 # ============ v1.1 NEW FEATURE TESTS ============
 
+
 class CSVDownloadTests(TestCase):
     """Test the public CSV download endpoint (v1.1 feature)."""
 
     def setUp(self):
         self.client = Client()
         Accident.objects.create(
-            lat=-6.7924, lng=39.2083,
+            lat=-6.7924,
+            lng=39.2083,
             occurred_at=timezone.now(),
             severity="fatal",
             vehicle_types=["car", "motorcycle"],
             junction_name="Ubungo",
-            casualties=2, fatalities=1, injuries=1,
+            casualties=2,
+            fatalities=1,
+            injuries=1,
         )
 
     def test_csv_download_endpoint_exists(self):
@@ -381,7 +424,8 @@ class AIRecommendationsTests(TestCase):
         # Seed enough data for recommendations
         for i in range(10):
             Accident.objects.create(
-                lat=-6.7924, lng=39.2083,
+                lat=-6.7924,
+                lng=39.2083,
                 occurred_at=timezone.now().replace(hour=8 + (i % 4)) - timedelta(days=i),
                 severity="fatal" if i < 3 else "serious",
                 vehicle_types=["motorcycle"],
@@ -417,23 +461,28 @@ class FatalClusterNotificationTests(TestCase):
     def setUp(self):
         self.junction = Junction.objects.create(
             name="Kariakoo Market",
-            lat=-6.8160, lng=39.2765,
+            lat=-6.8160,
+            lng=39.2765,
         )
         # 3 fatal accidents in 7 days at same junction (triggers alert)
         for i in range(3):
             Accident.objects.create(
-                lat=-6.8160, lng=39.2765,
+                lat=-6.8160,
+                lng=39.2765,
                 junction=self.junction,
                 junction_name="Kariakoo Market",
                 occurred_at=timezone.now() - timedelta(days=i),
                 severity="fatal",
                 vehicle_types=["motorcycle"],
-                fatalities=1, casualties=1,
+                fatalities=1,
+                casualties=1,
             )
 
     def test_cluster_detection_command(self):
-        from django.core.management import call_command
         from io import StringIO
+
+        from django.core.management import call_command
+
         out = StringIO()
         # Command exits with 1 when clusters found (by design for cron monitoring)
         try:
@@ -446,6 +495,7 @@ class FatalClusterNotificationTests(TestCase):
 
 
 # ===================== v1.2 NEW TESTS =====================
+
 
 class PWAEndpointTests(TestCase):
     """Test PWA endpoints (manifest, service worker, offline page)."""
@@ -476,14 +526,20 @@ class PDFReportTests(TestCase):
     """Test PDF monthly report endpoint."""
 
     def setUp(self):
-        from django.utils import timezone
         from datetime import timedelta
+
+        from django.utils import timezone
+
         Accident.objects.create(
             occurred_at=timezone.now() - timedelta(days=5),
-            severity="fatal", vehicle_types=["motorcycle"],
+            severity="fatal",
+            vehicle_types=["motorcycle"],
             junction_name="Test Junction",
-            lat=-6.7924, lng=39.2083,
-            fatalities=2, casualties=3, injuries=1,
+            lat=-6.7924,
+            lng=39.2083,
+            fatalities=2,
+            casualties=3,
+            injuries=1,
         )
 
     def test_pdf_endpoint_returns_pdf(self):
@@ -512,6 +568,7 @@ class TelegramWebhookTests(TestCase):
 
     def test_webhook_post_start_command(self):
         import json as jsonmod
+
         update = {
             "update_id": 12345,
             "message": {
@@ -569,10 +626,12 @@ class GenerateMonthlyReportTests(TestCase):
     """Test the PDF report generation command."""
 
     def test_command_runs(self):
-        from django.core.management import call_command
-        from io import StringIO
-        import tempfile
         import os
+        import tempfile
+        from io import StringIO
+
+        from django.core.management import call_command
+
         with tempfile.TemporaryDirectory() as tmp:
             output = os.path.join(tmp, "test_report.pdf")
             out = StringIO()
@@ -597,22 +656,26 @@ class TelegramBotModuleTests(TestCase):
 
     def test_send_message_without_token_returns_false(self):
         from accidents.telegram_bot import send_message
+
         # Without TELEGRAM_BOT_TOKEN env, should silently return False
         result = send_message(123456, "test")
         self.assertFalse(result)
 
     def test_broadcast_stats_returns_zero_without_token(self):
         from accidents.telegram_bot import broadcast_stats
+
         result = broadcast_stats([1, 2, 3], total=10, fatal=2)
         self.assertEqual(result, 0)
 
     def test_send_fatal_alert_returns_false_without_token(self):
         from accidents.telegram_bot import send_fatal_alert
+
         result = send_fatal_alert(123, "Test Junction", 5)
         self.assertFalse(result)
 
 
 # ===================== v1.2.0 TESTS (Versioning + Premium UI) =====================
+
 
 class VersioningTests(TestCase):
     """Test the versioning system."""
@@ -635,7 +698,8 @@ class VersioningTests(TestCase):
         self.assertIn("version", data)
 
     def test_version_module(self):
-        from roadsafety.version import version_info, short_version
+        from roadsafety.version import short_version, version_info
+
         info = version_info()
         self.assertIn("version", info)
         self.assertIn("build", info)
@@ -649,6 +713,7 @@ class SeedJunctionsTests(TestCase):
 
     def test_junction_has_district(self):
         from accidents.models import Junction
+
         # After seeding, junctions should have district field
         j = Junction.objects.first()
         if j:
@@ -656,8 +721,10 @@ class SeedJunctionsTests(TestCase):
             self.assertTrue(hasattr(j, "district"))
 
     def test_seed_junctions_command_runs(self):
-        from django.core.management import call_command
         from io import StringIO
+
+        from django.core.management import call_command
+
         out = StringIO()
         # Should not raise even if already seeded
         call_command("seed_junctions", stdout=out)
@@ -723,11 +790,14 @@ class APIImprovementsTests(TestCase):
 
     def test_heatmap_is_severity_weighted(self):
         # Create one of each severity at the same location
-        from datetime import datetime, timedelta
         from django.utils import timezone
+
         Accident.objects.create(
-            occurred_at=timezone.now(), severity="fatal",
-            vehicle_types=["car"], lat=-6.79, lng=39.20,
+            occurred_at=timezone.now(),
+            severity="fatal",
+            vehicle_types=["car"],
+            lat=-6.79,
+            lng=39.20,
         )
         resp = self.client.get("/api/heatmap/")
         pts = resp.json()
@@ -739,18 +809,23 @@ class APIImprovementsTests(TestCase):
             self.assertGreater(p[2], 0)
 
     def test_junctions_includes_district(self):
-        from datetime import datetime, timedelta
         from django.utils import timezone
+
         # Create a junction and a linked accident
         j = Junction.objects.create(
             name="Test District Junction",
-            lat=-6.79, lng=39.20,
+            lat=-6.79,
+            lng=39.20,
             district="Kinondoni",
         )
         Accident.objects.create(
-            occurred_at=timezone.now(), severity="minor",
-            vehicle_types=["car"], lat=-6.79, lng=39.20,
-            junction=j, junction_name="Test District Junction",
+            occurred_at=timezone.now(),
+            severity="minor",
+            vehicle_types=["car"],
+            lat=-6.79,
+            lng=39.20,
+            junction=j,
+            junction_name="Test District Junction",
         )
         resp = self.client.get("/api/junctions/?limit=100")
         data = resp.json()
@@ -765,7 +840,11 @@ class ResponsiveLayoutTests(TestCase):
     def test_css_has_mobile_breakpoints(self):
         resp = self.client.get("/static/css/app.css")
         # WhiteNoise uses streaming_content for static files
-        content = b"".join(resp.streaming_content) if hasattr(resp, "streaming_content") else resp.content
+        content = (
+            b"".join(resp.streaming_content)
+            if hasattr(resp, "streaming_content")
+            else resp.content
+        )
         # CSS should have @media queries
         self.assertIn(b"@media", content)
         self.assertTrue(
@@ -785,15 +864,15 @@ class EastAfricaTimezoneTests(TestCase):
 
     def test_timezone_is_set_in_settings(self):
         from django.conf import settings
+
         self.assertEqual(settings.TIME_ZONE, "Africa/Dar_es_Salaam")
 
     def test_timezone_is_activated(self):
         from django.utils import timezone
-        from datetime import datetime
+
         # Make a datetime and verify it has EAT applied
         now = timezone.now()
         self.assertIsNotNone(now.tzinfo)
-
 
 
 class AuthTests(TestCase):
@@ -802,6 +881,7 @@ class AuthTests(TestCase):
     def setUp(self):
         self.client = Client()
         from accidents.decorators import _rate_log
+
         _rate_log.clear()
         self.user = User.objects.create_user("authtest", "auth@test.com", "pass1234")
         # UserProfile auto-created by signal, role defaults to community
@@ -838,22 +918,24 @@ class AuthTests(TestCase):
         self.assertEqual(resp.status_code, 200)
 
     def test_user_profile_created_on_signup(self):
-        from .models import UserProfile
         self.assertTrue(hasattr(self.user, "profile"))
         self.assertEqual(self.user.profile.role, "community")
 
     def test_report_post_sets_reporter_type_from_role(self):
         self.client.login(username="authtest", password="pass1234")
-        resp = self.client.post(reverse("report"), {
-            "severity": "minor",
-            "vehicle_type": "car",
-            "lat": -6.7924,
-            "lng": 39.2083,
-            "occurred_at": "2026-07-01T10:00",
-            "casualties": 0,
-            "fatalities": 0,
-            "injuries": 0,
-        })
+        resp = self.client.post(
+            reverse("report"),
+            {
+                "severity": "minor",
+                "vehicle_type": "car",
+                "lat": -6.7924,
+                "lng": 39.2083,
+                "occurred_at": "2026-07-01T10:00",
+                "casualties": 0,
+                "fatalities": 0,
+                "injuries": 0,
+            },
+        )
         self.assertEqual(resp.status_code, 302)
         a = Accident.objects.first()
         self.assertEqual(a.reporter_type, "community")
@@ -871,11 +953,13 @@ class EmailNotificationTests(TestCase):
 
     def test_fatal_accident_sends_alert(self):
         Accident.objects.create(
-            lat=-6.7924, lng=39.2083,
+            lat=-6.7924,
+            lng=39.2083,
             occurred_at=timezone.now(),
             severity="fatal",
             vehicle_types=["car"],
-            fatalities=1, casualties=1,
+            fatalities=1,
+            casualties=1,
             junction_name="Ubungo",
         )
         self.assertGreater(len(mail.outbox), 0)
@@ -884,7 +968,8 @@ class EmailNotificationTests(TestCase):
 
     def test_critical_accident_sends_alert(self):
         Accident.objects.create(
-            lat=-6.7924, lng=39.2083,
+            lat=-6.7924,
+            lng=39.2083,
             occurred_at=timezone.now(),
             severity="critical",
             vehicle_types=["bus"],
@@ -896,7 +981,8 @@ class EmailNotificationTests(TestCase):
 
     def test_minor_accident_does_not_send_alert(self):
         Accident.objects.create(
-            lat=-6.7924, lng=39.2083,
+            lat=-6.7924,
+            lng=39.2083,
             occurred_at=timezone.now(),
             severity="minor",
             vehicle_types=["car"],
@@ -907,11 +993,13 @@ class EmailNotificationTests(TestCase):
         self.police.profile.email_notifications = False
         self.police.profile.save()
         Accident.objects.create(
-            lat=-6.7924, lng=39.2083,
+            lat=-6.7924,
+            lng=39.2083,
             occurred_at=timezone.now(),
             severity="fatal",
             vehicle_types=["car"],
-            fatalities=1, casualties=1,
+            fatalities=1,
+            casualties=1,
         )
         self.assertEqual(len(mail.outbox), 0)
 
@@ -927,7 +1015,9 @@ class DigestCommandTests(TestCase):
 
     def test_dry_run_does_not_send_email(self):
         from io import StringIO
+
         from django.core.management import call_command
+
         out = StringIO()
         call_command("send_daily_digest", dry_run=True, stdout=out)
         output = out.getvalue()
@@ -936,11 +1026,14 @@ class DigestCommandTests(TestCase):
 
     def test_digest_sends_with_data(self):
         from io import StringIO
+
         from django.core.management import call_command
+
         # Clear email outbox from signal (fatal accident triggers alert)
         mail.outbox.clear()
         Accident.objects.create(
-            lat=-6.7924, lng=39.2083,
+            lat=-6.7924,
+            lng=39.2083,
             occurred_at=timezone.now(),
             severity="minor",
             vehicle_types=["car"],
@@ -953,14 +1046,15 @@ class DigestCommandTests(TestCase):
 
     def test_no_recipients_skips(self):
         from io import StringIO
+
         from django.core.management import call_command
+
         self.police.profile.email_notifications = False
         self.police.profile.save()
         out = StringIO()
         call_command("send_daily_digest", stdout=out)
         self.assertIn("No authority recipients", out.getvalue())
         self.assertEqual(len(mail.outbox), 0)
-
 
 
 # ===================== Prompt 8: Admin Panel & Data Quality Tests =====================
@@ -972,7 +1066,8 @@ class AuditLogModelTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user("adminuser", "admin@test.com", "pass1234")
         self.accident = Accident.objects.create(
-            lat=-6.7924, lng=39.2083,
+            lat=-6.7924,
+            lng=39.2083,
             occurred_at=timezone.now(),
             severity="minor",
             vehicle_types=["car"],
@@ -980,9 +1075,12 @@ class AuditLogModelTests(TestCase):
 
     def test_audit_log_created(self):
         from .models import AuditLog
+
         log = AuditLog.objects.create(
-            accident=self.accident, user=self.user,
-            action="verify", description="Test verify",
+            accident=self.accident,
+            user=self.user,
+            action="verify",
+            description="Test verify",
         )
         self.assertEqual(log.action, "verify")
         self.assertEqual(log.accident, self.accident)
@@ -990,14 +1088,17 @@ class AuditLogModelTests(TestCase):
 
     def test_audit_log_str(self):
         from .models import AuditLog
+
         log = AuditLog.objects.create(
-            accident=self.accident, user=self.user,
+            accident=self.accident,
+            user=self.user,
             action="edit",
         )
         self.assertIn("Edit", str(log))
 
     def test_audit_log_ordering(self):
         from .models import AuditLog
+
         log1 = AuditLog.objects.create(accident=self.accident, action="create")
         log2 = AuditLog.objects.create(accident=self.accident, action="verify")
         logs = AuditLog.objects.all().order_by("-created_at", "-pk")
@@ -1006,6 +1107,7 @@ class AuditLogModelTests(TestCase):
 
     def test_audit_log_no_accident_ok(self):
         from .models import AuditLog
+
         log = AuditLog.objects.create(user=self.user, action="junction_merge")
         self.assertIsNone(log.accident)
 
@@ -1015,20 +1117,26 @@ class DataQualityCommandTests(TestCase):
 
     def test_command_runs_with_no_data(self):
         from io import StringIO
+
         from django.core.management import call_command
+
         out = StringIO()
         call_command("data_quality_report", stdout=out)
         self.assertIn("No accident records", out.getvalue())
 
     def test_command_runs_with_data(self):
         from io import StringIO
+
         from django.core.management import call_command
+
         Accident.objects.create(
-            lat=-6.7924, lng=39.2083,
+            lat=-6.7924,
+            lng=39.2083,
             occurred_at=timezone.now(),
             severity="fatal",
             vehicle_types=["car"],
-            fatalities=2, casualties=2,
+            fatalities=2,
+            casualties=2,
             description="Test crash",
         )
         out = StringIO()
@@ -1040,9 +1148,12 @@ class DataQualityCommandTests(TestCase):
 
     def test_command_markdown_output(self):
         from io import StringIO
+
         from django.core.management import call_command
+
         Accident.objects.create(
-            lat=-6.7924, lng=39.2083,
+            lat=-6.7924,
+            lng=39.2083,
             occurred_at=timezone.now(),
             severity="minor",
             vehicle_types=["bicycle"],
@@ -1056,11 +1167,14 @@ class DataQualityCommandTests(TestCase):
 
     def test_command_grade_a_with_good_data(self):
         from io import StringIO
+
         from django.core.management import call_command
+
         # Perfect records: all 5 core fields filled + verified
         for i in range(10):
             Accident.objects.create(
-                lat=-6.7924, lng=39.2083,
+                lat=-6.7924,
+                lng=39.2083,
                 occurred_at=timezone.now(),
                 severity="minor",
                 vehicle_types=["car"],
@@ -1102,7 +1216,8 @@ class AdminPanelTests(TestCase):
     def test_admin_accident_list_renders(self):
         self.client.login(username="super", password="pass1234")
         Accident.objects.create(
-            lat=-6.7924, lng=39.2083,
+            lat=-6.7924,
+            lng=39.2083,
             occurred_at=timezone.now(),
             severity="minor",
             vehicle_types=["car"],
@@ -1112,9 +1227,11 @@ class AdminPanelTests(TestCase):
 
     def test_admin_verify_action_logs_audit(self):
         from .models import AuditLog
+
         self.client.login(username="super", password="pass1234")
         a = Accident.objects.create(
-            lat=-6.7924, lng=39.2083,
+            lat=-6.7924,
+            lng=39.2083,
             occurred_at=timezone.now(),
             severity="minor",
             vehicle_types=["car"],
@@ -1148,7 +1265,8 @@ class TTSAPITests(TestCase):
             self.assertIn("API key not configured", resp.content.decode())
 
     def test_tts_endpoint_successful_mocked(self):
-        from unittest.mock import patch, MagicMock
+        from unittest.mock import MagicMock, patch
+
         mock_audio_bytes = b"fake-mpeg-audio-data"
 
         with self.settings(ELEVENLABS_API_KEY="mock-eleven-key"):
@@ -1162,4 +1280,3 @@ class TTSAPITests(TestCase):
                 self.assertEqual(resp["Content-Type"], "audio/mpeg")
                 self.assertEqual(resp.content, mock_audio_bytes)
                 self.assertIn("Cache-Control", resp)
-

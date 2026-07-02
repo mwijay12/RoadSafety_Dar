@@ -1,7 +1,6 @@
 """
 Security middleware — adds hardening headers without extra packages.
 """
-from django.conf import settings
 
 
 class SecurityHeadersMiddleware:
@@ -24,9 +23,7 @@ class SecurityHeadersMiddleware:
             "frame-ancestors 'none'; "
             "base-uri 'self'"
         )
-        response["Permissions-Policy"] = (
-            "geolocation=(self), camera=(), microphone=(), payment=()"
-        )
+        response["Permissions-Policy"] = "geolocation=(self), camera=(), microphone=(), payment=()"
         response["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response["X-Content-Type-Options"] = "nosniff"
 

@@ -6,8 +6,8 @@ Activate with:
     export DJANGO_SETTINGS_MODULE=roadsafety.settings.dev
     # (or just run ``python manage.py runserver`` — it defaults to dev)
 """
+
 from .base import *  # noqa: F401,F403
-from .base import BASE_DIR, REDIS_URL  # explicit re-import for clarity
 
 DEBUG = True
 

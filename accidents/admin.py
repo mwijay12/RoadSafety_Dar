@@ -7,18 +7,15 @@ Features:
   - Bulk actions (verify, set severity, junction merge)
   - Completeness score display per report
 """
+
 from django.contrib import admin
-from django.db.models import Count, Sum
-from django.http import HttpResponseRedirect
-from django.shortcuts import render
-from django.template.response import TemplateResponse
-from django.urls import path, reverse
-from django.utils import timezone
+from django.db.models import Sum
+from django.urls import reverse
 
-from .models import Accident, Junction, UserProfile, AuditLog, SiteSettings
-
+from .models import Accident, AuditLog, Junction, SiteSettings, UserProfile
 
 # ===================== Inlines =====================
+
 
 class AuditLogInline(admin.TabularInline):
     model = AuditLog
@@ -35,23 +32,42 @@ class AuditLogInline(admin.TabularInline):
 
 # ===================== Model Admins =====================
 
+
 @admin.register(Accident)
 class AccidentAdmin(admin.ModelAdmin):
     list_display = (
-        "id", "occurred_at", "severity_badge", "junction_name",
-        "vehicle_types_display", "casualties", "fatalities",
-        "completeness_score", "verified", "is_demo",
+        "id",
+        "occurred_at",
+        "severity_badge",
+        "junction_name",
+        "vehicle_types_display",
+        "casualties",
+        "fatalities",
+        "completeness_score",
+        "verified",
+        "is_demo",
     )
     list_filter = (
-        "severity", "verified", "is_demo", "reporter_type",
-        "weather", "road_condition", "occurred_at",
+        "severity",
+        "verified",
+        "is_demo",
+        "reporter_type",
+        "weather",
+        "road_condition",
+        "occurred_at",
     )
     search_fields = ("junction_name", "description", "id", "source_notes")
     date_hierarchy = "occurred_at"
     list_per_page = 50
     list_select_related = ("junction",)
-    actions = ["mark_verified", "mark_unverified", "set_severity_fatal",
-               "set_severity_critical", "set_severity_serious", "set_severity_minor"]
+    actions = [
+        "mark_verified",
+        "mark_unverified",
+        "set_severity_fatal",
+        "set_severity_critical",
+        "set_severity_serious",
+        "set_severity_minor",
+    ]
     readonly_fields = ("reported_at", "h3_cell", "completeness_score")
     fieldsets = (
         ("Location", {"fields": ("lat", "lng", "junction_name", "junction", "h3_cell")}),
@@ -68,11 +84,16 @@ class AccidentAdmin(admin.ModelAdmin):
 
     @admin.display(description="Severity")
     def severity_badge(self, obj):
-        colors = {"fatal": "#c0392b", "critical": "#e67e22",
-                  "serious": "#d4a017", "minor": "#2d8659"}
+        colors = {
+            "fatal": "#c0392b",
+            "critical": "#e67e22",
+            "serious": "#d4a017",
+            "minor": "#2d8659",
+        }
         c = colors.get(obj.severity, "#6b7280")
         label = obj.get_severity_display().split(" (")[0]
         return f'<span style="background:{c};color:#fff;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;">{label}</span>'
+
     severity_badge.allow_tags = True
 
     @admin.display(description="Vehicles")
@@ -81,19 +102,20 @@ class AccidentAdmin(admin.ModelAdmin):
 
     @admin.display(description="Completeness")
     def completeness_score(self, obj):
-        fields = [obj.description, obj.weather, obj.road_condition,
-                  obj.junction_name, obj.contact]
+        fields = [obj.description, obj.weather, obj.road_condition, obj.junction_name, obj.contact]
         filled = sum(1 for f in fields if f and f.strip())
         pct = round((filled / len(fields)) * 100)
         color = "#2d8659" if pct >= 80 else "#e67e22" if pct >= 50 else "#c0392b"
         return f'<span style="color:{color};font-weight:700;">{pct}%</span>'
+
     completeness_score.allow_tags = True
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         if change:
             AuditLog.objects.create(
-                accident=obj, user=request.user,
+                accident=obj,
+                user=request.user,
                 action="edit",
                 description="Edited via admin",
             )
@@ -105,8 +127,10 @@ class AccidentAdmin(admin.ModelAdmin):
         count = queryset.update(verified=True)
         for a in queryset:
             AuditLog.objects.create(
-                accident=a, user=request.user,
-                action="verify", description="Verified via admin action",
+                accident=a,
+                user=request.user,
+                action="verify",
+                description="Verified via admin action",
             )
         self.message_user(request, f"{count} incident(s) marked as verified.")
 
@@ -115,8 +139,10 @@ class AccidentAdmin(admin.ModelAdmin):
         count = queryset.update(verified=False)
         for a in queryset:
             AuditLog.objects.create(
-                accident=a, user=request.user,
-                action="unverify", description="Unverified via admin action",
+                accident=a,
+                user=request.user,
+                action="unverify",
+                description="Unverified via admin action",
             )
         self.message_user(request, f"{count} incident(s) marked as unverified.")
 
@@ -140,7 +166,8 @@ class AccidentAdmin(admin.ModelAdmin):
         count = queryset.update(severity=severity)
         for a in queryset:
             AuditLog.objects.create(
-                accident=a, user=request.user,
+                accident=a,
+                user=request.user,
                 action="severity_change",
                 description=f"Bulk severity set to {severity}",
             )
@@ -149,8 +176,16 @@ class AccidentAdmin(admin.ModelAdmin):
 
 @admin.register(Junction)
 class JunctionAdmin(admin.ModelAdmin):
-    list_display = ("name", "district", "safety_score_display",
-                    "accident_count", "fatal_count", "lat", "lng", "is_demo")
+    list_display = (
+        "name",
+        "district",
+        "safety_score_display",
+        "accident_count",
+        "fatal_count",
+        "lat",
+        "lng",
+        "is_demo",
+    )
     list_filter = ("district", "is_demo")
     search_fields = ("name", "description", "district")
     actions = ["merge_junctions"]
@@ -163,6 +198,7 @@ class JunctionAdmin(admin.ModelAdmin):
         score = obj.safety_score
         color = "#c0392b" if score >= 50 else "#e67e22" if score >= 25 else "#2d8659"
         return f'<span style="color:{color};font-weight:700;">{score}</span>'
+
     safety_score_display.allow_tags = True
 
     @admin.display(description="Incidents")
@@ -186,12 +222,16 @@ class JunctionAdmin(admin.ModelAdmin):
             merged_count += count
             j.delete()
         AuditLog.objects.create(
-            user=request.user, action="junction_merge",
+            user=request.user,
+            action="junction_merge",
             description=f"Merged {rest.count()} junctions into {primary.name} "
-                        f"({merged_count} accidents reassigned)",
+            f"({merged_count} accidents reassigned)",
         )
-        self.message_user(request, f"Merged {rest.count()} junctions into {primary.name}. "
-                                   f"{merged_count} accidents reassigned.")
+        self.message_user(
+            request,
+            f"Merged {rest.count()} junctions into {primary.name}. "
+            f"{merged_count} accidents reassigned.",
+        )
 
 
 @admin.register(UserProfile)
@@ -205,13 +245,16 @@ class UserProfileAdmin(admin.ModelAdmin):
 class SiteSettingsAdmin(admin.ModelAdmin):
     list_display = ("show_demo_data",)
     fieldsets = (
-        (None, {
-            "fields": ("show_demo_data",),
-            "description": (
-                "When ON, demo/seed data is shown alongside real data on the public dashboard. "
-                "When OFF, only real data (is_demo=False) is visible to the public."
-            ),
-        }),
+        (
+            None,
+            {
+                "fields": ("show_demo_data",),
+                "description": (
+                    "When ON, demo/seed data is shown alongside real data on the public dashboard. "
+                    "When OFF, only real data (is_demo=False) is visible to the public."
+                ),
+            },
+        ),
     )
 
     def has_delete_permission(self, request, obj=None):
@@ -242,6 +285,7 @@ class AuditLogAdmin(admin.ModelAdmin):
             url = reverse("admin:accidents_accident_change", args=[obj.accident.id])
             return f'<a href="{url}">#{obj.accident.id}</a>'
         return "—"
+
     accident_link.allow_tags = True
 
 

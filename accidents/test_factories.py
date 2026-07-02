@@ -2,10 +2,10 @@
 Pytest tests for the factory-boy factories (Prompt 1 data-layer hardening).
 Run with: pytest accidents/test_factories.py -v
 """
+
 import pytest
 
-from .factories import JunctionFactory, AccidentFactory
-
+from .factories import AccidentFactory, JunctionFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -37,8 +37,7 @@ class TestJunctionFactory:
 
     def test_safety_score_with_accidents(self):
         j = JunctionFactory()
-        AccidentFactory.create_batch(4, junction=j, junction_name=j.name,
-                                     severity="fatal")
+        AccidentFactory.create_batch(4, junction=j, junction_name=j.name, severity="fatal")
         j = JunctionFactory._meta.model.objects.get(pk=j.pk)
         assert j.safety_score > 50.0  # (4 fatal * weight 4) / 4 * 25 = 100
 

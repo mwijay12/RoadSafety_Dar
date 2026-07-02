@@ -8,15 +8,16 @@ Usage:
     python manage.py data_quality_report
     python manage.py data_quality_report --output markdown  # plain|markdown
 """
+
 import logging
 from collections import Counter
 from datetime import timedelta
 
-from django.core.management.base import BaseCommand, CommandError
-from django.db.models import Count, Sum, Q, FloatField, F, ExpressionWrapper
+from django.core.management.base import BaseCommand
+from django.db.models import Count
 from django.utils import timezone
 
-from accidents.models import Accident, Junction, SEVERITY_CHOICES
+from accidents.models import SEVERITY_CHOICES, Accident
 
 logger = logging.getLogger(__name__)
 
@@ -57,26 +58,29 @@ class Command(BaseCommand):
         has_weather = qs.exclude(weather="").count()
         has_road = qs.exclude(road_condition="").count()
         has_junction_name = qs.exclude(junction_name="").count()
-        has_junction_fk = qs.exclude(junction=None).count()
+        qs.exclude(junction=None).count()
         has_contact = qs.exclude(contact="").count()
-        has_source = qs.exclude(source_notes="").count()
-        has_all_five = qs.exclude(description="").exclude(weather="").exclude(
-            road_condition=""
-        ).exclude(junction_name="").exclude(contact="").count()
+        qs.exclude(source_notes="").count()
+        has_all_five = (
+            qs.exclude(description="")
+            .exclude(weather="")
+            .exclude(road_condition="")
+            .exclude(junction_name="")
+            .exclude(contact="")
+            .count()
+        )
 
         # --- Verification ---
         verified = qs.filter(verified=True).count()
         unverified = total - verified
 
         # --- Severity distribution ---
-        severity_counts = {
-            s: qs.filter(severity=s).count() for s, _ in SEVERITY_CHOICES
-        }
+        severity_counts = {s: qs.filter(severity=s).count() for s, _ in SEVERITY_CHOICES}
 
         # --- Vehicle type distribution ---
         vehicle_counter = Counter()
         for obj in qs.iterator():
-            for vt in (obj.vehicle_types or []):
+            for vt in obj.vehicle_types or []:
                 vehicle_counter[vt] += 1
 
         # --- Temporal gaps ---
@@ -94,8 +98,12 @@ class Command(BaseCommand):
 
         # --- Output ---
         sep = "#" if md else "="
-        h = lambda s: out(self.style.MIGRATE_LABEL(f"\n{sep * 4} {s} {sep * 4}"))
-        line = lambda: out("-" * 55)
+
+        def h(s):
+            out(self.style.MIGRATE_LABEL(f"\n{sep * 4} {s} {sep * 4}"))
+
+        def line():
+            out("-" * 55)
 
         if md:
             out("# Data Quality Report")
@@ -104,18 +112,40 @@ class Command(BaseCommand):
 
         h("Overview")
         self._report_row(md, out, "Total records", str(total))
-        self._report_row(md, out, "Date range",
-                         f"{qs.earliest('occurred_at').occurred_at.date() if total else 'N/A'} — "
-                         f"{qs.latest('occurred_at').occurred_at.date() if total else 'N/A'}")
+        self._report_row(
+            md,
+            out,
+            "Date range",
+            f"{qs.earliest('occurred_at').occurred_at.date() if total else 'N/A'} — "
+            f"{qs.latest('occurred_at').occurred_at.date() if total else 'N/A'}",
+        )
         line()
 
         h("Completeness")
-        self._report_row(md, out, "Description filled", f"{has_desc} ({self._pct(has_desc, total)}%)")
-        self._report_row(md, out, "Weather filled", f"{has_weather} ({self._pct(has_weather, total)}%)")
-        self._report_row(md, out, "Road condition filled", f"{has_road} ({self._pct(has_road, total)}%)")
-        self._report_row(md, out, "Junction name filled", f"{has_junction_name} ({self._pct(has_junction_name, total)}%)")
-        self._report_row(md, out, "Contact filled", f"{has_contact} ({self._pct(has_contact, total)}%)")
-        self._report_row(md, out, "All 5 core fields filled", f"{has_all_five} ({self._pct(has_all_five, total)}%)")
+        self._report_row(
+            md, out, "Description filled", f"{has_desc} ({self._pct(has_desc, total)}%)"
+        )
+        self._report_row(
+            md, out, "Weather filled", f"{has_weather} ({self._pct(has_weather, total)}%)"
+        )
+        self._report_row(
+            md, out, "Road condition filled", f"{has_road} ({self._pct(has_road, total)}%)"
+        )
+        self._report_row(
+            md,
+            out,
+            "Junction name filled",
+            f"{has_junction_name} ({self._pct(has_junction_name, total)}%)",
+        )
+        self._report_row(
+            md, out, "Contact filled", f"{has_contact} ({self._pct(has_contact, total)}%)"
+        )
+        self._report_row(
+            md,
+            out,
+            "All 5 core fields filled",
+            f"{has_all_five} ({self._pct(has_all_five, total)}%)",
+        )
         line()
 
         h("Verification")

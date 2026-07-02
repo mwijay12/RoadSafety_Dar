@@ -20,17 +20,17 @@ list and free-tier source links):
                         optional; enables Cloudflare Turnstile CAPTCHA
     TELEGRAM_BOT_TOKEN  optional; enables the Telegram bot integration
 """
-import os
+
 import logging
+import os
 
 from .base import *  # noqa: F401,F403
 from .base import (
-    BASE_DIR,
     REDIS_URL,
-    SENTRY_DSN,
-    SENTRY_TRACES_SAMPLE_RATE,
-    SENTRY_ENVIRONMENT,
     RESEND_API_KEY,
+    SENTRY_DSN,
+    SENTRY_ENVIRONMENT,
+    SENTRY_TRACES_SAMPLE_RATE,
 )
 
 DEBUG = False
@@ -38,11 +38,12 @@ DEBUG = False
 # ALLOWED_HOSTS is required in production. We read it from the env (comma
 # separated) but fall back to a safe default that will still be rejected by
 # Django if DEBUG is False and the host doesn't match.
-ALLOWED_HOSTS = [
-    h.strip()
-    for h in os.getenv("ALLOWED_HOSTS", "").split(",")
-    if h.strip()
-] or [".onrender.com", ".railway.app", ".fly.dev", ".herokuapp.com"]
+ALLOWED_HOSTS = [h.strip() for h in os.getenv("ALLOWED_HOSTS", "").split(",") if h.strip()] or [
+    ".onrender.com",
+    ".railway.app",
+    ".fly.dev",
+    ".herokuapp.com",
+]
 
 # ---------------------------------------------------------------------------
 # Cookies + TLS — full lockdown behind the Cloudflare / load balancer proxy.

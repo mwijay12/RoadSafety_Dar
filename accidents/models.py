@@ -10,15 +10,16 @@ Every new accident automatically gets an Uber H3 hex cell ID at resolution
 10 (~68m edge) via ``h3.latlng_to_cell()``. This enables proper spatial
 grouping for the junction heatmap without PostGIS.
 """
+
 import logging
 
 from django.contrib.auth.models import User
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.text import slugify
-from django.core.validators import MinValueValidator, MaxValueValidator
 
 logger = logging.getLogger(__name__)
 
@@ -64,15 +65,21 @@ DAR_LNG_MIN, DAR_LNG_MAX = 38.5, 39.7
 
 class Junction(models.Model):
     """Named intersections / black-spots we track separately."""
+
     name = models.CharField(max_length=120, unique=True)
     slug = models.SlugField(
-        max_length=120, unique=False, blank=True, db_index=True,
+        max_length=120,
+        unique=False,
+        blank=True,
+        db_index=True,
         help_text="URL-safe identifier. Auto-generated from name on save.",
     )
     lat = models.FloatField()
     lng = models.FloatField()
     district = models.CharField(
-        max_length=60, blank=True, db_index=True,
+        max_length=60,
+        blank=True,
+        db_index=True,
         help_text="Dar es Salaam district: Ilala, Kinondoni, Temeke, Ubungo, Kigamboni",
     )
     description = models.TextField(blank=True)
@@ -145,12 +152,19 @@ AUDIT_ACTION_CHOICES = [
 
 class AuditLog(models.Model):
     """Simple audit trail for admin actions on accident records."""
+
     accident = models.ForeignKey(
-        "Accident", on_delete=models.SET_NULL, null=True, blank=True,
+        "Accident",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name="audit_logs",
     )
     user = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True,
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
     action = models.CharField(max_length=30, choices=AUDIT_ACTION_CHOICES)
     description = models.TextField(blank=True)
@@ -167,6 +181,7 @@ class AuditLog(models.Model):
 
 class UserProfile(models.Model):
     """Extra profile data tied to Django's built-in User model."""
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="community")
     phone = models.CharField(max_length=20, blank=True, help_text="Tanzania phone number")
@@ -188,6 +203,7 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 class SiteSettings(models.Model):
     """Singleton model — toggle demo/real data visibility across the public site."""
+
     show_demo_data = models.BooleanField(
         default=True,
         help_text="When ON, demo records appear alongside real data. When OFF, only real data is shown.",
@@ -197,6 +213,9 @@ class SiteSettings(models.Model):
         verbose_name = "Site Settings"
         verbose_name_plural = "Site Settings"
 
+    def __str__(self):
+        return f"Site Settings (show_demo={'ON' if self.show_demo_data else 'OFF'})"
+
     def save(self, *args, **kwargs):
         self.pk = 1  # enforce singleton
         super().save(*args, **kwargs)
@@ -205,9 +224,6 @@ class SiteSettings(models.Model):
     def get_settings(cls):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
-
-    def __str__(self):
-        return f"Site Settings (show_demo={'ON' if self.show_demo_data else 'OFF'})"
 
 
 def visible_accidents():
@@ -234,6 +250,7 @@ def visible_junctions():
 
 class Accident(models.Model):
     """Core accident report — PRD schema §5."""
+
     # Spatial
     lat = models.FloatField(
         db_index=True,
@@ -244,15 +261,21 @@ class Accident(models.Model):
         validators=[MinValueValidator(DAR_LNG_MIN), MaxValueValidator(DAR_LNG_MAX)],
     )
     h3_cell = models.CharField(
-        max_length=20, blank=True, db_index=True,
+        max_length=20,
+        blank=True,
+        db_index=True,
         help_text="Uber H3 hex cell ID at resolution 10 (~68m). Auto-set on save.",
     )
     junction_name = models.CharField(
-        max_length=120, blank=True,
+        max_length=120,
+        blank=True,
         help_text="Closest named intersection (PRD §5 field)",
     )
     junction = models.ForeignKey(
-        Junction, on_delete=models.SET_NULL, null=True, blank=True,
+        Junction,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name="accidents",
     )
 
@@ -267,7 +290,9 @@ class Accident(models.Model):
         help_text='List of one or more vehicle types, e.g. ["bus","motorcycle"]',
     )
     reporter_type = models.CharField(
-        max_length=20, choices=REPORTER_CHOICES, default="community",
+        max_length=20,
+        choices=REPORTER_CHOICES,
+        default="community",
     )
 
     # Casualties
@@ -280,7 +305,9 @@ class Accident(models.Model):
     weather = models.CharField(max_length=60, blank=True)
     road_condition = models.CharField(max_length=60, blank=True)
     contact = models.CharField(max_length=120, blank=True)
-    source_notes = models.TextField(blank=True, help_text="PRD §5: e.g. 'Reported via mobile form'")
+    source_notes = models.TextField(
+        blank=True, help_text="PRD §5: e.g. 'Reported via mobile form'"
+    )
 
     # Meta
     verified = models.BooleanField(default=False, help_text="Police-verified record")
@@ -311,6 +338,7 @@ class Accident(models.Model):
         """
         try:
             import h3
+
             self.h3_cell = h3.latlng_to_cell(self.lat, self.lng, 10)
         except Exception:
             logger.debug("h3 computation skipped (package missing or invalid coords)")
@@ -320,14 +348,18 @@ class Accident(models.Model):
         super().clean()
         if self.fatalities > self.casualties:
             from django.core.exceptions import ValidationError
+
             raise ValidationError("fatalities cannot exceed casualties")
         if self.injuries > self.casualties:
             from django.core.exceptions import ValidationError
+
             raise ValidationError("injuries cannot exceed casualties")
         if not self.vehicle_types:
             from django.core.exceptions import ValidationError
+
             raise ValidationError("vehicle_types must contain at least one value")
         for v in self.vehicle_types:
             if v not in dict(VEHICLE_CHOICES):
                 from django.core.exceptions import ValidationError
+
                 raise ValidationError(f"unknown vehicle type: {v}")

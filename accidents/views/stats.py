@@ -1,6 +1,7 @@
 """
 Statistics API endpoints — all read-only, no auth required.
 """
+
 import logging
 from collections import Counter, defaultdict
 
@@ -10,7 +11,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 
-from ..models import Accident, Junction, visible_accidents, visible_junctions
+from ..models import visible_accidents, visible_junctions
 
 logger = logging.getLogger(__name__)
 
@@ -33,10 +34,13 @@ def api_stats_vehicles(_request):
 
 @require_GET
 def api_stats_monthly(_request):
-    qs = (visible_accidents()
-          .annotate(month=TruncMonth("occurred_at"))
-          .values("month").annotate(c=Count("id"))
-          .order_by("month"))
+    qs = (
+        visible_accidents()
+        .annotate(month=TruncMonth("occurred_at"))
+        .values("month")
+        .annotate(c=Count("id"))
+        .order_by("month")
+    )
     data = [{"month": r["month"].strftime("%Y-%m"), "count": r["c"]} for r in qs]
     return JsonResponse(data, safe=False)
 
@@ -57,8 +61,17 @@ def api_stats_junctions(request):
         limit = 10
     limit = max(1, min(100, limit))
 
-    buckets = defaultdict(lambda: {"count": 0, "fatalities": 0, "casualties": 0,
-                                    "lat": 0.0, "lng": 0.0, "name": "", "district": ""})
+    buckets = defaultdict(
+        lambda: {
+            "count": 0,
+            "fatalities": 0,
+            "casualties": 0,
+            "lat": 0.0,
+            "lng": 0.0,
+            "name": "",
+            "district": "",
+        }
+    )
     for a in visible_accidents().exclude(junction_name=""):
         b = buckets[a.junction_name]
         b["name"] = a.junction_name
@@ -76,23 +89,26 @@ def api_stats_junctions(request):
 @require_GET
 def api_stats_summary(_request):
     qs = visible_accidents()
-    return JsonResponse({
-        "total": qs.count(),
-        "total_reports": qs.count(),
-        "fatal": qs.filter(severity="fatal").count(),
-        "serious": qs.filter(severity="serious").count(),
-        "minor": qs.filter(severity="minor").count(),
-        "critical": qs.filter(severity="critical").count(),
-        "verified": qs.filter(verified=True).count(),
-        "total_fatalities": qs.aggregate(s=Sum("fatalities"))["s"] or 0,
-        "total_casualties": qs.aggregate(s=Sum("casualties"))["s"] or 0,
-        "junction_count": visible_junctions().count(),
-        "service": "roadsafety-dar",
-        "server_time": timezone.now().isoformat(),
-    })
+    return JsonResponse(
+        {
+            "total": qs.count(),
+            "total_reports": qs.count(),
+            "fatal": qs.filter(severity="fatal").count(),
+            "serious": qs.filter(severity="serious").count(),
+            "minor": qs.filter(severity="minor").count(),
+            "critical": qs.filter(severity="critical").count(),
+            "verified": qs.filter(verified=True).count(),
+            "total_fatalities": qs.aggregate(s=Sum("fatalities"))["s"] or 0,
+            "total_casualties": qs.aggregate(s=Sum("casualties"))["s"] or 0,
+            "junction_count": visible_junctions().count(),
+            "service": "roadsafety-dar",
+            "server_time": timezone.now().isoformat(),
+        }
+    )
 
 
 # ===================== Legacy aliases =====================
+
 
 def api_heatmap(_request):
     """[[lat, lng, intensity], ...] for Leaflet.heat."""

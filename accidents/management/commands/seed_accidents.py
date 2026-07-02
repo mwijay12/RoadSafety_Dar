@@ -5,6 +5,7 @@ Drops existing records and reseeds. Use --count to control size.
 
 Run:  python manage.py seed_accidents --count 500
 """
+
 import random
 from datetime import timedelta
 
@@ -16,52 +17,58 @@ from accidents.models import Accident, Junction
 
 # Real Dar es Salaam accident hotspots (approximate, from OpenStreetMap + public reports)
 HOTSPOTS = [
-    ("Ubungo Interchange",          -6.7900, 39.2000, "Ubungo"),
-    ("Kariakoo Market Junction",    -6.8200, 39.2600, "Ilala"),
-    ("Morocco Junction (Mwenge)",   -6.7600, 39.2300, "Kinondoni"),
-    ("Selander Bridge",             -6.8000, 39.2700, "Ilala"),
-    ("Bagamoyo Rd / Sam Nujoma",    -6.7500, 39.2700, "Kinondoni"),
-    ("Kimara Junction",             -6.7900, 39.1700, "Ubungo"),
-    ("Mbezi Luis",                  -6.7400, 39.2200, "Kinondoni"),
-    ("Mikocheni B",                 -6.7700, 39.2400, "Kinondoni"),
-    ("Tegeta Kibaoni",              -6.7100, 39.2200, "Kinondoni"),
-    ("Kigamboni Ferry",             -6.8200, 39.3000, "Kigamboni"),
-    ("Buguruni",                    -6.8400, 39.2600, "Ilala"),
-    ("Ilala Boma",                  -6.8200, 39.2800, "Ilala"),
-    ("Tabata Dampo",                -6.8400, 39.2400, "Ilala"),
-    ("Sinza Kijitonyama",           -6.7800, 39.2300, "Kinondoni"),
-    ("Ali Hassan Mwinyi Rd",        -6.7600, 39.2400, "Kinondoni"),
-    ("Tandika",                     -6.8600, 39.2600, "Temeke"),
-    ("Mbagala Rangi Tatu",          -6.8900, 39.2900, "Temeke"),
-    ("Temeke Soko la Mpya",         -6.8700, 39.2700, "Temeke"),
-    ("Chang'ombe",                  -6.8300, 39.2700, "Ilala"),
-    ("Gerezani",                    -6.8200, 39.2700, "Ilala"),
-    ("Kibaha Border",               -6.7800, 39.0900, "Ubungo"),
-    ("Mkuranga Junction",           -7.1100, 39.2000, "Temeke"),
-    ("Bagamoyo Rd / Mwenge",        -6.7600, 39.2200, "Kinondoni"),
-    ("Kawe Beach",                  -6.7400, 39.2700, "Kinondoni"),
-    ("Oyster Bay",                  -6.7600, 39.2900, "Kinondoni"),
-    ("Posta Haroub",                -6.8100, 39.2800, "Ilala"),
-    ("Mnazi Mmoja",                 -6.8100, 39.2700, "Ilala"),
-    ("Kivukoni Front",              -6.8100, 39.2900, "Ilala"),
-    ("Manzese",                     -6.8100, 39.2200, "Ubungo"),
-    ("Tandale",                     -6.8000, 39.2200, "Ubungo"),
-    ("Vingunguti",                  -6.8400, 39.2400, "Ilala"),
-    ("Keko",                        -6.8300, 39.2600, "Temeke"),
-    ("Yombo Vituka",                -6.8700, 39.2400, "Temeke"),
-    ("Kipawa",                      -6.8600, 39.2300, "Temeke"),
-    ("Kwa Mnyenyani",               -6.8500, 39.2100, "Temeke"),
-    ("Kongo",                       -6.8400, 39.2000, "Ubungo"),
-    ("Urafiki",                     -6.8200, 39.2500, "Ilala"),
-    ("Kwa Wazee",                   -6.8000, 39.2600, "Ilala"),
-    ("Kisiwani",                    -6.7900, 39.2800, "Kinondoni"),
-    ("Msasani",                     -6.7700, 39.2700, "Kinondoni"),
+    ("Ubungo Interchange", -6.7900, 39.2000, "Ubungo"),
+    ("Kariakoo Market Junction", -6.8200, 39.2600, "Ilala"),
+    ("Morocco Junction (Mwenge)", -6.7600, 39.2300, "Kinondoni"),
+    ("Selander Bridge", -6.8000, 39.2700, "Ilala"),
+    ("Bagamoyo Rd / Sam Nujoma", -6.7500, 39.2700, "Kinondoni"),
+    ("Kimara Junction", -6.7900, 39.1700, "Ubungo"),
+    ("Mbezi Luis", -6.7400, 39.2200, "Kinondoni"),
+    ("Mikocheni B", -6.7700, 39.2400, "Kinondoni"),
+    ("Tegeta Kibaoni", -6.7100, 39.2200, "Kinondoni"),
+    ("Kigamboni Ferry", -6.8200, 39.3000, "Kigamboni"),
+    ("Buguruni", -6.8400, 39.2600, "Ilala"),
+    ("Ilala Boma", -6.8200, 39.2800, "Ilala"),
+    ("Tabata Dampo", -6.8400, 39.2400, "Ilala"),
+    ("Sinza Kijitonyama", -6.7800, 39.2300, "Kinondoni"),
+    ("Ali Hassan Mwinyi Rd", -6.7600, 39.2400, "Kinondoni"),
+    ("Tandika", -6.8600, 39.2600, "Temeke"),
+    ("Mbagala Rangi Tatu", -6.8900, 39.2900, "Temeke"),
+    ("Temeke Soko la Mpya", -6.8700, 39.2700, "Temeke"),
+    ("Chang'ombe", -6.8300, 39.2700, "Ilala"),
+    ("Gerezani", -6.8200, 39.2700, "Ilala"),
+    ("Kibaha Border", -6.7800, 39.0900, "Ubungo"),
+    ("Mkuranga Junction", -7.1100, 39.2000, "Temeke"),
+    ("Bagamoyo Rd / Mwenge", -6.7600, 39.2200, "Kinondoni"),
+    ("Kawe Beach", -6.7400, 39.2700, "Kinondoni"),
+    ("Oyster Bay", -6.7600, 39.2900, "Kinondoni"),
+    ("Posta Haroub", -6.8100, 39.2800, "Ilala"),
+    ("Mnazi Mmoja", -6.8100, 39.2700, "Ilala"),
+    ("Kivukoni Front", -6.8100, 39.2900, "Ilala"),
+    ("Manzese", -6.8100, 39.2200, "Ubungo"),
+    ("Tandale", -6.8000, 39.2200, "Ubungo"),
+    ("Vingunguti", -6.8400, 39.2400, "Ilala"),
+    ("Keko", -6.8300, 39.2600, "Temeke"),
+    ("Yombo Vituka", -6.8700, 39.2400, "Temeke"),
+    ("Kipawa", -6.8600, 39.2300, "Temeke"),
+    ("Kwa Mnyenyani", -6.8500, 39.2100, "Temeke"),
+    ("Kongo", -6.8400, 39.2000, "Ubungo"),
+    ("Urafiki", -6.8200, 39.2500, "Ilala"),
+    ("Kwa Wazee", -6.8000, 39.2600, "Ilala"),
+    ("Kisiwani", -6.7900, 39.2800, "Kinondoni"),
+    ("Msasani", -6.7700, 39.2700, "Kinondoni"),
 ]
 
 # Realistic weights — bodaboda dominant in Dar
 VEHICLE_W = [
-    ("motorcycle", 40), ("car", 25), ("bus", 12), ("truck", 6),
-    ("pedestrian", 7), ("auto_rickshaw", 5), ("bicycle", 3), ("mixed", 2),
+    ("motorcycle", 40),
+    ("car", 25),
+    ("bus", 12),
+    ("truck", 6),
+    ("pedestrian", 7),
+    ("auto_rickshaw", 5),
+    ("bicycle", 3),
+    ("mixed", 2),
 ]
 
 REPORTER_W = [("community", 5), ("police", 3), ("hospital", 2), ("tanroads", 1), ("media", 1)]
@@ -190,7 +197,7 @@ class Command(BaseCommand):
             # Hour distribution: morning peak (6-9), evening peak (16-19), night lull
             hour = random.choices(
                 range(24),
-                weights=[2,1,1,1,1,2,5,7,6,4,3,3,3,3,3,4,5,7,8,6,4,3,2,2],
+                weights=[2, 1, 1, 1, 1, 2, 5, 7, 6, 4, 3, 3, 3, 3, 3, 4, 5, 7, 8, 6, 4, 3, 2, 2],
             )[0]
 
             severity = pick_severity(hour, weather, road)
@@ -198,7 +205,9 @@ class Command(BaseCommand):
 
             day = random.randint(1, 28)
             minute = random.randint(0, 59)
-            occurred = now.replace(month=month, day=day, hour=hour, minute=minute, second=0, microsecond=0)
+            occurred = now.replace(
+                month=month, day=day, hour=hour, minute=minute, second=0, microsecond=0
+            )
             # Spread across 12 months
             occurred -= timedelta(days=random.randint(0, 365))
 
@@ -218,7 +227,8 @@ class Command(BaseCommand):
                 severity=severity,
                 vehicle_types=vehicles,
                 reporter_type=weighted_choice(REPORTER_W),
-                lat=lat, lng=lng,
+                lat=lat,
+                lng=lng,
                 junction_name=name,
                 occurred_at=occurred,
                 casualties=casualties,
@@ -239,14 +249,23 @@ class Command(BaseCommand):
 
         # Show distribution
         from collections import Counter
+
         qs = Accident.objects.all()
         sev = Counter(qs.values_list("severity", flat=True))
-        self.stdout.write(f"\nDistribution:")
+        self.stdout.write("\nDistribution:")
         self.stdout.write(f"  Severity: {dict(sev)}")
-        from django.db.models.functions import TruncMonth
         from django.db.models import Count
-        months = (qs.annotate(m=TruncMonth("occurred_at")).values("m").annotate(c=Count("id")).order_by("m"))
+        from django.db.models.functions import TruncMonth
+
+        months = (
+            qs.annotate(m=TruncMonth("occurred_at"))
+            .values("m")
+            .annotate(c=Count("id"))
+            .order_by("m")
+        )
         first = months.first()
         last = months.last()
         if first and last:
-            self.stdout.write(f"  Monthly span: {first['m'].strftime('%Y-%m')} - {last['m'].strftime('%Y-%m')}")
+            self.stdout.write(
+                f"  Monthly span: {first['m'].strftime('%Y-%m')} - {last['m'].strftime('%Y-%m')}"
+            )

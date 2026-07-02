@@ -5,6 +5,7 @@ Django settings live in ``roadsafety.settings.dev`` so tests never touch
 production secrets or the network. Add shared fixtures below as the test
 suite grows.
 """
+
 import os
 
 import django

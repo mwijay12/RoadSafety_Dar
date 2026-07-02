@@ -5,18 +5,19 @@ Replaces raw ``request.POST`` access from views.py with a single ``ModelForm``
 that powers both the web form and the JSON API, keeping validation in one
 place.
 """
+
 from django import forms
 from django.utils import timezone
 
 from .models import (
+    DAR_LAT_MAX,
+    DAR_LAT_MIN,
+    DAR_LNG_MAX,
+    DAR_LNG_MIN,
+    REPORTER_CHOICES,
+    VEHICLE_CHOICES,
     Accident,
     Junction,
-    VEHICLE_CHOICES,
-    REPORTER_CHOICES,
-    DAR_LAT_MIN,
-    DAR_LAT_MAX,
-    DAR_LNG_MIN,
-    DAR_LNG_MAX,
 )
 
 SUBMIT_FIELDS = [
@@ -65,7 +66,7 @@ class AccidentForm(forms.ModelForm):
             # (QueryDict stores values as lists, regular JSON dicts may as well).
             data = {}
             for k, v in raw.items():
-                if isinstance(v, (list, tuple)):
+                if isinstance(v, list | tuple):
                     data[k] = v[0] if v else ""
                 else:
                     data[k] = v

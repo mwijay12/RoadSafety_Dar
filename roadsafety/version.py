@@ -9,7 +9,6 @@ Uses semantic versioning: MAJOR.MINOR.PATCH
 Bump this BEFORE committing changes.
 Update CHANGELOG.md with notable changes.
 """
-import datetime
 
 # Application version (semver)
 VERSION = "1.3.1"
@@ -27,48 +26,73 @@ DJANGO_MIN = "5.0"
 
 # Changelog summary
 CHANGELOG = [
-    ("1.3.1", "2026-07-02", "Mwitikio", [
-        "✨ Full responsive design (mobile, tablet, desktop)",
-        "✨ Polished PDF monthly report with severity/vehicle/peak-hour breakdown",
-        "🔧 Hero, nav, forms, action bar, map, KPIs all scale on <720px / <480px",
-    ]),
-    ("1.3.0", "2026-07-01", "Chombo", [
-        "✨ Docker + Docker Compose (PostGIS 16 + Redis 7)",
-        "✨ Demo/real data toggle with SiteSettings",
-        "✨ 500 realistic seed records with time/weather patterns",
-        "✨ SecurityHeadersMiddleware (CSP, Permissions-Policy)",
-        "✨ 3D icons throughout UI",
-        "🔧 Skylearn pill buttons, dark gradient hero, animated checkbox",
-        "🔧 All 97 tests passing",
-    ]),
-    ("1.2.0", "2026-07-01", "Mwangaza", [
-        "✨ PDF monthly report generation (reportlab)",
-        "✨ Progressive Web App (PWA) with offline support",
-        "✨ Telegram bot integration for instant alerts",
-        "✨ Real-time auto-refresh dashboard (30s polling)",
-        "✨ PostGIS migration script for spatial queries",
-        "✨ Bulk CSV import for TPF legacy data",
-        "🔧 Severity-weighted heatmap (v1.1 carried over)",
-        "🔧 AI-powered recommendations (v1.1 carried over)",
-        "🔧 Swahili i18n support (v1.1 carried over)",
-    ]),
-    ("1.1.0", "2026-06-30", "Taa", [
-        "✨ Public CSV export endpoint",
-        "✨ AI recommendations (OpenRouter integration)",
-        "✨ Swahili (sw) translation file",
-        "✨ Fatal cluster detection management command",
-        "🔧 Locale middleware for /sw/ URL prefix",
-    ]),
-    ("1.0.0", "2026-06-29", "Msingi", [
-        "🎉 Initial release",
-        "✨ Public dashboard with heatmap + 4 charts",
-        "✨ Mobile report form with GPS capture",
-        "✨ Authority dashboard with recommendations",
-        "✨ Django admin with bulk verify action",
-        "✨ 8 JSON API endpoints",
-        "✨ 80+ seeded accident records (Dar es Salaam)",
-        "✨ 20+ named Dar junctions",
-    ]),
+    (
+        "1.3.1",
+        "2026-07-02",
+        "Mwitikio",
+        [
+            "✨ Full responsive design (mobile, tablet, desktop)",
+            "✨ Polished PDF monthly report with severity/vehicle/peak-hour breakdown",
+            "🔧 Hero, nav, forms, action bar, map, KPIs all scale on <720px / <480px",
+        ],
+    ),
+    (
+        "1.3.0",
+        "2026-07-01",
+        "Chombo",
+        [
+            "✨ Docker + Docker Compose (PostGIS 16 + Redis 7)",
+            "✨ Demo/real data toggle with SiteSettings",
+            "✨ 500 realistic seed records with time/weather patterns",
+            "✨ SecurityHeadersMiddleware (CSP, Permissions-Policy)",
+            "✨ 3D icons throughout UI",
+            "🔧 Skylearn pill buttons, dark gradient hero, animated checkbox",
+            "🔧 All 97 tests passing",
+        ],
+    ),
+    (
+        "1.2.0",
+        "2026-07-01",
+        "Mwangaza",
+        [
+            "✨ PDF monthly report generation (reportlab)",
+            "✨ Progressive Web App (PWA) with offline support",
+            "✨ Telegram bot integration for instant alerts",
+            "✨ Real-time auto-refresh dashboard (30s polling)",
+            "✨ PostGIS migration script for spatial queries",
+            "✨ Bulk CSV import for TPF legacy data",
+            "🔧 Severity-weighted heatmap (v1.1 carried over)",
+            "🔧 AI-powered recommendations (v1.1 carried over)",
+            "🔧 Swahili i18n support (v1.1 carried over)",
+        ],
+    ),
+    (
+        "1.1.0",
+        "2026-06-30",
+        "Taa",
+        [
+            "✨ Public CSV export endpoint",
+            "✨ AI recommendations (OpenRouter integration)",
+            "✨ Swahili (sw) translation file",
+            "✨ Fatal cluster detection management command",
+            "🔧 Locale middleware for /sw/ URL prefix",
+        ],
+    ),
+    (
+        "1.0.0",
+        "2026-06-29",
+        "Msingi",
+        [
+            "🎉 Initial release",
+            "✨ Public dashboard with heatmap + 4 charts",
+            "✨ Mobile report form with GPS capture",
+            "✨ Authority dashboard with recommendations",
+            "✨ Django admin with bulk verify action",
+            "✨ 8 JSON API endpoints",
+            "✨ 80+ seeded accident records (Dar es Salaam)",
+            "✨ 20+ named Dar junctions",
+        ],
+    ),
 ]
 
 

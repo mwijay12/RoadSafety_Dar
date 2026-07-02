@@ -14,24 +14,26 @@ Expected CSV columns (in any order, header required):
     casualties,fatalities,injuries,weather,road_condition,
     reporter_type,description
 """
+
 import csv
-import json
 import logging
 import os
 from datetime import datetime
-from django.contrib.gis.geos import Point
+
 from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction, IntegrityError
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 
-from accidents.models import Accident, Junction
+from accidents.models import Accident
 
 logger = logging.getLogger(__name__)
 
 # Validation ranges for Dar es Salaam
 DAR_BBOX = {
-    "min_lat": -7.0, "max_lat": -6.5,
-    "min_lng": 39.0, "max_lng": 39.6,
+    "min_lat": -7.0,
+    "max_lat": -6.5,
+    "min_lng": 39.0,
+    "max_lng": 39.6,
 }
 
 ALLOWED_SEVERITY = {"fatal", "critical", "serious", "minor"}
@@ -43,14 +45,19 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--file", type=str, help="Single CSV file to import")
         parser.add_argument("--directory", type=str, help="Directory of CSV files")
-        parser.add_argument("--source", type=str, default="tpf",
-                          help="Reporter type (tpf, hospital, community, tanroads)")
-        parser.add_argument("--auto-verify", action="store_true",
-                          help="Auto-mark imported records as verified")
-        parser.add_argument("--dry-run", action="store_true",
-                          help="Validate without saving")
-        parser.add_argument("--batch-size", type=int, default=100,
-                          help="Insert in batches (default 100)")
+        parser.add_argument(
+            "--source",
+            type=str,
+            default="tpf",
+            help="Reporter type (tpf, hospital, community, tanroads)",
+        )
+        parser.add_argument(
+            "--auto-verify", action="store_true", help="Auto-mark imported records as verified"
+        )
+        parser.add_argument("--dry-run", action="store_true", help="Validate without saving")
+        parser.add_argument(
+            "--batch-size", type=int, default=100, help="Insert in batches (default 100)"
+        )
 
     def handle(self, *args, **options):
         if not options["file"] and not options["directory"]:
@@ -85,9 +92,11 @@ class Command(BaseCommand):
                 f"  ✅ Created: {created}  ⏭ Skipped: {skipped}  ❌ Errors: {errors}"
             )
 
-        self.stdout.write(self.style.SUCCESS(
-            f"\n🎉 Total: {total_created} created, {total_skipped} skipped, {total_errors} errors"
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"\n🎉 Total: {total_created} created, {total_skipped} skipped, {total_errors} errors"
+            )
+        )
 
     def _import_file(self, fpath, options):
         created = 0
@@ -100,9 +109,7 @@ class Command(BaseCommand):
             required = {"occurred_at", "severity", "lat", "lng"}
             missing = required - set(reader.fieldnames or [])
             if missing:
-                self.stdout.write(self.style.ERROR(
-                    f"  Missing required columns: {missing}"
-                ))
+                self.stdout.write(self.style.ERROR(f"  Missing required columns: {missing}"))
                 return 0, 0, 1
 
             for row_num, row in enumerate(reader, start=2):  # row 1 = header
@@ -116,9 +123,7 @@ class Command(BaseCommand):
                         created += self._save_batch(batch, options)
                         batch = []
                 except Exception as e:
-                    self.stdout.write(self.style.WARNING(
-                        f"  Row {row_num}: {e}"
-                    ))
+                    self.stdout.write(self.style.WARNING(f"  Row {row_num}: {e}"))
                     errors += 1
 
             if batch:
@@ -149,7 +154,7 @@ class Command(BaseCommand):
             lat = float(row.get("lat", "").strip())
             lng = float(row.get("lng", "").strip())
         except (ValueError, AttributeError):
-            raise ValueError("Invalid lat/lng")
+            raise ValueError("Invalid lat/lng") from None
 
         # Validate coordinates are within Dar es Salaam
         if not (DAR_BBOX["min_lat"] <= lat <= DAR_BBOX["max_lat"]):

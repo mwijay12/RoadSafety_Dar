@@ -11,6 +11,7 @@ Usage:
 Schedule via cron (or Render Cron Jobs free tier):
     0 7 * * * cd /app && .venv/bin/python manage.py send_daily_digest
 """
+
 import logging
 from collections import Counter
 from datetime import timedelta
@@ -112,9 +113,11 @@ class Command(BaseCommand):
                 html_message=html_message,
                 fail_silently=False,
             )
-            self.stdout.write(self.style.SUCCESS(
-                f"Digest sent to {len(recipients)} recipients ({total} incidents, "
-                f"{fatal_count} fatal)"
-            ))
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Digest sent to {len(recipients)} recipients ({total} incidents, "
+                    f"{fatal_count} fatal)"
+                )
+            )
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"Failed to send digest: {e}"))

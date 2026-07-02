@@ -1,6 +1,7 @@
 """
 PDF report generation — monthly report as downloadable PDF.
 """
+
 import logging
 from collections import Counter
 from datetime import datetime, timedelta
@@ -10,7 +11,7 @@ from django.http import HttpResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 
-from ..models import Accident, visible_accidents
+from ..models import visible_accidents
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,13 @@ def api_monthly_report(_request):
     """
     try:
         from reportlab.lib.pagesizes import A4
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
+        from reportlab.platypus import (
+            Paragraph,
+            SimpleDocTemplate,
+            Spacer,
+            Table,
+            TableStyle,
+        )
     except ImportError:
         return HttpResponse(
             "reportlab not installed. Run: pip install reportlab",
@@ -66,6 +73,7 @@ def api_monthly_report(_request):
         period_start = period_start.replace(day=1)
 
     from calendar import monthrange as mr
+
     last_day = mr(period_start.year, period_start.month)[1]
     period_end = period_start.replace(day=last_day, hour=23, minute=59, second=59)
 
@@ -78,78 +86,134 @@ def api_monthly_report(_request):
     )
 
     from reportlab.lib import colors
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import cm, mm
     from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
-    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 
     doc = SimpleDocTemplate(
-        response, pagesize=A4,
-        topMargin=1.8*cm, bottomMargin=1.8*cm,
-        leftMargin=2*cm, rightMargin=2*cm,
+        response,
+        pagesize=A4,
+        topMargin=1.8 * cm,
+        bottomMargin=1.8 * cm,
+        leftMargin=2 * cm,
+        rightMargin=2 * cm,
     )
     styles = getSampleStyleSheet()
     story = []
-    W = A4[0] - 4*cm  # usable width
+    W = A4[0] - 4 * cm  # usable width
 
     # ---- Custom styles ----
-    styles.add(ParagraphStyle(
-        "ReportTitle", fontName="Helvetica-Bold", fontSize=22,
-        textColor=colors.HexColor(INK), leading=28, alignment=TA_LEFT,
-        spaceAfter=2*mm,
-    ))
-    styles.add(ParagraphStyle(
-        "ReportSubtitle", fontName="Helvetica", fontSize=11,
-        textColor=colors.HexColor(INK_MUTED), leading=16, alignment=TA_LEFT,
-        spaceAfter=12*mm,
-    ))
-    styles.add(ParagraphStyle(
-        "SectionTitle", fontName="Helvetica-Bold", fontSize=13,
-        textColor=colors.HexColor(SKY_DARK), leading=18, alignment=TA_LEFT,
-        spaceBefore=8*mm, spaceAfter=4*mm,
-    ))
-    styles.add(ParagraphStyle(
-        "Body", fontName="Helvetica", fontSize=10,
-        textColor=colors.HexColor(INK), leading=14, alignment=TA_LEFT,
-        spaceAfter=3*mm,
-    ))
-    styles.add(ParagraphStyle(
-        "Footer", fontName="Helvetica-Oblique", fontSize=8,
-        textColor=colors.HexColor(INK_MUTED), leading=10, alignment=TA_CENTER,
-        spaceBefore=6*mm,
-    ))
-    styles.add(ParagraphStyle(
-        "SeverityKey", fontName="Helvetica", fontSize=9,
-        textColor=colors.HexColor(INK_MUTED), leading=13, alignment=TA_LEFT,
-        spaceAfter=2*mm,
-    ))
+    styles.add(
+        ParagraphStyle(
+            "ReportTitle",
+            fontName="Helvetica-Bold",
+            fontSize=22,
+            textColor=colors.HexColor(INK),
+            leading=28,
+            alignment=TA_LEFT,
+            spaceAfter=2 * mm,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            "ReportSubtitle",
+            fontName="Helvetica",
+            fontSize=11,
+            textColor=colors.HexColor(INK_MUTED),
+            leading=16,
+            alignment=TA_LEFT,
+            spaceAfter=12 * mm,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            "SectionTitle",
+            fontName="Helvetica-Bold",
+            fontSize=13,
+            textColor=colors.HexColor(SKY_DARK),
+            leading=18,
+            alignment=TA_LEFT,
+            spaceBefore=8 * mm,
+            spaceAfter=4 * mm,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            "Body",
+            fontName="Helvetica",
+            fontSize=10,
+            textColor=colors.HexColor(INK),
+            leading=14,
+            alignment=TA_LEFT,
+            spaceAfter=3 * mm,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            "Footer",
+            fontName="Helvetica-Oblique",
+            fontSize=8,
+            textColor=colors.HexColor(INK_MUTED),
+            leading=10,
+            alignment=TA_CENTER,
+            spaceBefore=6 * mm,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            "SeverityKey",
+            fontName="Helvetica",
+            fontSize=9,
+            textColor=colors.HexColor(INK_MUTED),
+            leading=13,
+            alignment=TA_LEFT,
+            spaceAfter=2 * mm,
+        )
+    )
 
     # ---- Header bar ----
-    header_data = [[
-        Paragraph(
-            f"<font color='{SKY}'><b>Road Safety</b></font>"
-            f"<font color='{INK}'>  Dar es Salaam</font>",
-            ParagraphStyle("hdr", fontName="Helvetica-Bold", fontSize=14, textColor=colors.HexColor(INK)),
-        ),
-        Paragraph(
-            f"{period_start:%B %Y}",
-            ParagraphStyle("hdr2", fontName="Helvetica", fontSize=12, textColor=colors.HexColor(INK_MUTED), alignment=TA_RIGHT),
-        ),
-    ]]
-    header_table = Table(header_data, colWidths=[W*0.6, W*0.4])
-    header_table.setStyle(TableStyle([
-        ("VALIGN", (0, 0), (-1, -1), "BOTTOM"),
-        ("LINEBELOW", (0, 0), (-1, 0), 2, colors.HexColor(SKY)),
-    ]))
+    header_data = [
+        [
+            Paragraph(
+                f"<font color='{SKY}'><b>Road Safety</b></font>"
+                f"<font color='{INK}'>  Dar es Salaam</font>",
+                ParagraphStyle(
+                    "hdr", fontName="Helvetica-Bold", fontSize=14, textColor=colors.HexColor(INK)
+                ),
+            ),
+            Paragraph(
+                f"{period_start:%B %Y}",
+                ParagraphStyle(
+                    "hdr2",
+                    fontName="Helvetica",
+                    fontSize=12,
+                    textColor=colors.HexColor(INK_MUTED),
+                    alignment=TA_RIGHT,
+                ),
+            ),
+        ]
+    ]
+    header_table = Table(header_data, colWidths=[W * 0.6, W * 0.4])
+    header_table.setStyle(
+        TableStyle(
+            [
+                ("VALIGN", (0, 0), (-1, -1), "BOTTOM"),
+                ("LINEBELOW", (0, 0), (-1, 0), 2, colors.HexColor(SKY)),
+            ]
+        )
+    )
     story.append(header_table)
-    story.append(Spacer(1, 2*mm))
+    story.append(Spacer(1, 2 * mm))
 
     # ---- Subtitle ----
-    story.append(Paragraph(
-        f"Monthly accident intelligence report &mdash; "
-        f"{period_start:%d %B} &ndash; {period_end:%d %B %Y}",
-        styles["ReportSubtitle"],
-    ))
+    story.append(
+        Paragraph(
+            f"Monthly accident intelligence report &mdash; "
+            f"{period_start:%d %B} &ndash; {period_end:%d %B %Y}",
+            styles["ReportSubtitle"],
+        )
+    )
 
     # ---- Summary section ----
     story.append(Paragraph("Executive Summary", styles["SectionTitle"]))
@@ -176,61 +240,84 @@ def api_monthly_report(_request):
             ["Total Casualties (injured)", str(total_casualties)],
             ["Vehicles Involved", str(total_vehicles)],
         ]
-        t = Table(summary_data, colWidths=[W*0.55, W*0.45])
-        t.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(SKY)),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 10),
-            ("ALIGN", (1, 0), (1, -1), "RIGHT"),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor(OUTLINE)),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor(BG_LIGHT)]),
-            ("TOPPADDING", (0, 0), (-1, -1), 5),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-        ]))
+        t = Table(summary_data, colWidths=[W * 0.55, W * 0.45])
+        t.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(SKY)),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("ALIGN", (1, 0), (1, -1), "RIGHT"),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor(OUTLINE)),
+                    (
+                        "ROWBACKGROUNDS",
+                        (0, 1),
+                        (-1, -1),
+                        [colors.white, colors.HexColor(BG_LIGHT)],
+                    ),
+                    ("TOPPADDING", (0, 0), (-1, -1), 5),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                ]
+            )
+        )
         story.append(t)
 
     # ---- Severity colour key ----
-    story.append(Spacer(1, 3*mm))
-    story.append(Paragraph(
-        f"<font color='{CORAL}'><b>■ Fatal</b></font> &nbsp;&nbsp;"
-        f"<font color='{SUN}'><b>■ Critical</b></font> &nbsp;&nbsp;"
-        f"<font color='{SKY}'><b>■ Serious</b></font> &nbsp;&nbsp;"
-        f"<font color='{LEAF}'><b>■ Minor</b></font>",
-        styles["SeverityKey"],
-    ))
+    story.append(Spacer(1, 3 * mm))
+    story.append(
+        Paragraph(
+            f"<font color='{CORAL}'><b>■ Fatal</b></font> &nbsp;&nbsp;"
+            f"<font color='{SUN}'><b>■ Critical</b></font> &nbsp;&nbsp;"
+            f"<font color='{SKY}'><b>■ Serious</b></font> &nbsp;&nbsp;"
+            f"<font color='{LEAF}'><b>■ Minor</b></font>",
+            styles["SeverityKey"],
+        )
+    )
 
     # ---- Severity breakdown ----
     story.append(Paragraph("Severity Breakdown", styles["SectionTitle"]))
     severity_data = [["Severity", "Count", "% of Total"]]
-    for sev, label in [("fatal", "Fatal"), ("critical", "Critical"),
-                       ("serious", "Serious"), ("minor", "Minor")]:
+    for sev, label in [
+        ("fatal", "Fatal"),
+        ("critical", "Critical"),
+        ("serious", "Serious"),
+        ("minor", "Minor"),
+    ]:
         count = qs.filter(severity=sev).count()
         pct = f"{count/total*100:.1f}%" if total else "—"
-        severity_data.append([
-            Paragraph(
-                f"<font color='{SEVERITY_COLORS[sev]}'><b>■</b></font>  {label}",
-                ParagraphStyle("sc", fontName="Helvetica", fontSize=10, textColor=colors.HexColor(INK)),
-            ),
-            str(count),
-            pct,
-        ])
+        severity_data.append(
+            [
+                Paragraph(
+                    f"<font color='{SEVERITY_COLORS[sev]}'><b>■</b></font>  {label}",
+                    ParagraphStyle(
+                        "sc", fontName="Helvetica", fontSize=10, textColor=colors.HexColor(INK)
+                    ),
+                ),
+                str(count),
+                pct,
+            ]
+        )
     if total:
         severity_data.append(["Total", str(total), "100%"])
-    st = Table(severity_data, colWidths=[W*0.5, W*0.25, W*0.25])
-    st.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(SKY)),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 0), (-1, -1), 10),
-        ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor(OUTLINE)),
-        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor(BG_LIGHT)]),
-        ("TOPPADDING", (0, 0), (-1, -1), 5),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-    ]))
+    st = Table(severity_data, colWidths=[W * 0.5, W * 0.25, W * 0.25])
+    st.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(SKY)),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, -1), 10),
+                ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor(OUTLINE)),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor(BG_LIGHT)]),
+                ("TOPPADDING", (0, 0), (-1, -1), 5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ]
+        )
+    )
     story.append(st)
 
     # ---- Vehicle Type Breakdown ----
@@ -245,20 +332,31 @@ def api_monthly_report(_request):
         total_v = sum(v_counts.values())
         v_data = [["Vehicle Type", "Count", "% of Total"]]
         for vt, count in v_counts.most_common():
-            v_data.append([vt.title() if vt else "Unknown", str(count), f"{count/total_v*100:.1f}%"])
-        vt = Table(v_data, colWidths=[W*0.5, W*0.25, W*0.25])
-        vt.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(SKY)),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 10),
-            ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor(OUTLINE)),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor(BG_LIGHT)]),
-            ("TOPPADDING", (0, 0), (-1, -1), 5),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-        ]))
+            v_data.append(
+                [vt.title() if vt else "Unknown", str(count), f"{count/total_v*100:.1f}%"]
+            )
+        vt = Table(v_data, colWidths=[W * 0.5, W * 0.25, W * 0.25])
+        vt.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(SKY)),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor(OUTLINE)),
+                    (
+                        "ROWBACKGROUNDS",
+                        (0, 1),
+                        (-1, -1),
+                        [colors.white, colors.HexColor(BG_LIGHT)],
+                    ),
+                    ("TOPPADDING", (0, 0), (-1, -1), 5),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                ]
+            )
+        )
         story.append(vt)
 
     # ---- Hourly distribution ----
@@ -268,28 +366,56 @@ def api_monthly_report(_request):
         hour_counts = Counter(hours_list)
         peak = hour_counts.most_common(5)
         hour_labels = {
-            0: "Midnight", 1: "1 AM", 2: "2 AM", 3: "3 AM", 4: "4 AM", 5: "5 AM",
-            6: "6 AM", 7: "7 AM", 8: "8 AM", 9: "9 AM", 10: "10 AM", 11: "11 AM",
-            12: "Noon", 13: "1 PM", 14: "2 PM", 15: "3 PM", 16: "4 PM",
-            17: "5 PM", 18: "6 PM", 19: "7 PM", 20: "8 PM", 21: "9 PM",
-            22: "10 PM", 23: "11 PM",
+            0: "Midnight",
+            1: "1 AM",
+            2: "2 AM",
+            3: "3 AM",
+            4: "4 AM",
+            5: "5 AM",
+            6: "6 AM",
+            7: "7 AM",
+            8: "8 AM",
+            9: "9 AM",
+            10: "10 AM",
+            11: "11 AM",
+            12: "Noon",
+            13: "1 PM",
+            14: "2 PM",
+            15: "3 PM",
+            16: "4 PM",
+            17: "5 PM",
+            18: "6 PM",
+            19: "7 PM",
+            20: "8 PM",
+            21: "9 PM",
+            22: "10 PM",
+            23: "11 PM",
         }
         h_data = [["Hour", "Incidents"]]
         for h, c in sorted(peak):
             h_data.append([hour_labels.get(h, f"{h}:00"), str(c)])
-        ht = Table(h_data, colWidths=[W*0.6, W*0.4])
-        ht.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(SKY)),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 10),
-            ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor(OUTLINE)),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor(BG_LIGHT)]),
-            ("TOPPADDING", (0, 0), (-1, -1), 4),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-        ]))
+        ht = Table(h_data, colWidths=[W * 0.6, W * 0.4])
+        ht.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(SKY)),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor(OUTLINE)),
+                    (
+                        "ROWBACKGROUNDS",
+                        (0, 1),
+                        (-1, -1),
+                        [colors.white, colors.HexColor(BG_LIGHT)],
+                    ),
+                    ("TOPPADDING", (0, 0), (-1, -1), 4),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ]
+            )
+        )
         story.append(ht)
 
     # ---- Top Junctions ----
@@ -302,35 +428,48 @@ def api_monthly_report(_request):
         story.append(Paragraph("Top Junctions by Incidents", styles["SectionTitle"]))
         j_data = [["#", "Junction", "District", "Incidents"]]
         for i, j in enumerate(junctions, 1):
-            j_data.append([
-                str(i),
-                j["junction__name"] or "Unknown",
-                j["junction__district"] or "—",
-                str(j["cnt"]),
-            ])
-        jt = Table(j_data, colWidths=[0.6*cm, W*0.35, W*0.25, W*0.2])
-        jt.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(SKY)),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 9),
-            ("ALIGN", (0, 1), (0, -1), "CENTER"),
-            ("ALIGN", (-1, 0), (-1, -1), "RIGHT"),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor(OUTLINE)),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor(BG_LIGHT)]),
-            ("TOPPADDING", (0, 0), (-1, -1), 4),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-        ]))
+            j_data.append(
+                [
+                    str(i),
+                    j["junction__name"] or "Unknown",
+                    j["junction__district"] or "—",
+                    str(j["cnt"]),
+                ]
+            )
+        jt = Table(j_data, colWidths=[0.6 * cm, W * 0.35, W * 0.25, W * 0.2])
+        jt.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(SKY)),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 9),
+                    ("ALIGN", (0, 1), (0, -1), "CENTER"),
+                    ("ALIGN", (-1, 0), (-1, -1), "RIGHT"),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor(OUTLINE)),
+                    (
+                        "ROWBACKGROUNDS",
+                        (0, 1),
+                        (-1, -1),
+                        [colors.white, colors.HexColor(BG_LIGHT)],
+                    ),
+                    ("TOPPADDING", (0, 0), (-1, -1), 4),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ]
+            )
+        )
         story.append(jt)
 
     # ---- Footer ----
-    story.append(Spacer(1, 6*mm))
-    story.append(Paragraph(
-        f"Generated by RoadSafety_Dar v1.3 on {timezone.now():%Y-%m-%d %H:%M} EAT &bull; "
-        f"Data source: crowdsourced reports and police records.",
-        styles["Footer"],
-    ))
+    story.append(Spacer(1, 6 * mm))
+    story.append(
+        Paragraph(
+            f"Generated by RoadSafety_Dar v1.3 on {timezone.now():%Y-%m-%d %H:%M} EAT &bull; "
+            f"Data source: crowdsourced reports and police records.",
+            styles["Footer"],
+        )
+    )
 
     doc.build(story)
     return response

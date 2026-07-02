@@ -8,11 +8,12 @@ Two modes:
 Set TELEGRAM_BOT_TOKEN in .env to enable. Without a token, the integration
 is dormant and never calls the API.
 """
+
 import json
 import logging
 import os
 from urllib.parse import urlencode
-from urllib.request import Request, urlopen
+from urllib.request import Request, urlopen  # noqa: S310
 
 logger = logging.getLogger(__name__)
 
@@ -41,15 +42,17 @@ def send_message(chat_id: int, text: str, parse_mode: str = "Markdown") -> bool:
         logger.debug("TELEGRAM_BOT_TOKEN not set — skipping send_message")
         return False
 
-    payload = urlencode({
-        "chat_id": chat_id,
-        "text": text,
-        "parse_mode": parse_mode,
-    }).encode()
+    payload = urlencode(
+        {
+            "chat_id": chat_id,
+            "text": text,
+            "parse_mode": parse_mode,
+        }
+    ).encode()
 
     try:
-        req = Request(url, data=payload, method="POST")
-        with urlopen(req, timeout=10) as r:
+        req = Request(url, data=payload, method="POST")  # noqa: S310
+        with urlopen(req, timeout=10) as r:  # noqa: S310
             data = json.loads(r.read())
         if not data.get("ok"):
             logger.warning("Telegram API error: %s", data)

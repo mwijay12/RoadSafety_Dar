@@ -18,9 +18,11 @@ This script:
 SAFE: It does NOT drop the old columns. The model continues to work
 with both representations. You can keep both for backwards compat.
 """
+
 import logging
+
 from django.core.management.base import BaseCommand
-from django.db import connection, transaction
+from django.db import connection
 
 logger = logging.getLogger(__name__)
 
@@ -35,10 +37,12 @@ class Command(BaseCommand):
         # Detect DB type
         vendor = connection.vendor
         if vendor != "postgresql":
-            self.stdout.write(self.style.ERROR(
-                f"PostGIS migration requires PostgreSQL. Current vendor: {vendor}. "
-                f"For local dev with SQLite, skip this — the model has lat/lng FloatFields."
-            ))
+            self.stdout.write(
+                self.style.ERROR(
+                    f"PostGIS migration requires PostgreSQL. Current vendor: {vendor}. "
+                    f"For local dev with SQLite, skip this — the model has lat/lng FloatFields."
+                )
+            )
             return
 
         self.stdout.write("🔍 Checking PostGIS extension...")
@@ -46,9 +50,9 @@ class Command(BaseCommand):
             c.execute("SELECT extname FROM pg_extension WHERE extname = 'postgis';")
             has_postgis = c.fetchone()
             if not has_postgis:
-                self.stdout.write(self.style.WARNING(
-                    "PostGIS extension not installed. Adding it now..."
-                ))
+                self.stdout.write(
+                    self.style.WARNING("PostGIS extension not installed. Adding it now...")
+                )
                 if not options["dry_run"]:
                     c.execute("CREATE EXTENSION IF NOT EXISTS postgis;")
                 self.stdout.write(self.style.SUCCESS("✅ PostGIS extension added"))
@@ -102,14 +106,16 @@ class Command(BaseCommand):
         if ok == total:
             self.stdout.write(self.style.SUCCESS("✅ Migration verified — no data loss"))
         else:
-            self.stdout.write(self.style.WARNING(
-                f"⚠ {total - ok} records missing location. Check logs."
-            ))
+            self.stdout.write(
+                self.style.WARNING(f"⚠ {total - ok} records missing location. Check logs.")
+            )
 
-        self.stdout.write(self.style.SUCCESS(
-            "\n🎉 PostGIS migration complete! Next steps:\n"
-            "1. Update accidents/models.py to add `location = models.PointField(...)`\n"
-            "2. Run: python manage.py makemigrations accidents\n"
-            "3. Update queries to use .annotate(distance=Distance('location', target_point))\n"
-            "4. See docs/POSTGIS.md for spatial query examples"
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                "\n🎉 PostGIS migration complete! Next steps:\n"
+                "1. Update accidents/models.py to add `location = models.PointField(...)`\n"
+                "2. Run: python manage.py makemigrations accidents\n"
+                "3. Update queries to use .annotate(distance=Distance('location', target_point))\n"
+                "4. See docs/POSTGIS.md for spatial query examples"
+            )
+        )

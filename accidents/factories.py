@@ -8,11 +8,11 @@ development data via ``./manage.py shell``:
     >>> j = JunctionFactory()
     >>> a = AccidentFactory(junction=j, junction_name=j.name)
 """
+
 import factory
 from django.utils import timezone
 
-from .models import Accident, Junction, SEVERITY_CHOICES, VEHICLE_CHOICES, REPORTER_CHOICES
-
+from .models import REPORTER_CHOICES, SEVERITY_CHOICES, VEHICLE_CHOICES, Accident, Junction
 
 SEVERITY_VALUES = [c[0] for c in SEVERITY_CHOICES]
 VEHICLE_VALUES = [c[0] for c in VEHICLE_CHOICES]
@@ -30,15 +30,14 @@ class JunctionFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: f"Junction-{n + 1}")
     lat = factory.Faker("pyfloat", min_value=LAT_MIN, max_value=LAT_MAX)
     lng = factory.Faker("pyfloat", min_value=LNG_MIN, max_value=LNG_MAX)
-    district = factory.Iterator(
-        ["Ilala", "Kinondoni", "Temeke", "Ubungo", "Kigamboni"]
-    )
+    district = factory.Iterator(["Ilala", "Kinondoni", "Temeke", "Ubungo", "Kigamboni"])
     description = factory.Faker("sentence", nb_words=8)
 
 
 class AccidentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Accident
+        skip_postgeneration_save = True
 
     lat = factory.Faker("pyfloat", min_value=LAT_MIN, max_value=LAT_MAX)
     lng = factory.Faker("pyfloat", min_value=LNG_MIN, max_value=LNG_MAX)
@@ -64,3 +63,5 @@ class AccidentFactory(factory.django.DjangoModelFactory):
             self.fatalities = self.casualties
         if self.injuries > self.casualties:
             self.injuries = self.casualties
+        if create:
+            self.save()

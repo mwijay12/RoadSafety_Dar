@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
+
 import os
 import sys
 
@@ -14,9 +15,7 @@ def main():
     django_env = os.getenv("DJANGO_ENV", "dev").lower()
     if django_env not in {"dev", "prod"}:
         django_env = "dev"
-    os.environ.setdefault(
-        "DJANGO_SETTINGS_MODULE", f"roadsafety.settings.{django_env}"
-    )
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", f"roadsafety.settings.{django_env}")
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

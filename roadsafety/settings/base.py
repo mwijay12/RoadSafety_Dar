@@ -7,6 +7,7 @@ For production spatial queries, swap DATABASE_URL to PostGIS.
 
 All values that vary between dev and prod live in ``dev.py`` and ``prod.py``.
 """
+
 import os
 from pathlib import Path
 
@@ -103,7 +104,9 @@ SITE_ID = 1
 
 ACCOUNT_LOGIN_REDIRECT_URL = "/dashboard/"
 ACCOUNT_LOGOUT_REDIRECT_URL = "/"
-ACCOUNT_EMAIL_VERIFICATION = "none"  # skip email verification for MVP (set to "optional" to enable)
+ACCOUNT_EMAIL_VERIFICATION = (
+    "none"  # skip email verification for MVP (set to "optional" to enable)
+)
 ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
 ACCOUNT_EMAIL_NOTIFICATIONS = True
 LOGIN_URL = "/accounts/login/"
@@ -138,9 +141,7 @@ GROQ_API_BASE = os.getenv("GROQ_API_BASE", "https://api.groq.com/openai/v1")
 
 CLOUDFLARE_API_TOKEN = os.getenv("CLOUDFLARE_API_TOKEN", "")
 CLOUDFLARE_ACCOUNT_ID = os.getenv("CLOUDFLARE_ACCOUNT_ID", "")
-CLOUDFLARE_AI_MODEL = os.getenv(
-    "CLOUDFLARE_AI_MODEL", "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
-)
+CLOUDFLARE_AI_MODEL = os.getenv("CLOUDFLARE_AI_MODEL", "@cf/meta/llama-3.3-70b-instruct-fp8-fast")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
