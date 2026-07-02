@@ -39,7 +39,8 @@ h3==4.5.0
 # --- v1.1: auth + role model ----------------------------------------------
 # Prompt 8 installs django-allauth for /accounts/, email verification, and
 # role-based permissions for CommunityReporter / OfficialUser.
-# django-allauth==0.63.3
+django-allauth==65.18.0
+django-turnstile==0.1.3
 
 # --- v1.1: AI recommendation engine (multi-provider fallback) -------------
 # Primary: Groq (free, 30 req/min). Fallback: Cloudflare Workers AI (free,

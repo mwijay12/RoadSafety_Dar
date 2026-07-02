@@ -26,6 +26,8 @@ dependencies = [
     "reportlab==4.2.5",
     "python-telegram-bot==21.7",
     "django-cors-headers==4.9.0",
+    "django-allauth==65.18.0",
+    "django-turnstile==0.1.3",
 ]
 
 # ============================================================================
