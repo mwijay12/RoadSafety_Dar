@@ -1,38 +1,33 @@
 #!/usr/bin/env bash
-# build.sh
-# Render runs this script during the build phase (before server starts).
-# Runs on every deploy — keep it fast.
-
-set -o errexit   # Exit immediately if any command fails
-set -o nounset   # Treat unset variables as errors
-set -o pipefail  # Catch errors in pipes
+set -o errexit
+set -o nounset
+set -o pipefail
 
 echo "=========================================="
 echo "  Road Safety Dar — Build Script"
+echo "  Python version:"
+python --version
 echo "=========================================="
 
-# ── 1. Install Python dependencies ──────────────────────────────────────────
+# Fail fast if wrong Python version
+python -c "import sys; assert sys.version_info[:2] == (3, 11), f'Wrong Python: {sys.version}'; print('✅ Python 3.11 confirmed')"
+
 echo ""
 echo "→ Installing Python dependencies..."
 pip install --upgrade pip
 pip install -r requirements.txt
 echo "✅ Dependencies installed"
 
-# ── 2. Collect static files ──────────────────────────────────────────────────
 echo ""
 echo "→ Collecting static files..."
 python manage.py collectstatic --noinput --clear
-echo "✅ Static files collected to /staticfiles/"
+echo "✅ Static files collected"
 
-# ── 3. Run database migrations ───────────────────────────────────────────────
 echo ""
 echo "→ Running database migrations..."
 python manage.py migrate --noinput
 echo "✅ Migrations applied"
 
-# ── 4. Verify health check endpoint responds ─────────────────────────────────
 echo ""
-echo "→ Build complete."
-echo "   Render will start the web server with gunicorn."
-echo "   Health check: GET /health/"
+echo "→ Build complete. Starting gunicorn next."
 echo "=========================================="

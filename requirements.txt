@@ -1,77 +1,11 @@
-# ============================================================================
-# RoadSafety_Dar — Python dependencies (v1.2.0 "Mwangaza")
-# ============================================================================
-# Install:    pip install -r requirements.txt
-# Dev extras: pip install -r requirements-dev.txt  (ruff, pytest-django, etc.)
-# Prod extras (PostGIS): pip install psycopg2-binary
-# ============================================================================
-
-# --- Core framework -------------------------------------------------------
 Django==5.0.6
-python-dotenv==1.0.1
-dj-database-url==2.2.0
-
-# --- Static files + WSGI server -------------------------------------------
-whitenoise==6.6.0
-gunicorn==22.0.0
-
-# --- Seeding / dev utilities ----------------------------------------------
-Faker==25.2.0
-factory-boy==3.3.3
-
-# --- Spatial hex indexing -------------------------------------------------
-# Uber H3 hexagon system for proper spatial clustering without PostGIS.
-# Resolution 10 (~68m) is what we use for junction-level grouping.
-h3==4.5.0
-
-# --- v1.1: rate limiting + caching -----------------------------------------
-# In-memory rate limiter in views.py still works without these, but the
-# Redis-backed one is required for multi-worker production. Uncomment when
-# Prompt 4 (API refactor + hardening) and Prompt 14 (performance) land.
-# django-ratelimit==4.1.0
-django-redis==5.4.0
-
-# --- v1.1: media storage (Cloudinary) -------------------------------------
-# Prompt 3 wires these up. Free tier: 25 GB, 25k transforms/mo.
-# django-cloudinary-storage==0.3.1
-# cloudinary==1.41.0
-
-# --- v1.1: auth + role model ----------------------------------------------
-# Prompt 8 installs django-allauth for /accounts/, email verification, and
-# role-based permissions for CommunityReporter / OfficialUser.
-django-allauth==65.18.0
-django-turnstile==0.1.3
-
-# --- v1.1: AI recommendation engine (multi-provider fallback) -------------
-# Primary: Groq (free, 30 req/min). Fallback: Cloudflare Workers AI (free,
-# 10k neurons/day), Gemini 2.5 Flash (free, 15 req/min). Last resort: rule
-# engine. Wired in Prompt 12.
-# groq==0.11.0
-# google-generativeai==0.8.3
-
-# --- v1.1: notifications (email + SMS) -------------------------------------
-# Resend free tier: 3k transactional emails / month.
-# Africa's Talking: pay-per-SMS (~$0.01/SMS in TZ), free sandbox.
-# resend==2.0.0
-# africastalking==1.2.5
-
-# --- v1.2: PDF + Telegram (already in use) ---------------------------------
-reportlab==4.2.5
-python-telegram-bot==21.7
-django-cors-headers==4.9.0
-
-# --- v1.2: monitoring -----------------------------------------------------
-# Sentry free tier: 5k events/month. Uncomment in prod.py by setting
-# SENTRY_DSN; the integration is a no-op without it.
-# sentry-sdk[django]==2.10.0
-
-# --- Production-only (PostGIS) --------------------------------------------
-# Uncomment for production spatial queries. GDAL is a system package on
-# Linux (apt install gdal-bin) — see the PostGIS migration script.
 psycopg2-binary==2.9.9
-# GDAL==3.9.1
-
-# --- Supabase Auth & JWT verification --------------------------------------
+dj-database-url==2.1.0
+python-dotenv==1.0.1
+whitenoise==6.7.0
+gunicorn==21.2.0
+h3==3.7.7
+Faker==25.0.0
 supabase==2.5.0
 PyJWT==2.8.0
 cryptography==42.0.5

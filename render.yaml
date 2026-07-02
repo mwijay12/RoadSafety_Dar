@@ -1,59 +1,34 @@
-# render.yaml
-# Render Blueprint — one-click deployment configuration
-# Docs: https://render.com/docs/blueprint-spec
-
 services:
   - type: web
     name: roadsafety-dar
     runtime: python
-    region: frankfurt          # closest to East Africa on Render free tier
+    region: frankfurt
     plan: free
-    branch: main               # auto-deploy from main branch
-
-    # Build phase — runs once before the server starts
+    branch: main
+    pythonVersion: "3.11.9"
     buildCommand: "./build.sh"
-
-    # Start phase — runs the web server
     startCommand: "gunicorn roadsafety.wsgi:application --workers 2 --threads 2 --worker-class gthread --timeout 120 --bind 0.0.0.0:$PORT --log-level info --access-logfile - --error-logfile -"
-
-    # Health check — Render pings this to confirm the app is alive
     healthCheckPath: /health/
-
-    # Environment variables
-    # Set SECRET values via the Render dashboard (not here)
-    # Only non-secret defaults go here
     envVars:
-      - key: DJANGO_ENV
-        value: prod
-
-      - key: DEBUG
-        value: "False"
-
-      - key: WEB_CONCURRENCY
-        value: "2"
-
       - key: PYTHON_VERSION
         value: "3.11.9"
-
-      # These MUST be set via Render dashboard → Environment
-      # Do not put actual values here — this file is committed to GitHub
+      - key: DJANGO_ENV
+        value: prod
+      - key: DEBUG
+        value: "False"
+      - key: WEB_CONCURRENCY
+        value: "2"
       - key: DJANGO_SECRET_KEY
-        generateValue: true       # Render auto-generates a secure value
-
+        generateValue: true
       - key: DATABASE_URL
-        sync: false               # Set manually in dashboard
-
+        sync: false
       - key: ALLOWED_HOSTS
-        sync: false               # Set to your *.onrender.com domain
-
+        sync: false
       - key: SUPABASE_URL
         sync: false
-
       - key: SUPABASE_ANON_KEY
         sync: false
-
       - key: SUPABASE_SERVICE_KEY
         sync: false
-
       - key: SUPABASE_JWT_SECRET
         sync: false
