@@ -203,8 +203,43 @@ function renderRecommendations(data) {
     </div>`;
   }).join('');
   if (data.ai_narrative) {
-    el.innerHTML += `<div class="reco-ai"><strong>AI Analysis:</strong> ${data.ai_narrative}</div>`;
+    const cleanText = data.ai_narrative.replace(/[*#`_\-]/g, '').trim();
+    el.innerHTML += `<div class="reco-ai">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-2);">
+        <strong>AI Analysis</strong>
+        <button id="ttsPlayBtn" class="btn-ghost btn-small" style="min-height:36px; padding:var(--space-1) var(--space-3); border-radius:12px; margin:0;" onclick="speakText(this, ${JSON.stringify(cleanText)})">🔊 Read Aloud</button>
+      </div>
+      <div>${data.ai_narrative.replace(/\n/g, '<br>')}</div>
+    </div>`;
   }
+}
+
+let currentAudio = null;
+function speakText(btn, text) {
+  if (currentAudio && !currentAudio.paused) {
+    currentAudio.pause();
+    btn.innerHTML = '🔊 Read Aloud';
+    return;
+  }
+  btn.innerHTML = '⏳ Loading...';
+  btn.disabled = true;
+  const url = "{% url 'api_tts' %}?text=" + encodeURIComponent(text);
+  currentAudio = new Audio(url);
+  currentAudio.play()
+    .then(() => {
+      btn.innerHTML = '⏸ Pause';
+      btn.disabled = false;
+      currentAudio.onended = () => {
+        btn.innerHTML = '🔊 Read Aloud';
+        currentAudio = null;
+      };
+    })
+    .catch(err => {
+      console.error("TTS playback failed:", err);
+      btn.innerHTML = '❌ Failed';
+      btn.disabled = false;
+      setTimeout(() => { btn.innerHTML = '🔊 Read Aloud'; }, 3000);
+    });
 }
 
 function fetchData() {

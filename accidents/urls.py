@@ -41,6 +41,9 @@ urlpatterns = [
 
     # v1.3 — API docs
     path("api/docs/", views.api_docs, name="api_docs"),
+
+    # v1.4 — TTS Endpoint
+    path("api/tts/", views.api_tts, name="api_tts"),
 ]
 
 # ===================== /api/v1/ versioned aliases (Prompt 7) =====================
@@ -61,6 +64,7 @@ _api_v1_patterns = [
     "api/v1/telegram/webhook/",
     "api/v1/authority/filter/",
     "api/v1/authority/export/csv/",
+    "api/v1/tts/",
 ]
 
 # Map each v1 path to its corresponding view by swapping the old path prefix
@@ -79,6 +83,7 @@ _view_map = {
     "api/v1/telegram/webhook/": views.api_telegram_webhook,
     "api/v1/authority/filter/": views.api_authority_filter,
     "api/v1/authority/export/csv/": views.api_authority_export_csv,
+    "api/v1/tts/": views.api_tts,
 }
 
 for _path, _view in _view_map.items():

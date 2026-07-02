@@ -15,6 +15,7 @@ from .public import (               # noqa: F401
     _build_recommendation_engine_context,
     _rule_based_recommendations,
     _ai_recommendations,
+    api_tts,
 )
 from .authority_views import (      # noqa: F401
     authority,

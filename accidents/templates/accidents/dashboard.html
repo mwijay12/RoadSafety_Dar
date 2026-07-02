@@ -118,6 +118,7 @@
     Demo
   </label>
   <button id="notifBtn" class="btn-ghost" title="Get notified of new reports">🔔 Alerts</button>
+  <button id="voiceNotifBtn" class="btn-ghost" title="Hear voice alerts for new reports">🔊 Voice Alerts</button>
   <div class="lang-switch">
     <a href="/dashboard/" class="lang-link">EN</a> |
     <a href="/sw/dashboard/" class="lang-link">SW</a>
@@ -165,19 +166,21 @@
   </div>
   <div class="chart-card wide">
     <h3>{% trans "Top 10 Worst-Affected Junctions" %}</h3>
-    <table id="junctionTable" class="data-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>{% trans "Junction" %}</th>
-          <th>{% trans "District" %}</th>
-          <th>{% trans "Accidents" %}</th>
-          <th>{% trans "Fatalities" %}</th>
-          <th>{% trans "Casualties" %}</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <div class="table-scroll">
+      <table id="junctionTable" class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{% trans "Junction" %}</th>
+            <th>{% trans "District" %}</th>
+            <th>{% trans "Accidents" %}</th>
+            <th>{% trans "Fatalities" %}</th>
+            <th>{% trans "Casualties" %}</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </div>
 </section>
 {% endblock %}
@@ -424,6 +427,9 @@
           indicator.style.color = '';
         }, 2000);
       }
+      if (typeof voiceAlertsEnabled !== 'undefined' && voiceAlertsEnabled) {
+        playVoiceAlert("Alert. A new road safety report has been logged.");
+      }
     }
     lastTotal = total;
 
@@ -448,7 +454,7 @@
   }
 
   function refreshLiveData() {
-    fetch('/api/stats/summary/', { credentials: 'same-origin' })
+    fetch('/api/stats/summary', { credentials: 'same-origin' })
       .then(function(r) { return r.ok ? r.json() : null; })
       .then(function(data) {
         if (!data) return;
@@ -506,6 +512,35 @@
           }
         });
     });
+  }
+
+  // ===== Voice Alerts (v1.4) =====
+  var voiceAlertsEnabled = localStorage.getItem('voiceAlertsEnabled') === 'true';
+  var voiceNotifBtn = document.getElementById('voiceNotifBtn');
+  
+  if (voiceNotifBtn) {
+    if (voiceAlertsEnabled) {
+      voiceNotifBtn.textContent = '🔊 Alerts Active';
+      voiceNotifBtn.style.color = '#22C55E'; // green color indicator
+    }
+    voiceNotifBtn.addEventListener('click', function() {
+      voiceAlertsEnabled = !voiceAlertsEnabled;
+      localStorage.setItem('voiceAlertsEnabled', voiceAlertsEnabled);
+      if (voiceAlertsEnabled) {
+        voiceNotifBtn.textContent = '🔊 Alerts Active';
+        voiceNotifBtn.style.color = '#22C55E';
+        playVoiceAlert("Voice alerts activated.");
+      } else {
+        voiceNotifBtn.textContent = '🔊 Voice Alerts';
+        voiceNotifBtn.style.color = '';
+      }
+    });
+  }
+
+  function playVoiceAlert(text) {
+    const url = "{% url 'api_tts' %}?text=" + encodeURIComponent(text);
+    const audio = new Audio(url);
+    audio.play().catch(err => console.warn("TTS failed to play:", err));
   }
 
   // ===== Init =====

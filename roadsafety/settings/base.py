@@ -149,6 +149,10 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "minimax/minimax-m3")
 
+# ElevenLabs (TTS Alerts & Recommendations)
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
+
+
 # ---------------------------------------------------------------------------
 # Media storage — Cloudinary (free tier: 25 GB, 25k transforms/mo)
 # Wired up in Prompt 3 (Public Report Flow v2). Keys are read here so all

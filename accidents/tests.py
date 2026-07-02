@@ -1131,3 +1131,35 @@ class AdminPanelTests(TestCase):
 
 
 # ===================== END v1.3 TESTS =====================
+
+
+class TTSAPITests(TestCase):
+    """Test the ElevenLabs TTS API endpoint (v1.4.0)."""
+
+    def test_tts_endpoint_returns_400_when_missing_text(self):
+        resp = self.client.get("/api/tts/")
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("Missing 'text' parameter", resp.content.decode())
+
+    def test_tts_endpoint_returns_503_when_no_api_key(self):
+        with self.settings(ELEVENLABS_API_KEY=""):
+            resp = self.client.get("/api/tts/?text=test")
+            self.assertEqual(resp.status_code, 503)
+            self.assertIn("API key not configured", resp.content.decode())
+
+    def test_tts_endpoint_successful_mocked(self):
+        from unittest.mock import patch, MagicMock
+        mock_audio_bytes = b"fake-mpeg-audio-data"
+
+        with self.settings(ELEVENLABS_API_KEY="mock-eleven-key"):
+            with patch("urllib.request.urlopen") as mock_urlopen:
+                mock_response = MagicMock()
+                mock_response.read.return_value = mock_audio_bytes
+                mock_urlopen.return_value.__enter__.return_value = mock_response
+
+                resp = self.client.get("/api/tts/?text=Hello+World")
+                self.assertEqual(resp.status_code, 200)
+                self.assertEqual(resp["Content-Type"], "audio/mpeg")
+                self.assertEqual(resp.content, mock_audio_bytes)
+                self.assertIn("Cache-Control", resp)
+

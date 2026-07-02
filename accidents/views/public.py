@@ -189,60 +189,98 @@ def _rule_based_recommendations(ctx):
 
 
 def _ai_recommendations(ctx):
-    """Try to enrich recommendations with LLM-generated narrative."""
+    """Try to enrich recommendations with LLM-generated narrative (Groq primary, OpenRouter fallback)."""
     if ctx is None:
         return []
 
-    api_key = getattr(settings, "OPENROUTER_API_KEY", None) or __import__("os").environ.get("OPENROUTER_API_KEY")
-    if not api_key:
+    top_junctions = sorted(
+        ctx["junction_buckets"].values(), key=lambda b: -b["count"]
+    )[:3]
+    if not top_junctions:
         return []
 
-    try:
-        import urllib.request
-        top_junctions = sorted(
-            ctx["junction_buckets"].values(), key=lambda b: -b["count"]
-        )[:3]
-        if not top_junctions:
-            return []
-
-        prompt = (
-            "You are a road safety analyst for Dar es Salaam, Tanzania. "
-            "Given these accident stats, suggest 1-2 SHORT (max 18 words) "
-            "engineering interventions for each junction. Be specific and practical. "
-            "Output as bullet points only, no preamble.\n\n"
+    prompt = (
+        "You are a road safety analyst for Dar es Salaam, Tanzania. "
+        "Given these accident stats, suggest 1-2 SHORT (max 18 words) "
+        "engineering interventions for each junction. Be specific and practical. "
+        "Output as bullet points only, no preamble.\n\n"
+    )
+    for b in top_junctions:
+        peak_h = sorted(b["hourly"].items(), key=lambda x: -x[1])[:1]
+        top_v = b["vehicle_types"].most_common(1)
+        prompt += (
+            f"- {b['name']}: {b['count']} incidents, {b['fatalities']} deaths, "
+            f"peak {peak_h[0][0] if peak_h else '?'}:00, "
+            f"top vehicle: {top_v[0][0] if top_v else 'mixed'}\n"
         )
-        for b in top_junctions:
-            peak_h = sorted(b["hourly"].items(), key=lambda x: -x[1])[:1]
-            top_v = b["vehicle_types"].most_common(1)
-            prompt += (
-                f"- {b['name']}: {b['count']} incidents, {b['fatalities']} deaths, "
-                f"peak {peak_h[0][0] if peak_h else '?'}:00, "
-                f"top vehicle: {top_v[0][0] if top_v else 'mixed'}\n"
+
+    # Fallback chain:
+    # 1. Groq (Primary)
+    # 2. OpenRouter (Secondary / Legacy)
+    providers = []
+    
+    import os
+    groq_key = getattr(settings, "GROQ_API_KEY", None) or os.environ.get("GROQ_API_KEY")
+    if groq_key:
+        providers.append({
+            "name": "Groq",
+            "url": getattr(settings, "GROQ_API_BASE", None) or "https://api.groq.com/openai/v1/chat/completions",
+            "key": groq_key,
+            "model": getattr(settings, "GROQ_MODEL", None) or "llama-3.3-70b-versatile"
+        })
+        
+    openrouter_key = getattr(settings, "OPENROUTER_API_KEY", None) or os.environ.get("OPENROUTER_API_KEY")
+    if openrouter_key:
+        providers.append({
+            "name": "OpenRouter",
+            "url": "https://openrouter.ai/api/v1/chat/completions",
+            "key": openrouter_key,
+            "model": getattr(settings, "OPENROUTER_MODEL", None) or "minimax/minimax-m3"
+        })
+
+    import urllib.request
+    
+    for provider in providers:
+        try:
+            logger.info("Attempting AI recommendations via %s...", provider["name"])
+            
+            url = provider["url"]
+            if "chat/completions" not in url:
+                url = url.rstrip("/") + "/chat/completions"
+                
+            body = json.dumps({
+                "model": provider["model"],
+                "messages": [
+                    {"role": "system", "content": "You are a road safety expert."},
+                    {"role": "user", "content": prompt},
+                ],
+                "max_tokens": 400,
+            }).encode()
+
+            req = urllib.request.Request(
+                url,
+                data=body,
+                headers={
+                    "Authorization": f"Bearer {provider['key']}",
+                    "Content-Type": "application/json",
+                },
             )
+            with urllib.request.urlopen(req, timeout=12) as r:
+                data = json.loads(r.read())
+            
+            content = data["choices"][0]["message"]["content"].strip()
+            if content:
+                logger.info("AI recommendations successfully generated via %s", provider["name"])
+                return [{"ai_narrative": content}]
+        except Exception as e:
+            logger.warning("AI recommendation via %s failed: %s", provider["name"], e)
 
-        body = json.dumps({
-            "model": "minimax/minimax-m3",
-            "messages": [
-                {"role": "system", "content": "You are a road safety expert."},
-                {"role": "user", "content": prompt},
-            ],
-            "max_tokens": 400,
-        }).encode()
-
-        req = urllib.request.Request(
-            "https://openrouter.ai/api/v1/chat/completions",
-            data=body,
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            },
-        )
-        with urllib.request.urlopen(req, timeout=15) as r:
-            data = json.loads(r.read())
-        return [{"ai_narrative": data["choices"][0]["message"]["content"]}]
-    except Exception as e:
-        logger.warning("AI recommendation failed: %s", e)
-        return []
+    logger.warning("All AI providers failed or none configured. Using rule-based fallback narrative.")
+    fallback_lines = []
+    for r in _rule_based_recommendations(ctx):
+        actions_str = ", ".join(r["actions"][:2])
+        fallback_lines.append(f"- {r['junction']}: {actions_str}")
+    return [{"ai_narrative": "\n".join(fallback_lines)}]
 
 
 @require_GET
@@ -256,3 +294,53 @@ def api_recommendations(_request):
         "ai_narrative": ai[0]["ai_narrative"] if ai else None,
         "generated_at": timezone.now().isoformat(),
     }, safe=False)
+
+
+@require_GET
+def api_tts(request):
+    """GET /api/tts/ — Text-to-Speech using ElevenLabs Rachel voice."""
+    text = request.GET.get("text", "").strip()
+    if not text:
+        return HttpResponse("Missing 'text' parameter.", status=400)
+
+    # Limit text length to conserve ElevenLabs character quota
+    text = text[:300]
+
+    api_key = getattr(settings, "ELEVENLABS_API_KEY", "")
+    if not api_key:
+        return HttpResponse("ElevenLabs API key not configured.", status=503)
+
+    try:
+        import urllib.request
+        # Rachel voice ID: 21m00Tcm4TlvDq8ikWAM
+        url = "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM"
+        body = json.dumps({
+            "text": text,
+            "model_id": "eleven_monolingual_v1",
+            "voice_settings": {
+                "stability": 0.5,
+                "similarity_boost": 0.75
+            }
+        }).encode()
+
+        req = urllib.request.Request(
+            url,
+            data=body,
+            headers={
+                "xi-api-key": api_key,
+                "Content-Type": "application/json",
+                "accept": "audio/mpeg"
+            },
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=15) as r:
+            audio_data = r.read()
+
+        response = HttpResponse(audio_data, content_type="audio/mpeg")
+        # Cache identical responses for 2 hours
+        response["Cache-Control"] = "public, max-age=7200"
+        return response
+    except Exception as e:
+        logger.error("TTS generation failed: %s", e)
+        return HttpResponse(f"TTS service unavailable: {e}", status=500)
+
