@@ -29,7 +29,7 @@ h3==4.5.0
 # Redis-backed one is required for multi-worker production. Uncomment when
 # Prompt 4 (API refactor + hardening) and Prompt 14 (performance) land.
 # django-ratelimit==4.1.0
-# django-redis==5.4.0
+django-redis==5.4.0
 
 # --- v1.1: media storage (Cloudinary) -------------------------------------
 # Prompt 3 wires these up. Free tier: 25 GB, 25k transforms/mo.

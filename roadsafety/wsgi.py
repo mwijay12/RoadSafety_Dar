@@ -5,6 +5,13 @@ Set ``DJANGO_ENV=dev`` for local runs.
 """
 
 import os
+import sys
+from pathlib import Path
+
+# Add project root to sys.path for serverless environments (like Vercel)
+BASE_DIR = Path(__file__).resolve().parent.parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
 
 from django.core.wsgi import get_wsgi_application
 
