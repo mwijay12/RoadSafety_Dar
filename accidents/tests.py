@@ -209,7 +209,10 @@ class ReportFormTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "accidents/report.html")
 
-    def test_post_anonymous_redirects_to_login(self):
+    def test_post_anonymous_creates_accident(self):
+        from accidents.decorators import _rate_log
+
+        _rate_log.clear()
         resp = self.client.post(
             reverse("report"),
             {
@@ -217,10 +220,14 @@ class ReportFormTests(TestCase):
                 "vehicle_type": "car",
                 "lat": -6.7924,
                 "lng": 39.2083,
+                "occurred_at": "2026-07-01T10:00",
+                "casualties": 0,
+                "fatalities": 0,
+                "injuries": 0,
             },
         )
         self.assertEqual(resp.status_code, 302)
-        self.assertIn("/accounts/login/", resp.url)
+        self.assertEqual(Accident.objects.count(), 1)
 
     def test_post_valid_form_redirects(self):
         self._login()

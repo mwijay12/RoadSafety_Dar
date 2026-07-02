@@ -20,8 +20,6 @@ logger = logging.getLogger(__name__)
 def report_form(request):
     form = AccidentForm()
     if request.method == "POST":
-        if not request.user.is_authenticated:
-            return redirect("/accounts/login/?next=/report/")
         if not _rate_check_wrapper(request):
             return HttpResponse("Too many submissions. Please wait a minute.", status=429)
         form = AccidentForm(request.POST, user=request.user)
