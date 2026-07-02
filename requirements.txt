@@ -1,7 +1,8 @@
-# Top-level dependencies for RoadSafety Dar
-# Generated from pyproject.toml — keep in sync
-# Render/Railway/Vercel all read this file directly.
-# Transitive deps are resolved by the package manager at install time.
+# RoadSafety_Dar — Python dependencies
+# Pinned to versions known to work with Python 3.11.9 on Render/Railway.
+# MUST mirror pyproject.toml [project.dependencies] — these are the
+# packages imported by roadsafety/* and accidents/* code.
+# Transitive deps are resolved by pip at install time.
 Django==5.0.6
 psycopg2-binary==2.9.9
 dj-database-url==2.1.0

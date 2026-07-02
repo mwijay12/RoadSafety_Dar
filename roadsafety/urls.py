@@ -87,6 +87,7 @@ urlpatterns = [
     path("offline/", offline_page, name="offline"),
     # System health and version endpoints.
     path("healthz", healthz, name="healthz"),
+    path("health/", healthz, name="health"),  # alias for Render default healthcheck
     path("api/version", version_endpoint, name="version"),
     # Include all URLs defined in the 'accidents' app.
     # Django's LocaleMiddleware handles /<lang>/ prefix automatically

@@ -21,7 +21,7 @@ STATUS = "stable"  # "alpha" | "beta" | "stable" | "deprecated"
 API_VERSION = "v1"  # API compatibility version
 
 # Compatibility
-PYTHON_MIN = "3.12"
+PYTHON_MIN = "3.11"
 DJANGO_MIN = "5.0"
 
 # Changelog summary

@@ -7,7 +7,7 @@
 # ----------------------------------------
 # Stage 1 — Builder
 # ----------------------------------------
-FROM python:3.12-slim AS builder
+FROM python:3.11-slim AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -34,7 +34,7 @@ RUN DJANGO_ENV=prod \
 # ----------------------------------------
 # Stage 2 — Runtime
 # ----------------------------------------
-FROM python:3.12-slim
+FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \

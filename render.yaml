@@ -5,13 +5,13 @@ services:
     region: frankfurt
     plan: free
     branch: main
-    pythonVersion: "3.12.7"
+    pythonVersion: "3.11.9"
     buildCommand: "./build.sh"
     startCommand: "gunicorn roadsafety.wsgi:application --workers 2 --threads 2 --worker-class gthread --timeout 120 --bind 0.0.0.0:$PORT --log-level info --access-logfile - --error-logfile -"
-    healthCheckPath: /healthz
+    healthCheckPath: /health/
     envVars:
       - key: PYTHON_VERSION
-        value: "3.12.7"
+        value: "3.11.9"
       - key: DJANGO_ENV
         value: prod
       - key: DEBUG

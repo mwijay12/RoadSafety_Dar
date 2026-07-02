@@ -21,8 +21,5 @@
     "oxlint": "^1.71.0",
     "typescript": "~6.0.2",
     "vite": "^8.1.1"
-  },
-  "optionalDependencies": {
-    "@rolldown/binding-win32-x64-msvc": "^1.1.3"
   }
 }

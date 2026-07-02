@@ -10,7 +10,7 @@ python --version
 echo "=========================================="
 
 # Fail fast if wrong Python version
-python -c "import sys; assert sys.version_info[:2] == (3, 12), f'Wrong Python: {sys.version}'; print('✅ Python 3.12 confirmed')"
+python -c "import sys; assert sys.version_info[:2] == (3, 11), f'Wrong Python: {sys.version}'; print('✅ Python 3.11 confirmed')"
 
 echo ""
 echo "→ Installing Python dependencies..."
