@@ -1,7 +1,0 @@
-{
-  "buildCommand": "cd landing && npx prisma generate && npx next build",
-  "installCommand": "cd landing && npm install",
-  "outputDirectory": "landing/.next",
-  "framework": "nextjs",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- landing/"
-}
