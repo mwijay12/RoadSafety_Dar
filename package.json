@@ -1,9 +1,0 @@
-{
-  "name": "roadsafety-dar",
-  "private": true,
-  "scripts": {
-    "dev": "cd landing && npm run dev",
-    "build": "cd landing && npm install && npx prisma generate && npx next build",
-    "start": "cd landing && npx next start"
-  }
-}
