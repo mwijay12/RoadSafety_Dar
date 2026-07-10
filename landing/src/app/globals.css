@@ -1,0 +1,45 @@
+@import url("https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Hubot+Sans:wght@500;600;700;800&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --sky: #3B82F6;
+  --sky-bright: #60A5FA;
+  --sky-deep: #1D4ED8;
+  --sky-soft: #DBEAFE;
+  --sun: #FBBF24;
+  --sun-bright: #FCD34D;
+  --sun-deep: #D97706;
+  --leaf: #22C55E;
+  --leaf-soft: #DCFCE7;
+  --leaf-deep: #16A34A;
+  --coral: #F87171;
+  --coral-soft: #FEE2E2;
+  --ink: #0F172A;
+  --ink-muted: #475569;
+  --ink-subtle: #94A3B8;
+  --outline: #E2E8F0;
+  --surface: #F8FAFC;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Atkinson Hyperlegible", "Nunito Sans", "Inter", system-ui, sans-serif;
+  font-size: 18px;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  background: var(--surface);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4 {
+  font-family: "Hubot Sans", "Nunito", "Quicksand", system-ui, sans-serif;
+  color: var(--ink);
+  margin: 0 0 12px;
+}
+h1 { font-size: 40px; font-weight: 700; line-height: 1.2; }
+h2 { font-size: 32px; font-weight: 700; line-height: 1.25; }
+h3 { font-size: 24px; font-weight: 600; line-height: 1.3; }

@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Accident {
+  id                 Int       @id @default(autoincrement())
+  lat                Float
+  lng                Float
+  h3Cell             String    @default("")
+  district           String    @default("")
+  ward               String    @default("")
+  locationId         String    @default("")
+  junctionName       String    @default("")
+  junctionId         Int?
+  occurredAt         DateTime
+  reportedAt         DateTime  @default(now())
+  severity           String
+  vehicleTypes       String    @default("[]")
+  reporterType       String    @default("community")
+  casualties         Int       @default(0)
+  fatalities         Int       @default(0)
+  injuries           Int       @default(0)
+  description        String    @default("")
+  weather            String    @default("")
+  roadCondition      String    @default("")
+  contact            String    @default("")
+  photoUrl           String    @default("")
+  sourceNotes        String    @default("")
+  verified           Boolean   @default(false)
+  isDemo             Boolean   @default(false)
+  submittedById      Int?
+  trustLevel         String    @default("anonymous")
+  upvoteCount        Int       @default(0)
+  verificationStatus String    @default("pending")
+  officialNotes      String?
+  rejectionReason    String?
+  verifiedById       Int?
+  verifiedAt         DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  submittedBy User?        @relation("submitted_accidents", fields: [submittedById], references: [id])
+  verifiedBy  User?        @relation("verified_accidents", fields: [verifiedById], references: [id])
+  junction    Junction?    @relation(fields: [junctionId], references: [id])
+  upvotes     AccidentUpvote[]
+  auditLogs   AuditLog[]
+
+  @@index([lat, lng])
+  @@index([occurredAt, severity])
+  @@index([district])
+  @@index([verificationStatus])
+}
+
+model Junction {
+  id          Int         @id @default(autoincrement())
+  name        String      @unique
+  slug        String      @default("")
+  lat         Float
+  lng         Float
+  district    String      @default("")
+  description String      @default("")
+  isDemo      Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+
+  accidents Accident[]
+
+  @@index([lat, lng])
+}
+
+model User {
+  id                  Int              @id @default(autoincrement())
+  username            String           @unique
+  email               String           @unique
+  firstName           String           @default("")
+  lastName            String           @default("")
+  password            String
+  isActive            Boolean          @default(true)
+  isStaff             Boolean          @default(false)
+  isSuperuser         Boolean          @default(false)
+  lastLogin           DateTime?
+  dateJoined          DateTime         @default(now())
+
+  profile             UserProfile?
+  submittedAccidents  Accident[]       @relation("submitted_accidents")
+  verifiedAccidents   Accident[]       @relation("verified_accidents")
+  upvotedAccidents    AccidentUpvote[]
+  auditLogs           AuditLog[]
+}
+
+model UserProfile {
+  id                Int      @id @default(autoincrement())
+  userId            Int      @unique
+  role              String   @default("community")
+  phone             String   @default("")
+  emailNotifications Boolean @default(true)
+  supabaseUid       String?  @unique
+  avatarUrl         String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AccidentUpvote {
+  id         Int      @id @default(autoincrement())
+  accidentId Int
+  userId     Int
+  createdAt  DateTime @default(now())
+
+  accident Accident @relation(fields: [accidentId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([accidentId, userId])
+}
+
+model AuditLog {
+  id          Int      @id @default(autoincrement())
+  accidentId  Int?
+  userId      Int?
+  action      String
+  description String   @default("")
+  createdAt   DateTime @default(now())
+
+  accident Accident? @relation(fields: [accidentId], references: [id])
+  user     User?     @relation(fields: [userId], references: [id])
+}
+
+model SiteSettings {
+  id            Int     @id @default(1)
+  showDemoData  Boolean @default(true)
+}
+
+model Location {
+  id        Int     @id @default(autoincrement())
+  region    String
+  regionCode Int
+  district  String
+  districtCode Int
+  ward      String
+  wardCode  Int
+  street    String  @default("")
+  places    String  @default("")
+  lat       Float?
+  lng       Float?
+
+  @@index([region])
+  @@index([district])
+  @@index([ward])
+  @@index([regionCode, districtCode, wardCode])
+}

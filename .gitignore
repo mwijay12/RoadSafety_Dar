@@ -76,12 +76,18 @@ landing/.parcel-cache/
 landing/coverage/
 landing/.env
 landing/.env.local
+landing/prisma/dev.db
+landing/prisma/dev.db-journal
 landing/npm-debug.log*
 landing/yarn-debug.log*
 landing/yarn-error.log*
 landing/pnpm-debug.log*
 
 # ---------------------------------------------------------------------------
+# SQLite databases (local dev)
+*.db
+*.db-journal
+
 # Seed + data exports
 # ---------------------------------------------------------------------------
 /data/exports/
