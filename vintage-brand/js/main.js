@@ -15,20 +15,14 @@ root.classList.add('js');
 window.__vjpMotion = true;
 
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const isTouch = window.matchMedia('(hover: none)').matches;
 
 /* ---------- shared easings ---------- */
 const E = {
   out: 'power3.out',
-  inOut: 'power2.inOut',
   expo: 'expo.out',
 };
 
-let splits = [];
-const trackSplit = (s) => {
-  splits.push(s);
-  return s;
-};
+const trackSplit = (s) => s;
 
 /* ============================================================
    1. HERO — masked line reveal, slow push-in, scroll-out
@@ -221,8 +215,8 @@ function range() {
   const track = document.querySelector('.range__track');
   if (!section || !track) return;
 
-  ScrollTrigger.matchMedia({
-    '(min-width: 961px)': () => {
+  const mm = gsap.matchMedia();
+  mm.add('(min-width: 961px)', () => {
       const distance = () => track.scrollWidth - window.innerWidth;
 
       const tween = gsap.to(track, {
@@ -259,10 +253,6 @@ function range() {
         );
       });
 
-      return () => {
-        ScrollTrigger.getAll().forEach((st) => st.kill());
-      };
-    },
   });
 }
 
@@ -346,7 +336,7 @@ function chrome() {
   const nav = document.getElementById('nav');
   let last = 0;
   ScrollTrigger.create({
-    start: 'top -120',
+    start: 0,
     end: 'max',
     onUpdate: (self) => {
       const y = self.scroll();
@@ -381,14 +371,6 @@ function boot() {
   visit();
   chrome();
 
-  // fonts land late → re-measure every scroll-driven layout
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(() => {
-      splits.forEach((s) => s && s.revert && s.revert());
-      splits = [];
-      ScrollTrigger.refresh();
-    });
-  }
   window.addEventListener('load', () => ScrollTrigger.refresh());
   let rAF;
   window.addEventListener('resize', () => {
@@ -397,8 +379,16 @@ function boot() {
   });
 }
 
+// SplitText measures line boxes, so wait for the webfonts (they are preloaded
+// and self-hosted, so this is quick) — but never block the page on them.
+const fontsReady = document.fonts && document.fonts.ready
+  ? document.fonts.ready
+  : Promise.resolve();
+const fontsTimeout = new Promise((resolve) => setTimeout(resolve, 1200));
+const start = () => Promise.race([fontsReady, fontsTimeout]).then(boot);
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', boot);
+  document.addEventListener('DOMContentLoaded', start, { once: true });
 } else {
-  boot();
+  start();
 }
