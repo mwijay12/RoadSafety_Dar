@@ -2,6 +2,10 @@
 
 A complete concept redesign for the juice business in the supplied Google Maps / menu photos. It keeps the recognisable **Vintage**, cup and black/gold equity while making the system calmer, more consistent and more premium for Dar es Salaam.
 
+## Live deployment
+
+`https://vintage-juice-point-site.vercel.app` — Vercel project `vintage-juice-point-site`, root directory `vintage-brand`, deployed from `arena/e8ab14d7-roadsafety-dar`.
+
 ## Preview
 
 From this folder:
@@ -33,7 +37,7 @@ Then open:
 | `assets/` | Logos, SVG sources, PNG exports, pattern, label, menu board, photography. |
 | `fonts/` | Cormorant Garamond + Manrope WOFF2 files (self-hosted, no CDN). |
 | `flow-inputs/` | Ten ready-to-upload reference and style frames for Google Flow. |
-| `vintage-brand-assets.zip` | Everything above in one ~7 MB download (build artifact, ignored by Git). Rebuild with the `zip` command in `.gitignore`. |
+| `vintage-brand-assets.zip` | Optional local bundle (~7 MB), ignored by Git so it is not published. Rebuild with the `zip` command in `.gitignore`. |
 
 ## Finished, composited assets
 
