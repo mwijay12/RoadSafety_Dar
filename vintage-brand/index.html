@@ -1,238 +1,260 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Vintage Juice Point — a premium fresh juice point in Dar es Salaam, Tanzania. Concept brand redesign." />
-  <title>Vintage Juice Point — Dar es Salaam</title>
-  <link rel="icon" href="assets/logo-mark.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vintage Juice Point — Dar es Salaam</title>
+<meta name="description" content="Vintage Juice Point. Asili safi, ladha ya kisasa. Freshly blended Tanzanian fruit, pressed daily in Dar es Salaam." />
+<meta name="theme-color" content="#0D1512" />
+<link rel="icon" href="assets/logo/mark.svg" type="image/svg+xml" />
+<link rel="preload" href="fonts/cormorant-garamond-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="fonts/manrope-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="assets/img/hero-sign.jpg" as="image" fetchpriority="high" />
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+<a class="skip" href="#menu">Skip to menu</a>
 
-<header class="site-header">
-  <div class="container">
-    <a href="index.html" aria-label="Vintage Juice Point home">
-      <img class="brand-logo" src="assets/logo-primary-on-ink.png" alt="Vintage Juice Point" />
-    </a>
-    <nav class="site-nav" aria-label="Main navigation">
-      <a href="index.html" class="active">Home</a>
-      <a href="#menu">Menu</a>
-      <a href="#story">Story</a>
-      <a href="#social">Social</a>
-      <a href="#visit">Visit</a>
-      <a href="brand-kit.html">Brand kit</a>
-      <a class="nav-cta" href="GOOGLE_FLOW_PROMPTS.md">Flow prompts</a>
-    </nav>
-  </div>
+<!-- ─────────── fixed frame: nav + progress ─────────── -->
+<header class="nav" id="nav">
+  <a class="nav__mark" href="#top" aria-label="Vintage Juice Point, top">
+    <svg viewBox="0 0 44 44" aria-hidden="true"><use href="assets/logo/mark.svg#mark" /></svg>
+    <span>Vintage</span>
+  </a>
+  <nav class="nav__links" aria-label="Sections">
+    <a href="#menu">Menu</a>
+    <a href="#build">Build</a>
+    <a href="#range">Range</a>
+    <a href="#visit">Visit</a>
+  </nav>
+  <a class="nav__cta" href="menu.html">Full list</a>
 </header>
 
-<main>
-  <section class="hero">
-    <div class="container hero-inner">
-      <div class="hero-kicker">Dar es Salaam · Tanzania</div>
-      <h1>Asili safi.<br /><em>Ladha</em> ya kisasa.</h1>
-      <p class="hero-sub">Clean origin. Modern taste.</p>
-      <p class="hero-copy">Freshly blended local fruit, signature mixes and takeaway cups — reimagined as a calm, premium everyday juice point with the character of the Swahili coast.</p>
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="#menu">View the menu</a>
-        <a class="btn btn-ghost" href="menu.html">Printable menu</a>
-      </div>
-      <div class="hero-meta">
-        <span>Takeaway</span>
-        <span>Card &amp; NFC payments</span>
-        <span>Good for kids</span>
-        <span>58F5+24 Dar es Salaam</span>
-      </div>
-      <p class="muted" style="font-size:.76rem;letter-spacing:.06em;margin-top:26px;max-width:60ch;">Concept redesign. Contact details and opening hours are editable placeholders — no verified phone, email, website or hours were supplied.</p>
+<div class="scroll-progress" aria-hidden="true"><i></i></div>
+
+<main id="top">
+
+  <!-- ─────────── 1. hero ─────────── -->
+  <section class="hero" id="hero">
+    <div class="hero__media">
+      <img src="assets/img/hero-sign.jpg" alt="A hand holds a bottle of roselle juice in front of the Vintage Juice Point brass-rimmed sign on a terracotta wall" />
+    </div>
+    <div class="hero__grain" aria-hidden="true"></div>
+
+    <div class="hero__inner">
+      <p class="hero__eyebrow" data-reveal>
+        <span>Dar es Salaam</span><i aria-hidden="true"></i><span>Tanzania</span>
+      </p>
+      <h1 class="hero__title" aria-label="Asili safi. Ladha ya kisasa.">
+        <span class="line" data-line><span class="ln">Asili safi.</span></span>
+        <span class="line" data-line><span class="ln"><em>Ladha</em> ya kisasa.</span></span>
+      </h1>
+      <p class="hero__sub" data-reveal>Clean origin. Modern taste.</p>
+    </div>
+
+    <div class="hero__foot">
+      <p class="hero__note" data-reveal>Freshly blended local fruit — pressed, poured and handed over the counter six days a week.</p>
+      <a class="scroll-cue" href="#strip" data-reveal>
+        <span>Scroll</span>
+        <svg viewBox="0 0 12 34" aria-hidden="true"><path d="M6 0v30M1 25l5 6 5-6" /></svg>
+      </a>
     </div>
   </section>
 
-  <div class="fruit-strip" aria-label="Fruit used at Vintage">
-    <div class="container">
-      <span>Rozela</span><span>Ukwaju</span><span>Embe</span><span>Nanasi</span><span>Parachichi</span><span>Passion</span><span>Ubuyu</span><span>Iliki</span><span>Tikiti maji</span><span>Zabibu</span>
-    </div>
-  </div>
+  <!-- ─────────── 2. marquee ─────────── -->
+  <section class="strip" id="strip" aria-label="Fruit we work with">
+    <div class="strip__track" data-marquee><span>Rozela</span><b>·</b><span>Ukwaju</span><b>·</b><span>Embe</span><b>·</b><span>Nanasi</span><b>·</b><span>Parachichi</span><b>·</b><span>Passion</span><b>·</b><span>Ubuyu</span><b>·</b><span>Iliki</span><b>·</b><span>Tikiti maji</span><b>·</b><span>Zabibu</span><b>·</b>
+      <span aria-hidden="true">Rozela</span><b aria-hidden="true">·</b><span aria-hidden="true">Ukwaju</span><b aria-hidden="true">·</b><span aria-hidden="true">Embe</span><b aria-hidden="true">·</b><span aria-hidden="true">Nanasi</span><b aria-hidden="true">·</b><span aria-hidden="true">Parachichi</span><b aria-hidden="true">·</b><span aria-hidden="true">Passion</span><b aria-hidden="true">·</b><span aria-hidden="true">Ubuyu</span><b aria-hidden="true">·</b><span aria-hidden="true">Iliki</span><b aria-hidden="true">·</b><span aria-hidden="true">Tikiti maji</span><b aria-hidden="true">·</b><span aria-hidden="true">Zabibu</span><b aria-hidden="true">·</b><span>Rozela</span><b>·</b><span>Ukwaju</span><b>·</b><span>Embe</span><b>·</b><span>Nanasi</span><b>·</b><span>Parachichi</span><b>·</b><span>Passion</span><b>·</b><span>Ubuyu</span><b>·</b><span>Iliki</span><b>·</b><span>Tikiti maji</span><b>·</b><span>Zabibu</span><b>·</b>
+      <span aria-hidden="true">Rozela</span><b aria-hidden="true">·</b><span aria-hidden="true">Ukwaju</span><b aria-hidden="true">·</b><span aria-hidden="true">Embe</span><b aria-hidden="true">·</b><span aria-hidden="true">Nanasi</span><b aria-hidden="true">·</b><span aria-hidden="true">Parachichi</span><b aria-hidden="true">·</b><span aria-hidden="true">Passion</span><b aria-hidden="true">·</b><span aria-hidden="true">Ubuyu</span><b aria-hidden="true">·</b><span aria-hidden="true">Iliki</span><b aria-hidden="true">·</b><span aria-hidden="true">Tikiti maji</span><b aria-hidden="true">·</b><span aria-hidden="true">Zabibu</span><b aria-hidden="true">·</b><span>Rozela</span><b>·</b><span>Ukwaju</span><b>·</b><span>Embe</span><b>·</b><span>Nanasi</span><b>·</b><span>Parachichi</span><b>·</b><span>Passion</span><b>·</b><span>Ubuyu</span><b>·</b><span>Iliki</span><b>·</b><span>Tikiti maji</span><b>·</b><span>Zabibu</span><b>·</b>
+      <span aria-hidden="true">Rozela</span><b aria-hidden="true">·</b><span aria-hidden="true">Ukwaju</span><b aria-hidden="true">·</b><span aria-hidden="true">Embe</span><b aria-hidden="true">·</b><span aria-hidden="true">Nanasi</span><b aria-hidden="true">·</b><span aria-hidden="true">Parachichi</span><b aria-hidden="true">·</b><span aria-hidden="true">Passion</span><b aria-hidden="true">·</b><span aria-hidden="true">Ubuyu</span><b aria-hidden="true">·</b><span aria-hidden="true">Iliki</span><b aria-hidden="true">·</b><span aria-hidden="true">Tikiti maji</span><b aria-hidden="true">·</b><span aria-hidden="true">Zabibu</span><b aria-hidden="true">·</b><span>Rozela</span><b>·</b><span>Ukwaju</span><b>·</b><span>Embe</span><b>·</b><span>Nanasi</span><b>·</b><span>Parachichi</span><b>·</b><span>Passion</span><b>·</b><span>Ubuyu</span><b>·</b><span>Iliki</span><b>·</b><span>Tikiti maji</span><b>·</b><span>Zabibu</span><b>·</b>
+      <span aria-hidden="true">Rozela</span><b aria-hidden="true">·</b><span aria-hidden="true">Ukwaju</span><b aria-hidden="true">·</b><span aria-hidden="true">Embe</span><b aria-hidden="true">·</b><span aria-hidden="true">Nanasi</span><b aria-hidden="true">·</b><span aria-hidden="true">Parachichi</span><b aria-hidden="true">·</b><span aria-hidden="true">Passion</span><b aria-hidden="true">·</b><span aria-hidden="true">Ubuyu</span><b aria-hidden="true">·</b><span aria-hidden="true">Iliki</span><b aria-hidden="true">·</b><span aria-hidden="true">Tikiti maji</span><b aria-hidden="true">·</b><span aria-hidden="true">Zabibu</span><b aria-hidden="true">·</b><span>Rozela</span><b>·</b><span>Ukwaju</span><b>·</b><span>Embe</span><b>·</b><span>Nanasi</span><b>·</b><span>Parachichi</span><b>·</b><span>Passion</span><b>·</b><span>Ubuyu</span><b>·</b><span>Iliki</span><b>·</b><span>Tikiti maji</span><b>·</b><span>Zabibu</span><b>·</b>
+      <span aria-hidden="true">Rozela</span><b aria-hidden="true">·</b><span aria-hidden="true">Ukwaju</span><b aria-hidden="true">·</b><span aria-hidden="true">Embe</span><b aria-hidden="true">·</b><span aria-hidden="true">Nanasi</span><b aria-hidden="true">·</b><span aria-hidden="true">Parachichi</span><b aria-hidden="true">·</b><span aria-hidden="true">Passion</span><b aria-hidden="true">·</b><span aria-hidden="true">Ubuyu</span><b aria-hidden="true">·</b><span aria-hidden="true">Iliki</span><b aria-hidden="true">·</b><span aria-hidden="true">Tikiti maji</span><b aria-hidden="true">·</b><span aria-hidden="true">Zabibu</span><b aria-hidden="true">·</b><span>Rozela</span><b>·</b><span>Ukwaju</span><b>·</b><span>Embe</span><b>·</b><span>Nanasi</span><b>·</b><span>Parachichi</span><b>·</b><span>Passion</span><b>·</b><span>Ubuyu</span><b>·</b><span>Iliki</span><b>·</b><span>Tikiti maji</span><b>·</b><span>Zabibu</span><b>·</b>
+      <span aria-hidden="true">Rozela</span><b aria-hidden="true">·</b><span aria-hidden="true">Ukwaju</span><b aria-hidden="true">·</b><span aria-hidden="true">Embe</span><b aria-hidden="true">·</b><span aria-hidden="true">Nanasi</span><b aria-hidden="true">·</b><span aria-hidden="true">Parachichi</span><b aria-hidden="true">·</b><span aria-hidden="true">Passion</span><b aria-hidden="true">·</b><span aria-hidden="true">Ubuyu</span><b aria-hidden="true">·</b><span aria-hidden="true">Iliki</span><b aria-hidden="true">·</b><span aria-hidden="true">Tikiti maji</span><b aria-hidden="true">·</b><span aria-hidden="true">Zabibu</span><b aria-hidden="true">·</b><span>Rozela</span><b>·</b><span>Ukwaju</span><b>·</b><span>Embe</span><b>·</b><span>Nanasi</span><b>·</b><span>Parachichi</span><b>·</b><span>Passion</span><b>·</b><span>Ubuyu</span><b>·</b><span>Iliki</span><b>·</b><span>Tikiti maji</span><b>·</b><span>Zabibu</span><b>·</b>
+      <span aria-hidden="true">Rozela</span><b aria-hidden="true">·</b><span aria-hidden="true">Ukwaju</span><b aria-hidden="true">·</b><span aria-hidden="true">Embe</span><b aria-hidden="true">·</b><span aria-hidden="true">Nanasi</span><b aria-hidden="true">·</b><span aria-hidden="true">Parachichi</span><b aria-hidden="true">·</b><span aria-hidden="true">Passion</span><b aria-hidden="true">·</b><span aria-hidden="true">Ubuyu</span><b aria-hidden="true">·</b><span aria-hidden="true">Iliki</span><b aria-hidden="true">·</b><span aria-hidden="true">Tikiti maji</span><b aria-hidden="true">·</b><span aria-hidden="true">Zabibu</span><b aria-hidden="true">·</b><span>Rozela</span><b>·</b><span>Ukwaju</span><b>·</b><span>Embe</span><b>·</b><span>Nanasi</span><b>·</b><span>Parachichi</span><b>·</b><span>Passion</span><b>·</b><span>Ubuyu</span><b>·</b><span>Iliki</span><b>·</b><span>Tikiti maji</span><b>·</b><span>Zabibu</span><b>·</b>
+      <span aria-hidden="true">Rozela</span><b aria-hidden="true">·</b><span aria-hidden="true">Ukwaju</span><b aria-hidden="true">·</b><span aria-hidden="true">Embe</span><b aria-hidden="true">·</b><span aria-hidden="true">Nanasi</span><b aria-hidden="true">·</b><span aria-hidden="true">Parachichi</span><b aria-hidden="true">·</b><span aria-hidden="true">Passion</span><b aria-hidden="true">·</b><span aria-hidden="true">Ubuyu</span><b aria-hidden="true">·</b><span aria-hidden="true">Iliki</span><b aria-hidden="true">·</b><span aria-hidden="true">Tikiti maji</span><b aria-hidden="true">·</b><span aria-hidden="true">Zabibu</span><b aria-hidden="true">·</b><span>Rozela</span><b>·</b><span>Ukwaju</span><b>·</b><span>Embe</span><b>·</b><span>Nanasi</span><b>·</b><span>Parachichi</span><b>·</b><span>Passion</span><b>·</b><span>Ubuyu</span><b>·</b><span>Iliki</span><b>·</b><span>Tikiti maji</span><b>·</b><span>Zabibu</span><b>·</b>
+      <span aria-hidden="true">Rozela</span><b aria-hidden="true">·</b><span aria-hidden="true">Ukwaju</span><b aria-hidden="true">·</b><span aria-hidden="true">Embe</span><b aria-hidden="true">·</b><span aria-hidden="true">Nanasi</span><b aria-hidden="true">·</b><span aria-hidden="true">Parachichi</span><b aria-hidden="true">·</b><span aria-hidden="true">Passion</span><b aria-hidden="true">·</b><span aria-hidden="true">Ubuyu</span><b aria-hidden="true">·</b><span aria-hidden="true">Iliki</span><b aria-hidden="true">·</b><span aria-hidden="true">Tikiti maji</span><b aria-hidden="true">·</b><span aria-hidden="true">Zabibu</span><b aria-hidden="true">·</b><span>Rozela</span><b>·</b><span>Ukwaju</span><b>·</b><span>Embe</span><b>·</b><span>Nanasi</span><b>·</b><span>Parachichi</span><b>·</b><span>Passion</span><b>·</b><span>Ubuyu</span><b>·</b><span>Iliki</span><b>·</b><span>Tikiti maji</span><b>·</b><span>Zabibu</span><b>·</b>
+      <span aria-hidden="true">Rozela</span><b aria-hidden="true">·</b><span aria-hidden="true">Ukwaju</span><b aria-hidden="true">·</b><span aria-hidden="true">Embe</span><b aria-hidden="true">·</b><span aria-hidden="true">Nanasi</span><b aria-hidden="true">·</b><span aria-hidden="true">Parachichi</span><b aria-hidden="true">·</b><span aria-hidden="true">Passion</span><b aria-hidden="true">·</b><span aria-hidden="true">Ubuyu</span><b aria-hidden="true">·</b><span aria-hidden="true">Iliki</span><b aria-hidden="true">·</b><span aria-hidden="true">Tikiti maji</span><b aria-hidden="true">·</b><span aria-hidden="true">Zabibu</span><b aria-hidden="true">·</b><span>Rozela</span><b>·</b><span>Ukwaju</span><b>·</b><span>Embe</span><b>·</b><span>Nanasi</span><b>·</b><span>Parachichi</span><b>·</b><span>Passion</span><b>·</b><span>Ubuyu</span><b>·</b><span>Iliki</span><b>·</b><span>Tikiti maji</span><b>·</b><span>Zabibu</span><b>·</b>
+      <span aria-hidden="true">Rozela</span><b aria-hidden="true">·</b><span aria-hidden="true">Ukwaju</span><b aria-hidden="true">·</b><span aria-hidden="true">Embe</span><b aria-hidden="true">·</b><span aria-hidden="true">Nanasi</span><b aria-hidden="true">·</b><span aria-hidden="true">Parachichi</span><b aria-hidden="true">·</b><span aria-hidden="true">Passion</span><b aria-hidden="true">·</b><span aria-hidden="true">Ubuyu</span><b aria-hidden="true">·</b><span aria-hidden="true">Iliki</span><b aria-hidden="true">·</b><span aria-hidden="true">Tikiti maji</span><b aria-hidden="true">·</b><span aria-hidden="true">Zabibu</span><b aria-hidden="true">·</b><span>Rozela</span><b>·</b><span>Ukwaju</span><b>·</b><span>Embe</span><b>·</b><span>Nanasi</span><b>·</b><span>Parachichi</span><b>·</b><span>Passion</span><b>·</b><span>Ubuyu</span><b>·</b><span>Iliki</span><b>·</b><span>Tikiti maji</span><b>·</b><span>Zabibu</span><b>·</b>
+      <span aria-hidden="true">Rozela</span><b aria-hidden="true">·</b><span aria-hidden="true">Ukwaju</span><b aria-hidden="true">·</b><span aria-hidden="true">Embe</span><b aria-hidden="true">·</b><span aria-hidden="true">Nanasi</span><b aria-hidden="true">·</b><span aria-hidden="true">Parachichi</span><b aria-hidden="true">·</b><span aria-hidden="true">Passion</span><b aria-hidden="true">·</b><span aria-hidden="true">Ubuyu</span><b aria-hidden="true">·</b><span aria-hidden="true">Iliki</span><b aria-hidden="true">·</b><span aria-hidden="true">Tikiti maji</span><b aria-hidden="true">·</b><span aria-hidden="true">Zabibu</span><b aria-hidden="true">·</b><span>Rozela</span><b>·</b><span>Ukwaju</span><b>·</b><span>Embe</span><b>·</b><span>Nanasi</span><b>·</b><span>Parachichi</span><b>·</b><span>Passion</span><b>·</b><span>Ubuyu</span><b>·</b><span>Iliki</span><b>·</b><span>Tikiti maji</span><b>·</b><span>Zabibu</span><b>·</b>
+      <span aria-hidden="true">Rozela</span><b aria-hidden="true">·</b><span aria-hidden="true">Ukwaju</span><b aria-hidden="true">·</b><span aria-hidden="true">Embe</span><b aria-hidden="true">·</b><span aria-hidden="true">Nanasi</span><b aria-hidden="true">·</b><span aria-hidden="true">Parachichi</span><b aria-hidden="true">·</b><span aria-hidden="true">Passion</span><b aria-hidden="true">·</b><span aria-hidden="true">Ubuyu</span><b aria-hidden="true">·</b><span aria-hidden="true">Iliki</span><b aria-hidden="true">·</b><span aria-hidden="true">Tikiti maji</span><b aria-hidden="true">·</b><span aria-hidden="true">Zabibu</span><b aria-hidden="true">·</b><span>Rozela</span><b>·</b><span>Ukwaju</span><b>·</b><span>Embe</span><b>·</b><span>Nanasi</span><b>·</b><span>Parachichi</span><b>·</b><span>Passion</span><b>·</b><span>Ubuyu</span><b>·</b><span>Iliki</span><b>·</b><span>Tikiti maji</span><b>·</b><span>Zabibu</span><b>·</b>
+      <span aria-hidden="true">Rozela</span><b aria-hidden="true">·</b><span aria-hidden="true">Ukwaju</span><b aria-hidden="true">·</b><span aria-hidden="true">Embe</span><b aria-hidden="true">·</b><span aria-hidden="true">Nanasi</span><b aria-hidden="true">·</b><span aria-hidden="true">Parachichi</span><b aria-hidden="true">·</b><span aria-hidden="true">Passion</span><b aria-hidden="true">·</b><span aria-hidden="true">Ubuyu</span><b aria-hidden="true">·</b><span aria-hidden="true">Iliki</span><b aria-hidden="true">·</b><span aria-hidden="true">Tikiti maji</span><b aria-hidden="true">·</b><span aria-hidden="true">Zabibu</span><b aria-hidden="true">·</b><span>Rozela</span><b>·</b><span>Ukwaju</span><b>·</b><span>Embe</span><b>·</b><span>Nanasi</span><b>·</b><span>Parachichi</span><b>·</b><span>Passion</span><b>·</b><span>Ubuyu</span><b>·</b><span>Iliki</span><b>·</b><span>Tikiti maji</span><b>·</b><span>Zabibu</span><b>·</b>
+      <span aria-hidden="true">Rozela</span><b aria-hidden="true">·</b><span aria-hidden="true">Ukwaju</span><b aria-hidden="true">·</b><span aria-hidden="true">Embe</span><b aria-hidden="true">·</b><span aria-hidden="true">Nanasi</span><b aria-hidden="true">·</b><span aria-hidden="true">Parachichi</span><b aria-hidden="true">·</b><span aria-hidden="true">Passion</span><b aria-hidden="true">·</b><span aria-hidden="true">Ubuyu</span><b aria-hidden="true">·</b><span aria-hidden="true">Iliki</span><b aria-hidden="true">·</b><span aria-hidden="true">Tikiti maji</span><b aria-hidden="true">·</b><span aria-hidden="true">Zabibu</span><b aria-hidden="true">·</b><span>Rozela</span><b>·</b><span>Ukwaju</span><b>·</b><span>Embe</span><b>·</b><span>Nanasi</span><b>·</b><span>Parachichi</span><b>·</b><span>Passion</span><b>·</b><span>Ubuyu</span><b>·</b><span>Iliki</span><b>·</b><span>Tikiti maji</span><b>·</b><span>Zabibu</span><b>·</b>
+      <span aria-hidden="true">Rozela</span><b aria-hidden="true">·</b><span aria-hidden="true">Ukwaju</span><b aria-hidden="true">·</b><span aria-hidden="true">Embe</span><b aria-hidden="true">·</b><span aria-hidden="true">Nanasi</span><b aria-hidden="true">·</b><span aria-hidden="true">Parachichi</span><b aria-hidden="true">·</b><span aria-hidden="true">Passion</span><b aria-hidden="true">·</b><span aria-hidden="true">Ubuyu</span><b aria-hidden="true">·</b><span aria-hidden="true">Iliki</span><b aria-hidden="true">·</b><span aria-hidden="true">Tikiti maji</span><b aria-hidden="true">·</b><span aria-hidden="true">Zabibu</span><b aria-hidden="true">·</b></div>
+  </section>
 
-  <section class="section section-soft" id="story">
-    <div class="container grid-2">
-      <div class="image-frame image-tall">
-        <img src="assets/storefront.jpg" alt="Premium Vintage juice counter concept with dark plaster, brass edge and coastal light" />
+  <!-- ─────────── 3. manifesto ─────────── -->
+  <section class="manifesto" id="build">
+    <div class="manifesto__sticky">
+      <p class="manifesto__index"><span>01</span> The point</p>
+      <p class="manifesto__text">
+        We do not invent flavour. We take what grows an hour out of the city, press it the same morning, and pour it over a brass counter on a street that smells of rain and diesel. Nothing added. Nothing hidden.
+      </p>
+      <ul class="manifesto__facts">
+        <li data-reveal><b>06</b><span>Days a week</span></li>
+        <li data-reveal><b>22</b><span>Blends on the board</span></li>
+        <li data-reveal><b>1,000</b><span>TZS from</span></li>
+      </ul>
+    </div>
+    <div class="manifesto__media" data-parallax="14">
+      <img src="assets/img/pour-close.jpg" alt="Mango juice poured from a glass carafe into a tumbler on a brass tray" loading="lazy" />
+    </div>
+  </section>
+
+  <!-- ─────────── 4. pinned menu board ─────────── -->
+  <section class="board" id="menu">
+    <div class="board__pin">
+      <div class="board__head">
+        <p class="eyebrow">02 — The board</p>
+        <h2 class="display display--xl" data-split>Fresh, from the morning.</h2>
       </div>
-      <div>
-        <div class="eyebrow">The new direction</div>
-        <h2 class="serif" style="font-size:clamp(2.4rem,4.4vw,4.2rem);line-height:1;margin:12px 0 20px;">Premium, but still Dar es Salaam.</h2>
-        <p class="lede">We kept what people already recognise — the Vintage name, the cup, black and gold, local fruit — and removed the visual noise. The result is quieter, warmer and easier to read at a counter, on a bottle, or on a phone.</p>
-        <div class="grid-2" style="gap:24px;margin-top:34px;">
-          <div class="value-card">
-            <div class="num">01</div>
-            <h3>One identity</h3>
-            <p>VINTAGE · JUICE POINT as the master brand; Vintage Experience kept as the existing Google listing and campaign line.</p>
-          </div>
-          <div class="value-card">
-            <div class="num">02</div>
-            <h3>One menu system</h3>
-            <p>Category, blend, ingredients, price. No cursive script, no equals signs, no clipart fruit crowding the board.</p>
-          </div>
-          <div class="value-card">
-            <div class="num">03</div>
-            <h3>Local material language</h3>
-            <p>Charcoal plaster, brushed brass, terracotta and soft Swahili-coast geometry — not a generic imported luxury look.</p>
-          </div>
-          <div class="value-card">
-            <div class="num">04</div>
-            <h3>Real fruit, real light</h3>
-            <p>Roselle, tamarind, mango, passion fruit and avocado photographed as still life in golden-hour coastal light.</p>
-          </div>
+
+      <div class="board__body">
+        <div class="board__disc">
+          <img src="assets/img/disc-sign.jpg" alt="Vintage Juice Point brass-rimmed disc sign on a terracotta wall" loading="lazy" />
         </div>
+
+        <ol class="rows" data-rows>
+          <li class="row">
+            <span class="row__n">01</span>
+            <div class="row__t">
+              <h3>Rozela <em>Roselle</em></h3>
+              <p>Deep crimson, steeped not sweetened. The one people come back for.</p>
+            </div>
+            <span class="row__p">1,000</span>
+          </li>
+          <li class="row">
+            <span class="row__n">02</span>
+            <div class="row__t">
+              <h3>Embe <em>Mango</em></h3>
+              <p>Thick as custard in season, loosened with a little lime.</p>
+            </div>
+            <span class="row__p">1,000</span>
+          </li>
+          <li class="row">
+            <span class="row__n">03</span>
+            <div class="row__t">
+              <h3>Vintage Nado <em>House signature</em></h3>
+              <p>Parachichi, nanasi, embe, passion. Avocado gives it the body.</p>
+            </div>
+            <span class="row__p">2,000</span>
+          </li>
+          <li class="row">
+            <span class="row__n">04</span>
+            <div class="row__t">
+              <h3>Vintage Angel <em>Coast blend</em></h3>
+              <p>Rozela, tangawizi, ndimu, ubuyu, ukwaju. Sour, warm, cold all at once.</p>
+            </div>
+            <span class="row__p">3,000</span>
+          </li>
+          <li class="row">
+            <span class="row__n">05</span>
+            <div class="row__t">
+              <h3>Nado Rich <em>Meal in a glass</em></h3>
+              <p>Parachichi, ndizi, tende, embe, yogurt. Breakfast for people in a hurry.</p>
+            </div>
+            <span class="row__p">4,000</span>
+          </li>
+        </ol>
       </div>
+
+      <footer class="board__foot">
+        <span>Prices in TZS</span>
+        <a class="link-arrow" href="menu.html">All 22 blends <svg viewBox="0 0 24 12" aria-hidden="true"><path d="M0 6h22M17 1l5 5-5 5" /></svg></a>
+      </footer>
     </div>
   </section>
 
-  <section class="section section-dark" id="menu">
-    <div class="container">
-      <div class="section-head center">
-        <div class="eyebrow">Freshly blended</div>
-        <h2>The menu, rewritten.</h2>
-        <p class="lede" style="margin:0 auto;">Prices below were transcribed from the original menu photo. Confirm every value before publishing. All prices are in Tanzanian shillings.</p>
-      </div>
+  <!-- ─────────── 5. horizontal range ─────────── -->
+  <section class="range" id="range">
+    <div class="range__track">
+      <article class="panel panel--intro">
+        <p class="eyebrow">03 — The range</p>
+        <h2 class="display display--lg" data-split>Three ways<br />to take it.</h2>
+        <p class="panel__copy">Bottled for the road, poured over ice at the counter, or layered in a Movie Box cup for the walk home.</p>
+        <p class="panel__hint"><svg viewBox="0 0 34 12" aria-hidden="true"><path d="M0 6h30M25 1l5 5-5 5" /></svg> Keep scrolling</p>
+      </article>
 
-      <div class="menu-toolbar">
-        <div class="menu-tabs" role="tablist" aria-label="Menu categories">
-          <button class="tab-btn" data-menu-tab="fresh">Fresh juice</button>
-          <button class="tab-btn" data-menu-tab="signature">Vintage signature</button>
-          <button class="tab-btn" data-menu-tab="movie">Movie box</button>
-        </div>
-        <div class="price-note">Prices in TSH · Ask about seasonal fruit</div>
-      </div>
+      <article class="panel panel--photo">
+        <img src="assets/img/range-labelled.jpg" alt="Five bottles of cold-pressed juice with Vintage Juice Point labels against a terracotta wall" loading="lazy" />
+        <div class="panel__cap"><b>01</b><span>The bottle</span></div>
+      </article>
 
-      <div class="menu-panel active" data-menu-panel="fresh">
-        <div class="menu-item"><div><h3>Rozela <span class="muted" style="font-size:.7em;font-family:var(--sans);">/ Roselle</span></h3><div class="ingredients">Single-note fresh blend</div></div><div class="price">1,000</div></div>
-        <div class="menu-item"><div><h3>Ukwaju <span class="muted" style="font-size:.7em;font-family:var(--sans);">/ Tamarind</span></h3><div class="ingredients">Single-note fresh blend</div></div><div class="price">1,000</div></div>
-        <div class="menu-item"><div><h3>Embe <span class="muted" style="font-size:.7em;font-family:var(--sans);">/ Mango</span></h3><div class="ingredients">Single-note fresh blend</div></div><div class="price">1,000</div></div>
-        <div class="menu-item"><div><h3>Nanasi <span class="muted" style="font-size:.7em;font-family:var(--sans);">/ Pineapple</span></h3><div class="ingredients">Single-note fresh blend</div></div><div class="price">1,000</div></div>
-        <div class="menu-item"><div><h3>Parachichi + Tangawizi</h3><div class="ingredients">Avocado · ginger</div></div><div class="price">1,000</div></div>
-        <div class="menu-item"><div><h3>Bungo</h3><div class="ingredients">Single-note fresh blend</div></div><div class="price">2,000</div></div>
-      </div>
+      <article class="panel panel--photo">
+        <img src="assets/img/cups-terracotta.jpg" alt="Three takeaway cups of layered juice, one held by hand, on a brass counter" loading="lazy" />
+        <div class="panel__cap"><b>02</b><span>The Movie Box</span></div>
+      </article>
 
-      <div class="menu-panel" data-menu-panel="signature" hidden>
-        <div class="menu-item"><div><h3>Vintage Nado</h3><div class="ingredients">Parachichi · nanasi · embe · passion</div></div><div class="price">2,000</div></div>
-        <div class="menu-item"><div><h3>Nado Rich</h3><div class="ingredients">Parachichi · ndizi · tende · embe · yogurt</div></div><div class="price">4,000</div></div>
-        <div class="menu-item"><div><h3>Vintage Diatta</h3><div class="ingredients">Carrot · nanasi · ndizi</div></div><div class="price">2,000</div></div>
-        <div class="menu-item"><div><h3>Diatta Plus</h3><div class="ingredients">Zabibu · apple/pears · nanasi · passion</div></div><div class="price">4,000</div></div>
-        <div class="menu-item"><div><h3>Vintage Bonzy Plus</h3><div class="ingredients">Ukwaju · nanasi · passion · tangawizi</div></div><div class="price">2,000</div></div>
-        <div class="menu-item"><div><h3>Bonzy Spice</h3><div class="ingredients">Rozela · ukwaju · ubuyu · iliki</div></div><div class="price">3,000</div></div>
-        <div class="menu-item"><div><h3>Vintage Gamers</h3><div class="ingredients">Tikiti maji · nanasi · embe · passion · mint</div></div><div class="price">2,000</div></div>
-        <div class="menu-item"><div><h3>Gamers Plus</h3><div class="ingredients">Nanasi · parachichi · embe · passion · tikiti maji · mint</div></div><div class="price">3,000</div></div>
-        <div class="menu-item"><div><h3>Vintage Tropical</h3><div class="ingredients">Tikiti maji · nanasi · apple/pears · mint</div></div><div class="price">4,000</div></div>
-        <div class="menu-item"><div><h3>Tropical Light</h3><div class="ingredients">Zabibu · tikiti · mint</div></div><div class="price">3,000</div></div>
-        <div class="menu-item"><div><h3>Guava Sunset</h3><div class="ingredients">Pera · nanasi · passion · orange</div></div><div class="price">3,000</div></div>
-        <div class="menu-item"><div><h3>Vintage Angel</h3><div class="ingredients">Rozela · tangawizi · ndimu · ubuyu · ukwaju</div></div><div class="price">3,000</div></div>
-        <div class="menu-item"><div><h3>Aloe Calm</h3><div class="ingredients">Ubuyu · ukwaju · aloe vera</div></div><div class="price">2,000</div></div>
-      </div>
+      <article class="panel panel--photo">
+        <img src="assets/img/counter-dusk.jpg" alt="The Vintage juice counter at dusk with warm bulbs, brass counter and terracotta walls" loading="lazy" />
+        <div class="panel__cap"><b>03</b><span>The counter</span></div>
+      </article>
 
-      <div class="menu-panel" data-menu-panel="movie" hidden>
-        <div class="menu-item"><div><h3>Mango Milk</h3><div class="ingredients">Embe · nanasi · maziwa</div></div><div class="price">2,000</div></div>
-        <div class="menu-item"><div><h3>Movie Box Deluxe</h3><div class="ingredients">Bungo · nanasi · passion · mint · seasonal fruit / yogurt blend</div></div><div class="price">3,000–5,000</div></div>
-        <div class="menu-item"><div><h3>Custom blend</h3><div class="ingredients">Ask at the counter for seasonal fruit and your own combination</div></div><div class="price">By request</div></div>
-      </div>
-
-      <div style="margin-top:38px;text-align:center;">
-        <a class="btn btn-primary" href="menu.html">Open full printable menu</a>
-        <a class="btn btn-ghost" href="assets/menu-board.png">Download menu board</a>
-      </div>
+      <article class="panel panel--outro">
+        <p class="eyebrow">Every day</p>
+        <h2 class="display display--md">Ask for<br /><em>the seasonal.</em></h2>
+        <p class="panel__copy">What is ripe decides half the board. Tell the counter what you like and they will build it.</p>
+        <a class="link-arrow" href="menu.html">Read the menu <svg viewBox="0 0 24 12" aria-hidden="true"><path d="M0 6h22M17 1l5 5-5 5" /></svg></a>
+      </article>
     </div>
   </section>
 
-  <section class="section section-soft" id="social">
-    <div class="container">
-      <div class="section-head">
-        <div class="eyebrow">Social system</div>
-        <h2 class="serif" style="font-size:clamp(2.4rem,4.4vw,4.2rem);line-height:1;">Three formats, one identity.</h2>
-        <p class="lede" style="margin-top:16px;">Post, story and Google cover are already typeset with the real fonts. Replace the contact placeholders once, and they are ready to publish.</p>
-      </div>
-      <div class="grid-3" style="align-items:start;">
-        <figure style="margin:0;">
-          <div class="image-frame fit-contain"><img src="assets/social-post-branded.jpg" alt="Vintage Juice Point Instagram post with roselle juice" /></div>
-          <p class="caption">Instagram post · 1080 × 1080</p>
-        </figure>
-        <figure style="margin:0;">
-          <div class="image-frame fit-contain"><img src="assets/social-story-branded.jpg" alt="Vintage Juice Point vertical story frame with three juices" /></div>
-          <p class="caption">Story / WhatsApp status · 1080 × 1920</p>
-        </figure>
-        <figure style="margin:0;">
-          <div class="image-frame fit-contain"><img src="assets/gbp-cover-branded.jpg" alt="Vintage Juice Point Google Business Profile cover" /></div>
-          <p class="caption">Google Business Profile cover · 1600 × 900</p>
-        </figure>
-      </div>
+  <!-- ─────────── 6. full-bleed statement ─────────── -->
+  <section class="statement">
+    <div class="statement__img" data-parallax="18">
+      <img src="assets/img/cups-terracotta.jpg" alt="" aria-hidden="true" loading="lazy" />
     </div>
+    <blockquote class="statement__quote">
+      <p data-split>“Cold, clean, and honest about where it came from.”</p>
+      <cite>— the house line</cite>
+    </blockquote>
   </section>
 
-  <section class="section" id="packaging">
-    <div class="container grid-2">
-      <div>
-        <div class="eyebrow">Packaging system</div>
-        <h2 class="serif" style="font-size:clamp(2.4rem,4.4vw,4.2rem);line-height:1;margin:12px 0 20px;">One bottle. One label. One shelf presence.</h2>
-        <p class="lede">Clear vessels let the juice colour do the work. A matte black cap, one round brass-ringed label and a thin seal strip replace the mixed bottles, mixed caps and sticker collage in the old photos.</p>
-        <p class="muted" style="font-size:.86rem;margin-top:22px;">The composite shows the real <code>label-round.svg</code> artwork applied to the generated packaging set. Use it as art direction for the printer; the printer still needs a proper dieline.</p>
-        <div class="tag-row">
-          <span class="tag">Matte black cap</span>
-          <span class="tag">Brass foil label</span>
-          <span class="tag">Clear PET / glass</span>
-          <span class="tag">No script type</span>
-        </div>
-      </div>
-      <div class="image-frame image-tall">
-        <img src="assets/packaging-labelled.jpg" alt="Vintage Juice Point bottle, smoothie cup and dessert tub with round black and brass labels" />
-      </div>
+  <!-- ─────────── 7. visit ─────────── -->
+  <section class="visit" id="visit">
+    <div class="visit__col">
+      <p class="eyebrow">04 — Visit</p>
+      <h2 class="display display--lg" data-split>Find the<br />disc on the wall.</h2>
+      <p class="visit__copy">A juice point, not a café. Stand at the brass, watch it pressed, take it with you.</p>
     </div>
+    <dl class="visit__meta">
+      <div data-reveal><dt>Where</dt><dd>58F5+24, Dar es Salaam</dd></div>
+      <div data-reveal><dt>Hours</dt><dd class="pending">Add opening hours</dd></div>
+      <div data-reveal><dt>Phone</dt><dd class="pending">+255 XXX XXX XXX</dd></div>
+      <div data-reveal><dt>Pay</dt><dd>Card · NFC · Cash</dd></div>
+      <div data-reveal><dt>Good for</dt><dd>Takeaway · Kids</dd></div>
+      <div data-reveal><dt>Listing</dt><dd>Vintage Experience</dd></div>
+    </dl>
+    <p class="visit__fine" data-reveal>Concept redesign. Hours, phone and email are placeholders — no verified details were supplied by the business.</p>
   </section>
 
-  <section class="section section-dark" id="visit">
-    <div class="container visit-grid">
-      <div>
-        <div class="eyebrow">Visit</div>
-        <h2 class="serif" style="font-size:clamp(2.4rem,4.4vw,4.2rem);line-height:1;margin:12px 0 20px;">The Vintage Experience.</h2>
-        <p class="lede">Keep the existing Google listing name while the owner confirms the trading name. Replace every highlighted placeholder below before this page goes live.</p>
-        <ul class="info-list" style="margin-top:30px;">
-          <li><strong>Google listing</strong><span>Vintage Experience</span></li>
-          <li><strong>Visual brand</strong><span>VINTAGE · JUICE POINT</span></li>
-          <li><strong>Plus code</strong><span>58F5+24 Dar es Salaam</span></li>
-          <li><strong>Phone / WhatsApp</strong><span class="placeholder">+255 XXX XXX XXX</span></li>
-          <li><strong>Email</strong><span class="placeholder">hello@vintage.co.tz</span></li>
-          <li><strong>Instagram</strong><span class="placeholder">@vintagejuicepoint</span></li>
-          <li><strong>Hours</strong><span class="placeholder">Add opening hours before publishing</span></li>
-          <li><strong>Website / menu URL</strong><span class="placeholder">Add verified website / menu URL</span></li>
-        </ul>
-        <div class="tag-row">
-          <span class="tag">Takeaway</span><span class="tag">Casual</span><span class="tag">Trendy</span><span class="tag">Solo dining</span><span class="tag">Groups</span><span class="tag">Good for kids</span><span class="tag">Cards</span><span class="tag">NFC</span>
-        </div>
-      </div>
-      <div class="image-frame image-wide">
-        <img src="assets/social-rose.jpg" alt="Hand holding a roselle juice against a terracotta wall with Swahili-coast shadow" />
-      </div>
+  <footer class="foot">
+    <div class="foot__mark">
+      <svg viewBox="0 0 44 44" aria-hidden="true"><use href="assets/logo/mark.svg#mark" /></svg>
+      <p>Vintage Juice Point<br /><span>Dar es Salaam · Tanzania</span></p>
     </div>
-  </section>
+    <nav class="foot__links" aria-label="Footer">
+      <a href="menu.html">Menu</a>
+      <a href="brand-kit.html">Brand kit</a>
+      <a href="GOOGLE_FLOW_PROMPTS.md">Flow prompts</a>
+    </nav>
+    <p class="foot__legal">Asili safi. Ladha ya kisasa.</p>
+  </footer>
 
-  <section class="section section-soft">
-    <div class="container-narrow" style="text-align:center;">
-      <div class="eyebrow">Next step</div>
-      <h2 class="serif" style="font-size:clamp(2.4rem,4.4vw,4rem);line-height:1;margin:12px 0 18px;">Make the film in Google Flow.</h2>
-      <p class="lede" style="margin:0 auto 28px;">The prompt pack includes a 30-second master prompt, six scene prompts, a style anchor and a negative prompt. Upload the frames in <code>flow-inputs/</code>, generate 8-second clips, then add the real logo and tagline in post.</p>
-      <a class="btn btn-dark" href="GOOGLE_FLOW_PROMPTS.md">Open Flow prompts</a>
-      <a class="btn btn-primary" href="brand-kit.html">View full brand kit</a>
-    </div>
-  </section>
 </main>
 
-<footer class="site-footer">
-  <div class="container">
-    <img src="assets/logo-primary-on-ink.png" alt="Vintage Juice Point" />
-    <p>Concept redesign · <span data-year>2026</span> · Dar es Salaam · <a href="BRAND_GUIDELINES.md">Guidelines</a> · <a href="GOOGLE_BUSINESS_PROFILE.md">Maps cleanup</a></p>
-    <p>Replace all contact placeholders before publishing.</p>
-  </div>
-</footer>
-
-<script src="app.js"></script>
+<script>
+  // progressive enhancement: if the motion module cannot load, show everything
+  setTimeout(function () {
+    if (!window.__vjpMotion) {
+      document.documentElement.classList.remove('js');
+      document.querySelectorAll('[data-reveal],.row,.w').forEach(function (el) {
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+      });
+    }
+  }, 1800);
+</script>
+<script type="module" src="js/main.js"></script>
 </body>
 </html>
