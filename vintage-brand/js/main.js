@@ -29,10 +29,15 @@ function prepareLines(container) {
     .join(' ');
 
   const lines = gsap.utils.toArray('.ln', container);
-  lines.forEach((ln) => {
+  lines.forEach((ln, i) => {
     if (ln.firstElementChild && ln.children.length === 1) return; // already wrapped
     const inner = document.createElement('span');
     while (ln.firstChild) inner.appendChild(ln.firstChild);
+    // A real space after every line but the last. The line boxes are block
+    // level, so screen readers, search engines and copy/paste otherwise see
+    // "Threewaystotake it" — the space collapses visually but survives in the
+    // text content.
+    if (i < lines.length - 1) inner.appendChild(document.createTextNode(' '));
     ln.appendChild(inner);
   });
   if (label && !container.hasAttribute('aria-label')) {
