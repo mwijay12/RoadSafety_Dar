@@ -24,6 +24,20 @@ const E = {
 
 const trackSplit = (s) => s;
 
+/* SplitText replaces the heading's text with aria-hidden line clones, so give
+   assistive tech the original sentence as the accessible name. */
+function splitHeading(el, opts) {
+  const label = el.innerHTML
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const split = SplitText.create(el, opts);
+  if (label) el.setAttribute('aria-label', label);
+  return split;
+}
+
+
 /* ============================================================
    1. HERO — masked line reveal, slow push-in, scroll-out
    ============================================================ */
@@ -156,7 +170,7 @@ function manifesto() {
 function board() {
   const head = document.querySelector('.board__head .display');
   if (head) {
-    const split = trackSplit(SplitText.create(head, { type: 'lines', mask: 'lines' }));
+    const split = trackSplit(splitHeading(head, { type: 'lines', mask: 'lines' }));
     gsap.from(split.lines, {
       yPercent: 110,
       duration: 1.2,
@@ -262,7 +276,7 @@ function range() {
 function statement() {
   const q = document.querySelector('.statement__quote [data-split]');
   if (!q) return;
-  const split = trackSplit(SplitText.create(q, { type: 'lines', mask: 'lines' }));
+  const split = trackSplit(splitHeading(q, { type: 'lines', mask: 'lines' }));
   gsap.from(split.lines, {
     yPercent: 112,
     duration: 1.35,
@@ -286,7 +300,7 @@ function statement() {
 function visit() {
   const h = document.querySelector('.visit .display');
   if (h) {
-    const split = trackSplit(SplitText.create(h, { type: 'lines', mask: 'lines' }));
+    const split = trackSplit(splitHeading(h, { type: 'lines', mask: 'lines' }));
     gsap.from(split.lines, {
       yPercent: 110,
       duration: 1.25,
