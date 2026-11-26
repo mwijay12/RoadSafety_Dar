@@ -60,17 +60,19 @@ function hero() {
 function marquee() {
   const track = document.querySelector('[data-marquee]');
   if (!track) return;
-  const half = track.scrollWidth / 2;
 
-  let dir = 1;
-  const loop = gsap.to(track, {
-    x: -half,
-    duration: 42,
-    ease: 'none',
-    repeat: -1,
-    modifiers: {
-      x: (x) => `${parseFloat(x) % half}px`,
-    },
+  // the markup holds exactly two copies of the run; one copy is one loop length
+  const half = track.scrollWidth / 2;
+  if (!half) return;
+
+  let speed = 1;
+  const state = { x: 0 };
+
+  gsap.ticker.add((time, deltaTime) => {
+    state.x -= (deltaTime / 1000) * 42 * speed;
+    if (state.x <= -half) state.x += half;
+    if (state.x > 0) state.x -= half;
+    track.style.transform = `translate3d(${state.x}px,0,0)`;
   });
 
   ScrollTrigger.create({
@@ -78,10 +80,10 @@ function marquee() {
     start: 'top bottom',
     end: 'bottom top',
     onUpdate: (self) => {
-      const v = self.getVelocity() / 1600;
-      const clamped = gsap.utils.clamp(-4, 4, v);
-      dir = clamped < 0 ? -1 : 1;
-      gsap.to(loop, { timeScale: dir * (1 + Math.min(Math.abs(clamped), 3.2)), duration: 0.5, overwrite: true });
+      // scroll velocity pushes the belt faster, and flips it when you scroll back
+      const v = gsap.utils.clamp(-1, 1, self.getVelocity() / 2600);
+      const target = v < -0.02 ? -Math.min(4, Math.abs(v) * 4) : 1 + Math.min(3, Math.abs(v) * 3);
+      speed += (target - speed) * 0.12;
     },
   });
 }
@@ -93,10 +95,17 @@ function manifesto() {
   const para = document.querySelector('.manifesto__text');
   if (para) {
     // word-level scrub: the sentence lights up as you read past it
+    // build nodes instead of an innerHTML string: joining spans without
+    // whitespace collapses the sentence, so keep a real text node between them
     const words = para.textContent.trim().split(/\s+/);
-    para.innerHTML = words
-      .map((w) => `<span class="w">${w}</span>`)
-      .join(' ');
+    para.textContent = '';
+    words.forEach((word, i) => {
+      const span = document.createElement('span');
+      span.className = 'w';
+      span.textContent = word;
+      para.appendChild(span);
+      if (i < words.length - 1) para.appendChild(document.createTextNode(' '));
+    });
 
     gsap.fromTo(
       '.manifesto__text .w',

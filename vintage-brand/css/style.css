@@ -163,7 +163,7 @@ ul,ol{list-style:none}
   font-family:var(--serif);font-size:clamp(1.6rem,3.05vw,3.05rem);line-height:1.16;font-weight:400;
   letter-spacing:-.005em;max-width:18em;color:var(--ivory);
 }
-.manifesto__text .w{display:inline-block;will-change:opacity}
+.manifesto__text .w{display:inline-block;margin-right:.26em;will-change:opacity}
 .manifesto__facts{display:flex;flex-wrap:wrap;gap:clamp(24px,3vw,54px);border-top:1px solid var(--hair);padding-top:clamp(18px,2.6vh,28px)}
 .manifesto__facts li{display:flex;flex-direction:column;gap:4px}
 .manifesto__facts b{font-family:var(--serif);font-size:clamp(1.7rem,2.6vw,2.4rem);font-weight:600;color:var(--brass-l);line-height:1}
