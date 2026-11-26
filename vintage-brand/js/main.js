@@ -156,7 +156,7 @@ function manifesto() {
 function board() {
   const head = document.querySelector('.board__head .display');
   if (head) {
-    const split = trackSplit(SplitText.create(head, { type: 'lines', mask: 'lines', linesClass: 'sl' }));
+    const split = trackSplit(SplitText.create(head, { type: 'lines', mask: 'lines' }));
     gsap.from(split.lines, {
       yPercent: 110,
       duration: 1.2,
@@ -262,7 +262,7 @@ function range() {
 function statement() {
   const q = document.querySelector('.statement__quote [data-split]');
   if (!q) return;
-  const split = trackSplit(SplitText.create(q, { type: 'lines', mask: 'lines', linesClass: 'sl' }));
+  const split = trackSplit(SplitText.create(q, { type: 'lines', mask: 'lines' }));
   gsap.from(split.lines, {
     yPercent: 112,
     duration: 1.35,
@@ -286,7 +286,7 @@ function statement() {
 function visit() {
   const h = document.querySelector('.visit .display');
   if (h) {
-    const split = trackSplit(SplitText.create(h, { type: 'lines', mask: 'lines', linesClass: 'sl' }));
+    const split = trackSplit(SplitText.create(h, { type: 'lines', mask: 'lines' }));
     gsap.from(split.lines, {
       yPercent: 110,
       duration: 1.25,

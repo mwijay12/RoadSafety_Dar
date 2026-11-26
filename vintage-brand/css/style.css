@@ -277,6 +277,9 @@ ul,ol{list-style:none}
 .js .manifesto__text .w{opacity:.12}
 .js .row{opacity:0}
 
+/* SplitText line masking: leave a hairline for descenders and italics */
+[class*="-mask"]{overflow:clip;padding-bottom:.04em;margin-bottom:-.04em}
+
 /* ---------- responsive ---------- */
 @media (max-width:960px){
   .manifesto{grid-template-columns:1fr}
