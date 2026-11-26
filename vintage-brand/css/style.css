@@ -216,8 +216,10 @@ ul,ol{list-style:none}
 .card--slab .card__price{color:var(--ink);border-color:rgba(13,21,18,.24)}
 .giant-link{
   display:block;font-family:var(--serif);font-weight:600;line-height:.86;
+  /* the three words are separate lines so the SVGs stay out of the text run */
   font-size:clamp(2rem,3.6vw,3.4rem);letter-spacing:-.02em;color:var(--ink);
 }
+.giant-link .ln{display:block}
 .giant-link svg{width:1.1em;height:.5em;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;margin-top:.3em;transition:transform .45s var(--ease)}
 .giant-link:hover svg{transform:translateX(12px)}
 .board__foot{

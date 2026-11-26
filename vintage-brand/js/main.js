@@ -20,7 +20,14 @@ const E = { expo: 'expo.out', out: 'power3.out' };
    and give the heading a real accessible name (the clones are aria-hidden). */
 function prepareLines(container) {
   if (!container) return [];
-  const label = container.textContent.replace(/\s+/g, ' ').trim();
+  // Read the sentence from the line elements before wrapping them: joining the
+  // raw textContent would run the lines together ("Threewaystotake it").
+  const label = gsap.utils
+    .toArray('.ln', container)
+    .map((ln) => ln.textContent.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .join(' ');
+
   const lines = gsap.utils.toArray('.ln', container);
   lines.forEach((ln) => {
     if (ln.firstElementChild && ln.children.length === 1) return; // already wrapped
