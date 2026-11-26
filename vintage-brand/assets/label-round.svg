@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600" role="img" aria-label="Vintage Juice Point round label">
+  <defs>
+    <linearGradient id="labelBrass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E7C77A"/>
+      <stop offset="0.5" stop-color="#C9A45B"/>
+      <stop offset="1" stop-color="#8F6C2F"/>
+    </linearGradient>
+  </defs>
+  <circle cx="300" cy="300" r="290" fill="#0D1512"/>
+  <circle cx="300" cy="300" r="278" fill="none" stroke="url(#labelBrass)" stroke-width="4"/>
+  <circle cx="300" cy="300" r="262" fill="none" stroke="url(#labelBrass)" stroke-width="1.5" opacity="0.7"/>
+  <g fill="none" stroke="url(#labelBrass)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M228 292 Q300 232 372 292" stroke-width="2" opacity="0.45"/>
+    <path d="M244 224 L356 224 L344 340 Q341 352 329 352 L271 352 Q259 352 256 340 Z" stroke-width="6"/>
+    <path d="M236 224 L364 224" stroke-width="6"/>
+    <path d="M328 220 L352 148 L374 148" stroke-width="6"/>
+  </g>
+  <g font-family="Cormorant Garamond, Georgia, serif" fill="#F7F1E3" text-anchor="middle">
+    <text x="300" y="420" font-size="52" font-weight="bold" letter-spacing="7">VINTAGE</text>
+  </g>
+  <g font-family="Manrope, Arial, sans-serif" text-anchor="middle">
+    <text x="300" y="452" font-size="16" font-weight="bold" letter-spacing="8" fill="url(#labelBrass)">JUICE POINT</text>
+    <text x="300" y="486" font-size="12" letter-spacing="3" fill="#CFC5B2">DAR ES SALAAM · TANZANIA</text>
+  </g>
+  <circle cx="300" cy="112" r="4" fill="url(#labelBrass)"/>
+  <circle cx="300" cy="520" r="4" fill="url(#labelBrass)"/>
+</svg>

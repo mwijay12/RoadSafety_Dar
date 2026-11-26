@@ -1,0 +1,65 @@
+{
+  "brand": "Vintage Juice Point",
+  "listing_name": "Vintage Experience",
+  "location": "Dar es Salaam, Tanzania",
+  "currency": "TZS",
+  "price_note": "Prices transcribed from the reference menu photo. Confirm every value with the owner before publishing or printing.",
+  "categories": [
+    {
+      "id": "fresh",
+      "title": "Fresh Juice",
+      "subtitle": "Single-note blends, freshly made",
+      "items": [
+        { "name": "Rozela", "english": "Roselle", "price": 1000, "price_label": "1,000" },
+        { "name": "Ukwaju", "english": "Tamarind", "price": 1000, "price_label": "1,000" },
+        { "name": "Embe", "english": "Mango", "price": 1000, "price_label": "1,000" },
+        { "name": "Nanasi", "english": "Pineapple", "price": 1000, "price_label": "1,000" },
+        { "name": "Parachichi / Tangawizi", "english": "Avocado / Ginger", "price": 1000, "price_label": "1,000" },
+        { "name": "Bungo", "english": null, "price": 2000, "price_label": "2,000" }
+      ]
+    },
+    {
+      "id": "signature",
+      "title": "Vintage Signature",
+      "subtitle": "House blends with local fruit",
+      "items": [
+        { "name": "Vintage Nado", "ingredients": ["parachichi", "nanasi", "embe", "passion"], "price": 2000, "price_label": "2,000" },
+        { "name": "Nado Rich", "ingredients": ["parachichi", "ndizi", "tende", "embe", "yogurt"], "price": 4000, "price_label": "4,000", "source_label": "PARACHICHI + NDIZI + TENDE + EMBE + YOGURT" },
+        { "name": "Vintage Diatta", "ingredients": ["carrot", "nanasi", "ndizi"], "price": 2000, "price_label": "2,000" },
+        { "name": "Diatta Plus", "ingredients": ["zabibu", "apple/pears", "nanasi", "passion"], "price": 4000, "price_label": "4,000", "source_label": "ZABIBU + PEAS/APPLE + NANASI + PASSION", "note": "Verify the ambiguous peas/apple entry." },
+        { "name": "Vintage Bonzy Plus", "ingredients": ["ukwaju", "nanasi", "passion", "tangawizi"], "price": 2000, "price_label": "2,000" },
+        { "name": "Bonzy Spice", "ingredients": ["rozela", "ukwaju", "ubuyu", "iliki"], "price": 3000, "price_label": "3,000", "source_label": "ROZELA + UKWAJU + UBUVU + ILIKI", "note": "Standardised to ubuyu; confirm with owner." },
+        { "name": "Vintage Gamers", "ingredients": ["tikiti maji", "nanasi", "embe", "passion", "mint"], "price": 2000, "price_label": "2,000" },
+        { "name": "Gamers Plus", "ingredients": ["nanasi", "parachichi", "embe", "passion", "tikiti maji", "mint"], "price": 3000, "price_label": "3,000" },
+        { "name": "Vintage Tropical", "ingredients": ["tikiti maji", "nanasi", "apple/pears", "mint"], "price": 4000, "price_label": "4,000" },
+        { "name": "Tropical Light", "ingredients": ["zabibu", "tikiti", "mint"], "price": 3000, "price_label": "3,000" },
+        { "name": "Guava Sunset", "ingredients": ["pera", "nanasi", "passion", "orange"], "price": 3000, "price_label": "3,000", "source_label": "PERA + NANASI + PASSION + ORANGE" },
+        { "name": "Vintage Angel", "ingredients": ["rozela", "tangawizi", "ndimu", "ubuyu", "ukwaju"], "price": 3000, "price_label": "3,000" },
+        { "name": "Aloe Calm", "ingredients": ["ubuyu", "ukwaju", "aloe vera"], "price": 2000, "price_label": "2,000", "source_label": "UBUYU + UKWAJU + ALOZERA", "note": "Standardised to aloe vera; confirm with owner." }
+      ]
+    },
+    {
+      "id": "movie-box",
+      "title": "Vintage Movie Box",
+      "subtitle": "Layered cups and richer blends",
+      "items": [
+        { "name": "Mango Milk", "ingredients": ["embe", "nanasi", "maziwa"], "price": 2000, "price_label": "2,000", "source_label": "EMBE + NANASI + MAZIWA" },
+        { "name": "Movie Box Deluxe", "ingredients": ["bungo", "nanasi", "passion", "mint", "seasonal fruit / yogurt blend"], "price_min": 3000, "price_max": 5000, "price_label": "3,000–5,000", "source_label": "BUNGO + NANASI + PASSION + MINT + (PEAS/PERA / EMBE + YOGURT + NDIZI)", "note": "Verify the exact seasonal add-ins and price range." }
+      ]
+    }
+  ],
+  "service_notes": [
+    "Takeaway",
+    "Credit cards, debit cards and NFC mobile payments",
+    "Casual, trendy, good for kids",
+    "Ask at the counter for seasonal fruit and custom blends"
+  ],
+  "placeholders": {
+    "phone": "+255 XXX XXX XXX",
+    "email": "hello@vintage.co.tz",
+    "instagram": "@vintagejuicepoint",
+    "hours": "Add opening hours before publishing",
+    "website": "Add verified website / menu URL",
+    "plus_code": "58F5+24 Dar es Salaam"
+  }
+}
