@@ -8,235 +8,245 @@
 <meta name="theme-color" content="#0D1512" />
 <link rel="icon" href="assets/logo/mark.svg" type="image/svg+xml" />
 <link rel="preload" href="fonts/cormorant-garamond-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin />
-<link rel="preload" href="fonts/manrope-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="fonts/manrope-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="assets/img/hero-sign.jpg" as="image" fetchpriority="high" />
 <link rel="stylesheet" href="css/style.css" />
-<link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 <a class="skip" href="#menu">Skip to menu</a>
 
-<!-- ─────────── fixed frame: nav + progress ─────────── -->
+<!-- ══════════ chrome ══════════ -->
 <header class="nav" id="nav">
   <a class="nav__mark" href="#top" aria-label="Vintage Juice Point, top">
-    <svg viewBox="0 0 44 44" aria-hidden="true"><use href="assets/logo/mark.svg#mark" /></svg>
+    <svg viewBox="0 0 600 600" aria-hidden="true"><use href="assets/logo/mark.svg#mark" /></svg>
     <span>Vintage</span>
   </a>
   <nav class="nav__links" aria-label="Sections">
     <a href="#menu">Menu</a>
-    <a href="#build">Build</a>
+    <a href="#flavour">Flavours</a>
     <a href="#range">Range</a>
     <a href="#visit">Visit</a>
   </nav>
   <a class="nav__cta" href="menu.html">Full list</a>
 </header>
-
 <div class="scroll-progress" aria-hidden="true"><i></i></div>
 
 <main id="top">
 
-  <!-- ─────────── 1. hero ─────────── -->
-  <section class="hero" id="hero">
-    <div class="hero__media">
-      <img src="assets/img/hero-sign.jpg" alt="A hand holds a bottle of roselle juice in front of the Vintage Juice Point brass-rimmed sign on a terracotta wall" />
-    </div>
+  <!-- ══════════ 01 · HERO ══════════ -->
+  <section class="hero" data-theme="ink">
+    <div class="hero__media"><img src="assets/img/hero-sign.jpg" alt="A hand holds a bottle of roselle juice in front of the Vintage Juice Point brass-rimmed sign on a terracotta wall" /></div>
     <div class="hero__grain" aria-hidden="true"></div>
 
-    <div class="hero__inner">
-      <p class="hero__eyebrow" data-reveal>
-        <span>Dar es Salaam</span><i aria-hidden="true"></i><span>Tanzania</span>
-      </p>
-      <h1 class="hero__title" aria-label="Asili safi. Ladha ya kisasa.">
-        <span class="line" data-line><span class="ln">Asili safi.</span></span>
-        <span class="line" data-line><span class="ln"><em>Ladha</em> ya kisasa.</span></span>
+    <div class="hero__top">
+      <p class="kicker">Dar es Salaam<i aria-hidden="true">·</i>Tanzania</p>
+      <p class="hero__since">Est. the coast</p>
+    </div>
+
+    <div class="hero__mid">
+      <h1 class="hero__title" data-spread>
+        <span class="ln">Asili</span>
+        <span class="ln">safi.</span>
       </h1>
-      <p class="hero__sub" data-reveal>Clean origin. Modern taste.</p>
+      <p class="hero__lede">
+        <em>Ladha ya kisasa.</em><br />
+        Clean origin, modern taste — pressed the same morning, poured over a brass counter.
+      </p>
     </div>
 
     <div class="hero__foot">
-      <p class="hero__note" data-reveal>Freshly blended local fruit — pressed, poured and handed over the counter six days a week.</p>
-      <a class="scroll-cue" href="#strip" data-reveal>
-        <span>Scroll</span>
-        <svg viewBox="0 0 12 34" aria-hidden="true"><path d="M6 0v30M1 25l5 6 5-6" /></svg>
-      </a>
+      <a class="cue" href="#menu"><span>Scroll</span><svg viewBox="0 0 12 40" aria-hidden="true"><path d="M6 0v34M1 29l5 6 5-6" /></svg></a>
+      <p class="hero__meta">Takeaway<i>·</i>Card &amp; NFC<i>·</i>Good for kids</p>
     </div>
   </section>
 
-  <!-- ─────────── 2. marquee ─────────── -->
-  <section class="strip" id="strip" aria-label="Fruit we work with">
-    <div class="strip__track" data-marquee>
-      <span>Rozela</span><b>·</b><span>Ukwaju</span><b>·</b><span>Embe</span><b>·</b><span>Nanasi</span><b>·</b><span>Parachichi</span><b>·</b><span>Passion</span><b>·</b><span>Ubuyu</span><b>·</b><span>Iliki</span><b>·</b><span>Tikiti maji</span><b>·</b><span>Zabibu</span><b>·</b><span aria-hidden="true">Rozela</span><b aria-hidden="true">·</b><span aria-hidden="true">Ukwaju</span><b aria-hidden="true">·</b><span aria-hidden="true">Embe</span><b aria-hidden="true">·</b><span aria-hidden="true">Nanasi</span><b aria-hidden="true">·</b><span aria-hidden="true">Parachichi</span><b aria-hidden="true">·</b><span aria-hidden="true">Passion</span><b aria-hidden="true">·</b><span aria-hidden="true">Ubuyu</span><b aria-hidden="true">·</b><span aria-hidden="true">Iliki</span><b aria-hidden="true">·</b><span aria-hidden="true">Tikiti maji</span><b aria-hidden="true">·</b><span aria-hidden="true">Zabibu</span><b aria-hidden="true">·</b>
+  <!-- ══════════ 02 · MARQUEE ══════════ -->
+  <section class="marquee" aria-label="Fruit we work with">
+    <div class="marquee__track" data-marquee>
+      <span>Rozela</span><b>/</b><span>Ukwaju</span><b>/</b><span>Embe</span><b>/</b><span>Nanasi</span><b>/</b><span>Parachichi</span><b>/</b><span>Passion</span><b>/</b><span>Ubuyu</span><b>/</b><span>Iliki</span><b>/</b><span>Tikiti maji</span><b>/</b><span>Zabibu</span><b>/</b><span aria-hidden="true">Rozela</span><b aria-hidden="true">/</b><span aria-hidden="true">Ukwaju</span><b aria-hidden="true">/</b><span aria-hidden="true">Embe</span><b aria-hidden="true">/</b><span aria-hidden="true">Nanasi</span><b aria-hidden="true">/</b><span aria-hidden="true">Parachichi</span><b aria-hidden="true">/</b><span aria-hidden="true">Passion</span><b aria-hidden="true">/</b><span aria-hidden="true">Ubuyu</span><b aria-hidden="true">/</b><span aria-hidden="true">Iliki</span><b aria-hidden="true">/</b><span aria-hidden="true">Tikiti maji</span><b aria-hidden="true">/</b><span aria-hidden="true">Zabibu</span><b aria-hidden="true">/</b>
     </div>
   </section>
 
-  <!-- ─────────── 3. manifesto ─────────── -->
-  <section class="manifesto" id="build">
-    <div class="manifesto__sticky">
-      <p class="manifesto__index"><span>01</span> The point</p>
-      <p class="manifesto__text">
-        We do not invent flavour. We take what grows an hour out of the city, press it the same morning, and pour it over a brass counter on a street that smells of rain and diesel. Nothing added. Nothing hidden.
-      </p>
-      <ul class="manifesto__facts">
-        <li data-reveal><b>06</b><span>Days a week</span></li>
-        <li data-reveal><b>22</b><span>Blends on the board</span></li>
-        <li data-reveal><b>1,000</b><span>TZS from</span></li>
+  <!-- ══════════ 03 · STATEMENT (terracotta field) ══════════ -->
+  <section class="statement" data-theme="terra">
+    <p class="kicker kicker--ink">01 — The point</p>
+    <h2 class="statement__text" data-words data-statement>
+      We do not invent flavour. We take what grows an hour out of the city, press it the same morning, and pour it over a brass counter on a street that smells of rain and diesel.
+    </h2>
+    <div class="statement__foot">
+      <ul class="facts">
+        <li><b>06</b><span>days a week</span></li>
+        <li><b>22</b><span>blends on the board</span></li>
+        <li><b>1,000</b><span>TZS from</span></li>
       </ul>
-    </div>
-    <div class="manifesto__media" data-parallax="14">
-      <img src="assets/img/pour-close.jpg" alt="Mango juice poured from a glass carafe into a tumbler on a brass tray" loading="lazy" />
+      <figure class="statement__fig">
+        <img src="assets/img/pour-close.jpg" alt="Mango juice poured from a glass carafe into a tumbler on a brass tray" loading="lazy" />
+      </figure>
     </div>
   </section>
 
-  <!-- ─────────── 4. pinned menu board ─────────── -->
-  <section class="board" id="menu">
+  <!-- ══════════ 04 · BOARD — pinned horizontal menu ══════════ -->
+  <section class="board" id="menu" data-theme="ink">
     <div class="board__pin">
-      <div class="board__head">
-        <p class="eyebrow">02 — The board</p>
-        <h2 class="display display--xl" data-split>Fresh, from the morning.</h2>
+      <header class="board__head">
+        <p class="kicker">02 — The board</p>
+        <h2 class="mega" data-spread>
+          <span class="ln">Fresh,</span>
+          <span class="ln">from</span>
+          <span class="ln">the</span>
+          <span class="ln">morning.</span>
+        </h2>
+      </header>
+
+      <div class="board__rail" data-rail>
+        <article class="card card--slab">
+          <span class="card__n">01</span>
+          <h3>Rozela</h3>
+          <p class="card__sub">Roselle</p>
+          <p class="card__copy">Deep crimson, steeped not sweetened. The one people come back for.</p>
+          <span class="card__price">1,000</span>
+        </article>
+        <article class="card">
+          <span class="card__n">02</span>
+          <h3>Embe</h3>
+          <p class="card__sub">Mango</p>
+          <p class="card__copy">Thick as custard in season, loosened with a little lime.</p>
+          <span class="card__price">1,000</span>
+        </article>
+        <article class="card">
+          <span class="card__n">03</span>
+          <h3>Nado</h3>
+          <p class="card__sub">House signature</p>
+          <p class="card__copy">Parachichi, nanasi, embe, passion. Avocado gives it the body.</p>
+          <span class="card__price">2,000</span>
+        </article>
+        <article class="card card--photo">
+          <img src="assets/img/range-labelled.jpg" alt="Five bottles of cold-pressed juice with Vintage Juice Point labels against a terracotta wall" loading="lazy" />
+        </article>
+        <article class="card">
+          <span class="card__n">04</span>
+          <h3>Angel</h3>
+          <p class="card__sub">Coast blend</p>
+          <p class="card__copy">Rozela, tangawizi, ndimu, ubuyu, ukwaju. Sour, warm, cold all at once.</p>
+          <span class="card__price">3,000</span>
+        </article>
+        <article class="card">
+          <span class="card__n">05</span>
+          <h3>Nado Rich</h3>
+          <p class="card__sub">Meal in a glass</p>
+          <p class="card__copy">Parachichi, ndizi, tende, embe, yogurt. Breakfast for people in a hurry.</p>
+          <span class="card__price">4,000</span>
+        </article>
+        <article class="card card--end">
+          <p class="kicker">All 22 blends</p>
+          <a class="giant-link" href="menu.html">Read<br />the<br />menu<svg viewBox="0 0 40 24" aria-hidden="true"><path d="M0 12h36M28 4l8 8-8 8" /></svg></a>
+        </article>
       </div>
 
-      <div class="board__body">
-        <div class="board__disc">
-          <img src="assets/img/disc-sign.jpg" alt="Vintage Juice Point brass-rimmed disc sign on a terracotta wall" loading="lazy" />
-        </div>
-
-        <ol class="rows" data-rows>
-          <li class="row">
-            <span class="row__n">01</span>
-            <div class="row__t">
-              <h3>Rozela <em>Roselle</em></h3>
-              <p>Deep crimson, steeped not sweetened. The one people come back for.</p>
-            </div>
-            <span class="row__p">1,000</span>
-          </li>
-          <li class="row">
-            <span class="row__n">02</span>
-            <div class="row__t">
-              <h3>Embe <em>Mango</em></h3>
-              <p>Thick as custard in season, loosened with a little lime.</p>
-            </div>
-            <span class="row__p">1,000</span>
-          </li>
-          <li class="row">
-            <span class="row__n">03</span>
-            <div class="row__t">
-              <h3>Vintage Nado <em>House signature</em></h3>
-              <p>Parachichi, nanasi, embe, passion. Avocado gives it the body.</p>
-            </div>
-            <span class="row__p">2,000</span>
-          </li>
-          <li class="row">
-            <span class="row__n">04</span>
-            <div class="row__t">
-              <h3>Vintage Angel <em>Coast blend</em></h3>
-              <p>Rozela, tangawizi, ndimu, ubuyu, ukwaju. Sour, warm, cold all at once.</p>
-            </div>
-            <span class="row__p">3,000</span>
-          </li>
-          <li class="row">
-            <span class="row__n">05</span>
-            <div class="row__t">
-              <h3>Nado Rich <em>Meal in a glass</em></h3>
-              <p>Parachichi, ndizi, tende, embe, yogurt. Breakfast for people in a hurry.</p>
-            </div>
-            <span class="row__p">4,000</span>
-          </li>
-        </ol>
-      </div>
-
-      <footer class="board__foot">
-        <span>Prices in TZS</span>
-        <a class="link-arrow" href="menu.html">All 22 blends <svg viewBox="0 0 24 12" aria-hidden="true"><path d="M0 6h22M17 1l5 5-5 5" /></svg></a>
-      </footer>
+      <footer class="board__foot"><span>Prices in TZS</span><span class="board__hint">Keep scrolling<svg viewBox="0 0 34 12" aria-hidden="true"><path d="M0 6h30M25 1l5 5-5 5" /></svg></span></footer>
     </div>
   </section>
 
-  <!-- ─────────── 5. horizontal range ─────────── -->
-  <section class="range" id="range">
-    <div class="range__track">
-      <article class="panel panel--intro">
-        <p class="eyebrow">03 — The range</p>
-        <h2 class="display display--lg" data-split>Three ways<br />to take it.</h2>
+  <!-- ══════════ 05 · FLAVOUR SWITCHER (colour fields) ══════════ -->
+  <section class="flavour" id="flavour" data-flavour>
+    <div class="flavour__stage">
+      <p class="flavour__kicker kicker" data-flavour-kicker>03 — The flavours</p>
+      <h2 class="flavour__word" data-flavour-word aria-live="polite">Rozela</h2>
+      <p class="flavour__eng" data-flavour-eng>Roselle</p>
+      <p class="flavour__note" data-flavour-note>Sour cherry-deep, steeped from dried calyces the same morning. Poured cold, never sweetened.</p>
+      <span class="flavour__price" data-flavour-price>1,000</span>
+
+      <div class="flavour__media">
+        <img data-flavour-img src="assets/img/cups-terracotta.jpg" alt="Layered takeaway cups of fresh juice on a brass counter" loading="lazy" />
+      </div>
+
+      <ol class="flavour__dots" data-flavour-list>
+        <li><button type="button" data-go="0" class="is-live" aria-label="Rozela"><i style="--dot:#6E1B2E"></i></button></li>
+        <li><button type="button" data-go="1" aria-label="Ukwaju"><i style="--dot:#B85C38"></i></button></li>
+        <li><button type="button" data-go="2" aria-label="Embe"><i style="--dot:#E9A23B"></i></button></li>
+        <li><button type="button" data-go="3" aria-label="Nanasi"><i style="--dot:#E7C77A"></i></button></li>
+        <li><button type="button" data-go="4" aria-label="Parachichi"><i style="--dot:#8FA65B"></i></button></li>
+        <li><button type="button" data-go="5" aria-label="Angel"><i style="--dot:#C9A45B"></i></button></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ══════════ 06 · RANGE (horizontal photos) ══════════ -->
+  <section class="range" id="range" data-theme="ink">
+    <div class="range__track" data-range-track>
+      <article class="panel panel--lead">
+        <p class="kicker">04 — The range</p>
+        <h2 class="mega mega--mid" data-spread><span class="ln">Three</span><span class="ln">ways</span><span class="ln">to</span><span class="ln">take it.</span></h2>
         <p class="panel__copy">Bottled for the road, poured over ice at the counter, or layered in a Movie Box cup for the walk home.</p>
-        <p class="panel__hint"><svg viewBox="0 0 34 12" aria-hidden="true"><path d="M0 6h30M25 1l5 5-5 5" /></svg> Keep scrolling</p>
       </article>
-
-      <article class="panel panel--photo">
-        <img src="assets/img/range-labelled.jpg" alt="Five bottles of cold-pressed juice with Vintage Juice Point labels against a terracotta wall" loading="lazy" />
-        <div class="panel__cap"><b>01</b><span>The bottle</span></div>
+      <article class="panel panel--shot">
+        <img src="assets/img/range-labelled.jpg" alt="Five bottles of cold-pressed juice with Vintage Juice Point labels on a terracotta wall" loading="lazy" />
+        <p class="panel__cap"><b>01</b> The bottle</p>
       </article>
-
-      <article class="panel panel--photo">
+      <article class="panel panel--shot">
         <img src="assets/img/cups-terracotta.jpg" alt="Three takeaway cups of layered juice, one held by hand, on a brass counter" loading="lazy" />
-        <div class="panel__cap"><b>02</b><span>The Movie Box</span></div>
+        <p class="panel__cap"><b>02</b> The Movie Box</p>
       </article>
-
-      <article class="panel panel--photo">
+      <article class="panel panel--shot">
         <img src="assets/img/counter-dusk.jpg" alt="The Vintage juice counter at dusk with warm bulbs, brass counter and terracotta walls" loading="lazy" />
-        <div class="panel__cap"><b>03</b><span>The counter</span></div>
+        <p class="panel__cap"><b>03</b> The counter</p>
       </article>
-
-      <article class="panel panel--outro">
-        <p class="eyebrow">Every day</p>
-        <h2 class="display display--md">Ask for<br /><em>the seasonal.</em></h2>
+      <article class="panel panel--kicker">
+        <p class="kicker">Every day</p>
+        <h2 class="mega mega--mid" data-spread><span class="ln">Ask</span><span class="ln">for the</span><span class="ln">seasonal.</span></h2>
         <p class="panel__copy">What is ripe decides half the board. Tell the counter what you like and they will build it.</p>
         <a class="link-arrow" href="menu.html">Read the menu <svg viewBox="0 0 24 12" aria-hidden="true"><path d="M0 6h22M17 1l5 5-5 5" /></svg></a>
       </article>
     </div>
   </section>
 
-  <!-- ─────────── 6. full-bleed statement ─────────── -->
-  <section class="statement">
-    <div class="statement__img" data-parallax="18">
-      <img src="assets/img/cups-terracotta.jpg" alt="" aria-hidden="true" loading="lazy" />
-    </div>
-    <blockquote class="statement__quote">
-      <p data-split>“Cold, clean, and honest about where it came from.”</p>
+  <!-- ══════════ 07 · QUOTE (brass field) ══════════ -->
+  <section class="quote" data-theme="brass">
+    <blockquote>
+      <p data-spread><span class="ln">“Cold,</span><span class="ln">clean,</span><span class="ln">and honest</span><span class="ln">about where</span><span class="ln">it came from.”</span></p>
       <cite>— the house line</cite>
     </blockquote>
   </section>
 
-  <!-- ─────────── 7. visit ─────────── -->
-  <section class="visit" id="visit">
-    <div class="visit__col">
-      <p class="eyebrow">04 — Visit</p>
-      <h2 class="display display--lg" data-split>Find the<br />disc on the wall.</h2>
-      <p class="visit__copy">A juice point, not a café. Stand at the brass, watch it pressed, take it with you.</p>
+  <!-- ══════════ 08 · VISIT ══════════ -->
+  <section class="visit" id="visit" data-theme="ink">
+    <div class="visit__head">
+      <p class="kicker">05 — Visit</p>
+      <h2 class="mega" data-spread><span class="ln">Find</span><span class="ln">the disc</span><span class="ln">on the wall.</span></h2>
     </div>
+    <p class="visit__copy">A juice point, not a café. Stand at the brass, watch it pressed, take it with you.</p>
     <dl class="visit__meta">
-      <div data-reveal><dt>Where</dt><dd>58F5+24, Dar es Salaam</dd></div>
-      <div data-reveal><dt>Hours</dt><dd class="pending">Add opening hours</dd></div>
-      <div data-reveal><dt>Phone</dt><dd class="pending">+255 XXX XXX XXX</dd></div>
-      <div data-reveal><dt>Pay</dt><dd>Card · NFC · Cash</dd></div>
-      <div data-reveal><dt>Good for</dt><dd>Takeaway · Kids</dd></div>
-      <div data-reveal><dt>Listing</dt><dd>Vintage Experience</dd></div>
+      <div><dt>Where</dt><dd>58F5+24, Dar es Salaam</dd></div>
+      <div><dt>Hours</dt><dd class="pending">Add opening hours</dd></div>
+      <div><dt>Phone</dt><dd class="pending">+255 XXX XXX XXX</dd></div>
+      <div><dt>Pay</dt><dd>Card · NFC · Cash</dd></div>
+      <div><dt>Good for</dt><dd>Takeaway · Kids</dd></div>
+      <div><dt>Listing</dt><dd>Vintage Experience</dd></div>
     </dl>
-    <p class="visit__fine" data-reveal>Concept redesign. Hours, phone and email are placeholders — no verified details were supplied by the business.</p>
+    <p class="visit__fine">Concept redesign. Hours, phone and email are placeholders — no verified details were supplied by the business.</p>
   </section>
 
-  <footer class="foot">
-    <div class="foot__mark">
-      <svg viewBox="0 0 44 44" aria-hidden="true"><use href="assets/logo/mark.svg#mark" /></svg>
-      <p>Vintage Juice Point<br /><span>Dar es Salaam · Tanzania</span></p>
+  <footer class="foot" data-theme="ink">
+    <h2 class="foot__word" data-spread><span class="ln">Vintage</span><span class="ln">Juice Point</span></h2>
+    <div class="foot__row">
+      <nav class="foot__links" aria-label="Footer">
+        <a href="menu.html">Menu</a>
+        <a href="brand-kit.html">Brand kit</a>
+        <a href="GOOGLE_FLOW_PROMPTS.md">Flow prompts</a>
+      </nav>
+      <p class="foot__addr">Dar es Salaam · Tanzania</p>
+      <p class="foot__legal">Asili safi. Ladha ya kisasa.</p>
     </div>
-    <nav class="foot__links" aria-label="Footer">
-      <a href="menu.html">Menu</a>
-      <a href="brand-kit.html">Brand kit</a>
-      <a href="GOOGLE_FLOW_PROMPTS.md">Flow prompts</a>
-    </nav>
-    <p class="foot__legal">Asili safi. Ladha ya kisasa.</p>
   </footer>
 
 </main>
 
 <script>
-  // progressive enhancement: if the motion module cannot load, show everything
   setTimeout(function () {
     if (!window.__vjpMotion) {
       document.documentElement.classList.remove('js');
-      document.querySelectorAll('[data-reveal],.row,.w').forEach(function (el) {
-        el.style.opacity = '1';
-        el.style.transform = 'none';
+      document.querySelectorAll('[data-reveal],.w,.card,.mega .ln,.hero__title .ln').forEach(function (el) {
+        el.style.opacity = '1'; el.style.transform = 'none';
       });
     }
   }, 1800);

@@ -1,406 +1,379 @@
 /* ============================================================
-   Vintage Juice Point — v2 motion
-   GSAP 3.15 core + ScrollTrigger + SplitText + Observer
-   (vendored locally, no CDN at runtime)
+   Vintage Juice Point — v3 motion
+   GSAP core + ScrollTrigger + SplitText, vendored in /vendor/gsap.
+   No CDN, no paid plugins (ScrollSmoother is commercial).
    ============================================================ */
 import { gsap } from '../vendor/gsap/gsap-core.js';
 import { CSSPlugin } from '../vendor/gsap/CSSPlugin.js';
 import { ScrollTrigger } from '../vendor/gsap/ScrollTrigger.js';
-import { SplitText } from '../vendor/gsap/SplitText.js';
 
-gsap.registerPlugin(CSSPlugin, ScrollTrigger, SplitText);
+gsap.registerPlugin(CSSPlugin, ScrollTrigger);
 
 const root = document.documentElement;
 root.classList.add('js');
 window.__vjpMotion = true;
 
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const E = { expo: 'expo.out', out: 'power3.out' };
 
-/* ---------- shared easings ---------- */
-const E = {
-  out: 'power3.out',
-  expo: 'expo.out',
-};
-
-const trackSplit = (s) => s;
-
-/* SplitText replaces the heading's text with aria-hidden line clones, so give
-   assistive tech the original sentence as the accessible name. */
-function splitHeading(el, opts) {
-  const label = el.innerHTML
-    .replace(/<br\s*\/?>/gi, ' ')
-    .replace(/<[^>]+>/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-  const split = SplitText.create(el, opts);
-  if (label) el.setAttribute('aria-label', label);
-  return split;
+/* Wrap each .ln in an inner span so a masked reveal never clips the type,
+   and give the heading a real accessible name (the clones are aria-hidden). */
+function prepareLines(container) {
+  if (!container) return [];
+  const label = container.textContent.replace(/\s+/g, ' ').trim();
+  const lines = gsap.utils.toArray('.ln', container);
+  lines.forEach((ln) => {
+    if (ln.firstElementChild && ln.children.length === 1) return; // already wrapped
+    const inner = document.createElement('span');
+    while (ln.firstChild) inner.appendChild(ln.firstChild);
+    ln.appendChild(inner);
+  });
+  if (label && !container.hasAttribute('aria-label')) {
+    container.setAttribute('aria-label', label);
+  }
+  return lines.map((ln) => ln.firstElementChild).filter(Boolean);
 }
 
-
 /* ============================================================
-   1. HERO — masked line reveal, slow push-in, scroll-out
+   01 · HERO
    ============================================================ */
 function hero() {
-  // .line wraps .ln in the markup so overflow-hidden masking never clips the type
+  const lines = prepareLines(document.querySelector('.hero__title'));
   const tl = gsap.timeline({ defaults: { ease: E.expo } });
 
-  tl.set('.hero__media img', { scale: 1.16 })
-    .to('.hero__media img', { scale: 1, duration: 2.6, ease: 'power2.out' }, 0)
-    .from('.hero__title .ln', { yPercent: 118, duration: 1.35, stagger: 0.09 }, 0.15)
-    .from('.hero__eyebrow', { opacity: 0, y: 18, duration: 1, clearProps: 'opacity' }, 0.45)
-    .from('.hero__sub', { opacity: 0, y: 20, duration: 1.1 }, 0.65)
-    .from('.hero__foot > *', { opacity: 0, y: 22, duration: 1, stagger: 0.12 }, 0.8)
-    .from('.nav > *', { opacity: 0, y: -14, duration: 0.9, stagger: 0.08, clearProps: 'opacity' }, 0.2);
+  tl.set('.hero__media img', { scale: 1.18 })
+    .to('.hero__media img', { scale: 1, duration: 2.4, ease: 'power2.out' }, 0)
+    .from(lines, { yPercent: 116, duration: 1.4, stagger: 0.1 }, 0.1)
+    .from('.hero__top > *', { opacity: 0, y: 16, duration: 1, stagger: 0.1 }, 0.35)
+    .from('.hero__lede', { opacity: 0, y: 24, duration: 1.1 }, 0.55)
+    .from('.hero__foot > *', { opacity: 0, y: 18, duration: 1, stagger: 0.1 }, 0.7)
+    .from('.nav > *', { opacity: 0, y: -12, duration: 0.9, stagger: 0.07 }, 0.2);
 
-  // scroll: hero content lifts, photo parallax, frame fades
   gsap.timeline({
-    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 0.6 },
+    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 0.5 },
   })
-    .to('.hero__inner', { yPercent: -18, opacity: 0.15, ease: 'none' }, 0)
-    .to('.hero__media img', { yPercent: 9, ease: 'none' }, 0)
+    .to('.hero__mid', { yPercent: -14, opacity: 0.1, ease: 'none' }, 0)
+    .to('.hero__media img', { yPercent: 10, ease: 'none' }, 0)
     .to('.hero__foot', { opacity: 0, ease: 'none' }, 0);
 }
 
 /* ============================================================
-   2. MARQUEE — infinite drift, speed/direction reacts to scroll
+   02 · MARQUEE — one belt, reacts to scroll velocity
    ============================================================ */
 function marquee() {
   const track = document.querySelector('[data-marquee]');
   if (!track) return;
-
-  // the markup holds exactly two copies of the run; one copy is one loop length
   const half = track.scrollWidth / 2;
   if (!half) return;
 
-  let speed = 1;
-  const state = { x: 0 };
-
-  gsap.ticker.add((time, deltaTime) => {
-    state.x -= (deltaTime / 1000) * 42 * speed;
+  const state = { x: 0, speed: 1 };
+  gsap.ticker.add((time, delta) => {
+    state.x -= (delta / 1000) * 54 * state.speed;
     if (state.x <= -half) state.x += half;
     if (state.x > 0) state.x -= half;
     track.style.transform = `translate3d(${state.x}px,0,0)`;
   });
 
   ScrollTrigger.create({
-    trigger: '.strip',
+    trigger: '.marquee',
     start: 'top bottom',
     end: 'bottom top',
     onUpdate: (self) => {
-      // scroll velocity pushes the belt faster, and flips it when you scroll back
-      const v = gsap.utils.clamp(-1, 1, self.getVelocity() / 2600);
+      const v = gsap.utils.clamp(-1, 1, self.getVelocity() / 2400);
       const target = v < -0.02 ? -Math.min(4, Math.abs(v) * 4) : 1 + Math.min(3, Math.abs(v) * 3);
-      speed += (target - speed) * 0.12;
+      state.speed += (target - state.speed) * 0.12;
     },
   });
 }
 
 /* ============================================================
-   3. MANIFESTO — word-by-word light-up + parallax photo
+   03 · SECTION HEADLINES — masked line reveals on scroll
    ============================================================ */
-function manifesto() {
-  const para = document.querySelector('.manifesto__text');
-  if (para) {
-    // word-level scrub: the sentence lights up as you read past it
-    // The space lives *inside* each span on purpose: with inline-block spans a
-    // whitespace-only text node between them is the only thing holding the
-    // words apart, and plenty of text extractors throw such nodes away.
-    const words = para.textContent.trim().split(/\s+/);
-    para.textContent = '';
-    words.forEach((word, i) => {
-      const span = document.createElement('span');
-      span.className = 'w';
-      span.textContent = i < words.length - 1 ? `${word} ` : word;
-      para.appendChild(span);
-    });
-
-    gsap.fromTo(
-      '.manifesto__text .w',
-      { opacity: 0.12 },
-      {
-        opacity: 1,
-        stagger: 0.4,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: para,
-          start: 'top 80%',
-          end: 'bottom 62%',
-          scrub: 0.45,
-        },
-      }
-    );
-  }
-
-  gsap.utils.toArray('[data-reveal]').forEach((el) => {
-    if (el.closest('.hero') || el.closest('.visit')) return;
-    gsap.fromTo(
-      el,
-      { y: 26, opacity: 0 },
-      {
-        y: 0,
-        opacity: 1,
-        duration: 1.1,
-        ease: E.out,
-        scrollTrigger: { trigger: el, start: 'top 88%', once: true },
-      }
-    );
-  });
-
-  gsap.utils.toArray('[data-parallax]').forEach((el) => {
-    const img = el.querySelector('img') || el;
-    const depth = parseFloat(el.dataset.parallax) || 12;
-    // images are oversized by ~18–28% of their own height, so stay inside that
-    const travel = Math.min(depth, 9);
-    gsap.fromTo(
-      img,
-      { yPercent: -travel },
-      {
-        yPercent: travel,
-        ease: 'none',
-        scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: 0.8 },
-      }
-    );
-  });
-}
-
-/* ============================================================
-   4. BOARD — pinned section, disc rotates in, rows stagger
-   ============================================================ */
-function board() {
-  const head = document.querySelector('.board__head .display');
-  if (head) {
-    const split = trackSplit(splitHeading(head, { type: 'lines', mask: 'lines' }));
-    gsap.from(split.lines, {
-      yPercent: 110,
-      duration: 1.2,
+function headlines() {
+  gsap.utils.toArray('[data-spread]').forEach((el) => {
+    if (el.closest('.hero')) return; // hero owns its own timeline
+    const lines = prepareLines(el);
+    if (!lines.length) return;
+    gsap.from(lines, {
+      yPercent: 112,
+      duration: 1.25,
       stagger: 0.08,
       ease: E.expo,
-      scrollTrigger: { trigger: '.board__head', start: 'top 82%', once: true },
+      scrollTrigger: { trigger: el, start: 'top 88%', once: true },
     });
-  }
-
-  const rows = gsap.utils.toArray('.row');
-  gsap.fromTo(
-    rows,
-    { y: 26, opacity: 0 },
-    {
-      y: 0,
-      opacity: 1,
-      duration: 0.85,
-      stagger: 0.075,
-      ease: E.out,
-      scrollTrigger: { trigger: '.rows', start: 'top 82%', once: true },
-    }
-  );
-
-  const disc = document.querySelector('.board__disc img');
-  if (disc) {
-    gsap.fromTo(
-      disc,
-      { scale: 1.25, rotate: -8 },
-      {
-        scale: 1,
-        rotate: 0,
-        ease: 'none',
-        scrollTrigger: { trigger: '.board', start: 'top bottom', end: 'top 25%', scrub: 0.7 },
-      }
-    );
-    gsap.to(disc, {
-      scale: 1.09,
-      ease: 'none',
-      scrollTrigger: { trigger: '.board', start: 'top 20%', end: 'bottom top', scrub: 1 },
-    });
-  }
-
-  // row hover: the row nudges toward the price column
-  rows.forEach((row) => {
-    const nudge = gsap.quickTo(row, 'x', { duration: 0.55, ease: 'power3' });
-    row.addEventListener('pointerenter', () => nudge(10));
-    row.addEventListener('pointerleave', () => nudge(0));
   });
 }
 
 /* ============================================================
-   5. RANGE — horizontal pin-driven scroll (desktop only)
+   04 · STATEMENT — words ignite as you read
+   ============================================================ */
+function statement() {
+  const para = document.querySelector('[data-words]');
+  if (!para) return;
+
+  const words = para.textContent.trim().split(/\s+/);
+  para.textContent = '';
+  words.forEach((word, i) => {
+    const span = document.createElement('span');
+    span.className = 'w';
+    span.textContent = i < words.length - 1 ? `${word} ` : word;
+    para.appendChild(span);
+  });
+  para.setAttribute('aria-label', words.join(' '));
+
+  gsap.fromTo('.statement__text .w',
+    { opacity: 0.16 },
+    {
+      opacity: 1,
+      stagger: 0.4,
+      ease: 'none',
+      scrollTrigger: { trigger: para, start: 'top 82%', end: 'bottom 58%', scrub: 0.4 },
+    });
+
+  const fig = document.querySelector('.statement__fig img');
+  if (fig) {
+    gsap.fromTo(fig, { yPercent: -5 }, {
+      yPercent: 5, ease: 'none',
+      scrollTrigger: { trigger: '.statement__fig', start: 'top bottom', end: 'bottom top', scrub: 0.8 },
+    });
+  }
+}
+
+/* ============================================================
+   05 · BOARD — pinned, rail slides sideways while the mega
+        heading stays put; cards stagger on entry
+   ============================================================ */
+function board() {
+  const section = document.querySelector('.board');
+  const rail = document.querySelector('[data-rail]');
+  if (!section || !rail) return;
+
+  const mm = gsap.matchMedia();
+
+  mm.add('(min-width: 961px)', () => {
+    const distance = () => Math.max(0, rail.scrollWidth - rail.clientWidth);
+
+    const slide = gsap.to(rail, {
+      x: () => -distance(),
+      ease: 'none',
+      scrollTrigger: {
+        trigger: section,
+        start: 'top top',
+        end: () => `+=${distance() + window.innerHeight * 0.6}`,
+        pin: true,
+        scrub: 0.7,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+      },
+    });
+
+    // the slab card drifts against the rail so the field feels layered
+    gsap.to('.card--slab h3', {
+      xPercent: -12,
+      ease: 'none',
+      scrollTrigger: { trigger: section, start: 'top top', end: () => `+=${distance()}`, scrub: 1 },
+    });
+
+    return () => { slide.scrollTrigger && slide.scrollTrigger.kill(); };
+  });
+
+  gsap.fromTo('.card',
+    { y: 34, opacity: 0 },
+    {
+      y: 0, opacity: 1, duration: 0.85, stagger: 0.07, ease: E.out,
+      scrollTrigger: { trigger: '.board__rail', start: 'top 92%', once: true },
+    });
+}
+
+/* ============================================================
+   06 · FLAVOUR SWITCHER — colour field, word, note and price swap
+   ============================================================ */
+const FLAVOURS = [
+  { name: 'Rozela', eng: 'Roselle', field: '#6E1B2E', ink: 'ivory', price: '1,000',
+    note: 'Sour cherry-deep, steeped from dried calyces the same morning. Poured cold, never sweetened.' },
+  { name: 'Ukwaju', eng: 'Tamarind', field: '#B85C38', ink: 'ink', price: '1,000',
+    note: 'Sticky, brown-sugar tart. The one that makes you close one eye.' },
+  { name: 'Embe', eng: 'Mango', field: '#E9A23B', ink: 'ink', price: '1,000',
+    note: 'Thick as custard in season, loosened with a little lime so it drinks.' },
+  { name: 'Nanasi', eng: 'Pineapple', field: '#E7C77A', ink: 'ink', price: '1,000',
+    note: 'Sharp, sunny, pressed with the core for the bite it carries.' },
+  { name: 'Parachichi', eng: 'Avocado', field: '#8FA65B', ink: 'ink', price: '1,000',
+    note: 'Green and buttery, whipped with a little ginger so it stays savoury.' },
+  { name: 'Vintage Angel', eng: 'Coast blend', field: '#C9A45B', ink: 'ink', price: '3,000',
+    note: 'Rozela, tangawizi, ndimu, ubuyu, ukwaju. Sour, warm, cold all at once.' },
+];
+
+function flavour() {
+  const stage = document.querySelector('[data-flavour]');
+  if (!stage) return;
+
+  const word = stage.querySelector('[data-flavour-word]');
+  const eng = stage.querySelector('[data-flavour-eng]');
+  const note = stage.querySelector('[data-flavour-note]');
+  const price = stage.querySelector('[data-flavour-price]');
+  const img = stage.querySelector('[data-flavour-img]');
+  const dots = gsap.utils.toArray('[data-flavour-list] button');
+
+  let current = 0;
+  let busy = false;
+
+  // "Rozela" and "Vintage Angel" cannot share one font-size; measure and fit.
+  function fitWord() {
+    word.style.fontSize = '';
+    const avail = stage.clientWidth - parseFloat(getComputedStyle(stage).paddingLeft) * 2;
+    const natural = word.scrollWidth;
+    if (!avail || !natural) return;
+    if (natural > avail) {
+      const base = parseFloat(getComputedStyle(word).fontSize);
+      word.style.fontSize = `${Math.floor(base * (avail / natural) * 0.98)}px`;
+    }
+  }
+  window.addEventListener('resize', fitWord);
+
+  if (reduced) return; // leave the default flavour readable, no swapping
+
+  const paint = (i, first) => {
+    const f = FLAVOURS[i];
+    if (!f) return;
+    stage.style.background = f.field;
+    stage.style.color = f.ink === 'ivory' ? '#F7F1E3' : '#0D1512';
+    word.textContent = f.name;
+    fitWord();
+    eng.textContent = f.eng;
+    note.textContent = f.note;
+    price.textContent = f.price;
+    dots.forEach((b, bi) => b.classList.toggle('is-live', bi === i));
+    if (first) return;
+    gsap.fromTo([word, eng, note], { yPercent: 26, opacity: 0 }, {
+      yPercent: 0, opacity: 1, duration: 0.85, stagger: 0.05, ease: E.expo, overwrite: true,
+    });
+    if (img) {
+      gsap.fromTo(img, { scale: 1.12, opacity: 0.5 }, {
+        scale: 1, opacity: 0.85, duration: 1.1, ease: E.expo, overwrite: true,
+      });
+    }
+  };
+
+  paint(0, true);
+
+  const go = (i) => {
+    if (busy || i === current || !FLAVOURS[i]) return;
+    busy = true;
+    current = i;
+    // collapse the old word upward, paint, bring the new one in
+    gsap.to([word, eng, note], {
+      yPercent: -22, opacity: 0, duration: 0.34, stagger: 0.03, ease: 'power2.in',
+      onComplete: () => { paint(i, false); busy = false; },
+    });
+  };
+
+  dots.forEach((btn, i) => btn.addEventListener('click', () => go(i)));
+
+  // pointer position nudges the word — the field feels alive under the cursor
+  const xTo = gsap.quickTo(word, 'x', { duration: 1.1, ease: 'power3' });
+  const yTo = gsap.quickTo(word, 'y', { duration: 1.1, ease: 'power3' });
+  stage.addEventListener('pointermove', (e) => {
+    const r = stage.getBoundingClientRect();
+    xTo(((e.clientX - r.left) / r.width - 0.5) * 34);
+    yTo(((e.clientY - r.top) / r.height - 0.5) * 22);
+  });
+  stage.addEventListener('pointerleave', () => { xTo(0); yTo(0); });
+}
+
+/* ============================================================
+   07 · RANGE — horizontal photos, desktop only
    ============================================================ */
 function range() {
   const section = document.querySelector('.range');
-  const track = document.querySelector('.range__track');
+  const track = document.querySelector('[data-range-track]');
   if (!section || !track) return;
 
   const mm = gsap.matchMedia();
   mm.add('(min-width: 961px)', () => {
-      const distance = () => track.scrollWidth - window.innerWidth;
+    const distance = () => Math.max(0, track.scrollWidth - window.innerWidth);
 
-      const tween = gsap.to(track, {
-        x: () => -distance(),
-        ease: 'none',
-        scrollTrigger: {
-          trigger: section,
-          start: 'top top',
-          end: () => `+=${distance() + window.innerHeight * 0.4}`,
-          pin: true,
-          scrub: 0.9,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-        },
-      });
-
-      // panels ease in slightly as they enter the viewport
-      gsap.utils.toArray('.panel--photo img').forEach((img) => {
-        gsap.fromTo(
-          img,
-          { scale: 1.14, xPercent: 4 },
-          {
-            scale: 1,
-            xPercent: 0,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: img,
-              containerAnimation: tween,
-              start: 'left right',
-              end: 'right left',
-              scrub: 0.8,
-            },
-          }
-        );
-      });
-
-  });
-}
-
-/* ============================================================
-   6. STATEMENT — quote splits in, image drifts
-   ============================================================ */
-function statement() {
-  const q = document.querySelector('.statement__quote [data-split]');
-  if (!q) return;
-  const split = trackSplit(splitHeading(q, { type: 'lines', mask: 'lines' }));
-  gsap.from(split.lines, {
-    yPercent: 112,
-    duration: 1.35,
-    stagger: 0.1,
-    ease: E.expo,
-    scrollTrigger: { trigger: '.statement__quote', start: 'top 85%', once: true },
-  });
-
-  gsap.from('.statement__quote cite', {
-    opacity: 0,
-    y: 14,
-    duration: 1,
-    delay: 0.35,
-    scrollTrigger: { trigger: '.statement__quote', start: 'top 78%', once: true },
-  });
-}
-
-/* ============================================================
-   7. VISIT + FOOTER
-   ============================================================ */
-function visit() {
-  const h = document.querySelector('.visit .display');
-  if (h) {
-    const split = trackSplit(splitHeading(h, { type: 'lines', mask: 'lines' }));
-    gsap.from(split.lines, {
-      yPercent: 110,
-      duration: 1.25,
-      stagger: 0.08,
-      ease: E.expo,
-      scrollTrigger: { trigger: h, start: 'top 86%', once: true },
+    const tween = gsap.to(track, {
+      x: () => -distance(),
+      ease: 'none',
+      scrollTrigger: {
+        trigger: section,
+        start: 'top top',
+        end: () => `+=${distance() + window.innerHeight * 0.4}`,
+        pin: true,
+        scrub: 0.8,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+      },
     });
-  }
 
-  gsap.utils.toArray('.visit [data-reveal]').forEach((el, i) => {
-    gsap.fromTo(
-      el,
-      { y: 22, opacity: 0 },
-      {
-        y: 0,
-        opacity: 1,
-        duration: 0.9,
-        delay: (i % 3) * 0.06,
-        ease: E.out,
-        scrollTrigger: { trigger: el, start: 'top 92%', once: true },
-      }
-    );
-  });
-
-  gsap.from('.foot > *', {
-    opacity: 0,
-    y: 24,
-    duration: 1,
-    stagger: 0.1,
-    scrollTrigger: { trigger: '.foot', start: 'top 92%', once: true },
+    gsap.utils.toArray('.panel--shot img').forEach((img) => {
+      gsap.fromTo(img, { scale: 1.16, xPercent: 4 }, {
+        scale: 1, xPercent: 0, ease: 'none',
+        scrollTrigger: { trigger: img, containerAnimation: tween, start: 'left right', end: 'right left', scrub: 0.8 },
+      });
+    });
   });
 }
 
 /* ============================================================
-   8. Chrome: scroll progress + retract nav
+   08 · CHROME
    ============================================================ */
 function chrome() {
   const bar = document.querySelector('.scroll-progress i');
   if (bar) {
     gsap.to(bar, {
-      scaleX: 1,
-      ease: 'none',
+      scaleX: 1, ease: 'none',
       scrollTrigger: { trigger: document.documentElement, start: 'top top', end: 'bottom bottom', scrub: 0.3 },
     });
   }
 
   const nav = document.getElementById('nav');
   let last = 0;
+  if (!nav) return;
   ScrollTrigger.create({
     start: 0,
     end: 'max',
     onUpdate: (self) => {
       const y = self.scroll();
-      if (nav) {
-        nav.style.transform = y > last && y > 260 ? 'translateY(-108%)' : 'translateY(0)';
-        nav.classList.toggle('is-solid', y > window.innerHeight * 0.6);
-      }
+      nav.style.transform = y > last && y > 280 ? 'translateY(-110%)' : 'translateY(0)';
+      nav.classList.toggle('is-solid', y > window.innerHeight * 0.55);
       last = y;
     },
   });
 }
 
-/* ============================================================
-   boot
-   ============================================================ */
+/* ============================================================ */
 function boot() {
   gsap.config({ nullTargetWarn: false });
   if (reduced) {
     root.classList.add('reduced');
-    document.querySelectorAll('[data-reveal]').forEach((el) => {
-      el.style.opacity = 1;
-      el.style.transform = 'none';
+    document.querySelectorAll('[data-reveal],.card,.w').forEach((el) => {
+      el.style.opacity = 1; el.style.transform = 'none';
+    });
+    document.querySelectorAll('.ln').forEach((ln) => {
+      const inner = ln.firstElementChild;
+      if (inner) inner.style.transform = 'none';
     });
     return;
   }
   hero();
   marquee();
-  manifesto();
-  board();
-  range();
+  headlines();
   statement();
-  visit();
+  board();
+  flavour();
+  range();
   chrome();
 
   window.addEventListener('load', () => ScrollTrigger.refresh());
-  let rAF;
+  let raf;
   window.addEventListener('resize', () => {
-    cancelAnimationFrame(rAF);
-    rAF = requestAnimationFrame(() => ScrollTrigger.refresh());
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => ScrollTrigger.refresh());
   });
 }
 
-// SplitText measures line boxes, so wait for the webfonts (they are preloaded
-// and self-hosted, so this is quick) — but never block the page on them.
-const fontsReady = document.fonts && document.fonts.ready
-  ? document.fonts.ready
-  : Promise.resolve();
-const fontsTimeout = new Promise((resolve) => setTimeout(resolve, 1200));
-const start = () => Promise.race([fontsReady, fontsTimeout]).then(boot);
-
+const start = () => boot();
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', start, { once: true });
 } else {
