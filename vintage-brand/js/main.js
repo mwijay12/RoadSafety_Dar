@@ -89,16 +89,16 @@ function manifesto() {
   const para = document.querySelector('.manifesto__text');
   if (para) {
     // word-level scrub: the sentence lights up as you read past it
-    // build nodes instead of an innerHTML string: joining spans without
-    // whitespace collapses the sentence, so keep a real text node between them
+    // The space lives *inside* each span on purpose: with inline-block spans a
+    // whitespace-only text node between them is the only thing holding the
+    // words apart, and plenty of text extractors throw such nodes away.
     const words = para.textContent.trim().split(/\s+/);
     para.textContent = '';
     words.forEach((word, i) => {
       const span = document.createElement('span');
       span.className = 'w';
-      span.textContent = word;
+      span.textContent = i < words.length - 1 ? `${word} ` : word;
       para.appendChild(span);
-      if (i < words.length - 1) para.appendChild(document.createTextNode(' '));
     });
 
     gsap.fromTo(
