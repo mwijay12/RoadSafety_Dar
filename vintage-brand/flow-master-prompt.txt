@@ -1,0 +1,12 @@
+Create a 30-second premium brand film for VINTAGE JUICE POINT, a fresh-juice bar in Dar es Salaam, Tanzania. Deep charcoal plaster, warm brushed brass, terracotta walls, Swahili-coast geometric shadows, golden-hour coastal light. Use the uploaded reference images for juice colour, bottle silhouette, fruit and black/gold/terracotta mood, but do not copy the old logo, script fonts or busy menu.
+
+0–4s: extreme macro of deep red roselle juice pouring slowly into a clear glass bottle; condensation beads form; warm light rims the glass; camera drifts 2 cm to the right.
+4–9s: elegant still-life cut of halved passion fruit, mango cubes, watermelon triangle, grapes, roselle and avocado on dark stone; a hand places one orange leaf; slow push-in.
+9–14s: top-down signature blend being built in layers — mango gold, pineapple, passion fruit, avocado green — in a clear cup; ingredients settle in slow motion; soft brass tray edge visible.
+14–19s: a hand with a delicate gold bangle lifts a tall clear cup of roselle juice against a terracotta wall; a geometric kanga-like shadow moves gently across the wall; hold on negative space at the top.
+19–24s: wide interior shot of a calm juice counter at golden hour: dark plaster, brass counter edge, carved Zanzibar-door-inspired panel, three unbranded juice bottles and a small bowl of fruit; slow dolly forward; no people, no signage text.
+24–30s: return to the hero still life of three juices — roselle red, mango gold, avocado green — on dark stone with fruit arranged sparingly; camera slowly rises; end on a clean, static frame with generous empty space on the left for a logo overlay.
+
+Cinematic, tactile, quiet luxury, 24fps feel, shallow depth of field, subtle film grain, no rapid cuts. Do not render any readable text, logo, phone number, email or watermark. End frame must be suitable for adding the VINTAGE JUICE POINT logo and the line “Asili safi. Ladha ya kisasa.” in post.
+
+Negative prompt: old Vintage Juice Point logo, cursive script, Summer Wavy text, glossy blue menu board, fruit clipart, large illustrated fruit, readable typography, generated logo, garbled letters, fake phone number, fake email, watermark, plastic straws, mismatched bottles, bright neon, harsh flash, fast cuts, oversaturated colours, messy counter, low-resolution phone snapshot, duplicated hands, extra limbs, distorted cups, spilled liquid, unrelated brands.
