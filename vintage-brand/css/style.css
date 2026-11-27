@@ -1,0 +1,618 @@
+/* ============================================================
+   Vintage Juice Point — v3
+   Big-type editorial. Full colour fields, hard cuts between them.
+   Terracotta / ink / brass / ivory. Nothing sits in a card.
+   ============================================================ */
+
+@font-face{font-family:"Cormorant Garamond";src:url("../fonts/cormorant-garamond-latin-400-normal.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Cormorant Garamond";src:url("../fonts/cormorant-garamond-latin-600-normal.woff2") format("woff2");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"Manrope";src:url("../fonts/manrope-latin-400-normal.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Manrope";src:url("../fonts/manrope-latin-600-normal.woff2") format("woff2");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"Manrope";src:url("../fonts/manrope-latin-700-normal.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+
+:root{
+  --ink:#0D1512;
+  --ink-2:#131D19;
+  --ivory:#F7F1E3;
+  --stone:#CFC5B2;
+  --brass:#C9A45B;
+  --brass-l:#E7C77A;
+  --terra:#C86B3F;
+  --roselle:#6E1B2E;
+
+  --gut:clamp(18px,4vw,64px);
+  --hair:rgba(247,241,227,.18);
+  --serif:"Cormorant Garamond",Georgia,serif;
+  --sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{background:var(--ink);-webkit-text-size-adjust:100%;overflow-x:clip}
+body{
+  margin:0;background:var(--ink);color:var(--ivory);
+  font-family:var(--sans);font-weight:400;font-size:clamp(14px,1.05vw,17px);
+  line-height:1.55;-webkit-font-smoothing:antialiased;
+}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+h1,h2,h3,p,ul,ol,dl,dd,figure,blockquote{margin:0;padding:0}
+ul,ol{list-style:none}
+::selection{background:var(--terra);color:var(--ivory)}
+.skip{position:fixed;left:-9999px;top:0;z-index:99}
+.skip:focus{left:12px;top:12px;background:var(--ivory);color:var(--ink);padding:10px 16px}
+
+/* ---------- colour fields ----------
+   Every section declares its own field. Text colour follows the field,
+   never the <body> — that is what made the last build unreadable. */
+[data-theme="ink"]{background:var(--ink);color:var(--ivory)}
+[data-theme="terra"]{background:var(--terra);color:var(--ink)}
+[data-theme="brass"]{background:var(--brass);color:var(--ink)}
+[data-theme="ivory"]{background:var(--ivory);color:var(--ink)}
+
+/* ---------- type ---------- */
+.kicker{
+  display:flex;align-items:center;gap:.9em;
+  font-size:.66rem;font-weight:700;letter-spacing:.34em;text-transform:uppercase;
+  color:var(--brass);
+}
+.kicker i{font-style:normal;opacity:.5}
+.kicker--ink{color:var(--ink);opacity:.72}
+.kicker--ink::after{background:currentColor}
+.kicker::after{content:"";height:1px;width:min(96px,14vw);background:currentColor;opacity:.4}
+
+/* the big letterspaced display face, as on the reference site */
+.mega{
+  font-family:var(--serif);font-weight:600;line-height:.86;
+  letter-spacing:-.01em;
+  font-size:clamp(3rem,15.5vw,17rem);
+  display:block;
+}
+.mega--mid{font-size:clamp(2.4rem,10.5vw,10rem)}
+/* The masked reveal (translateY 112% → 0) needs overflow:hidden, but
+   Cormorant descends 0.28em below the baseline while these headings run at
+   line-height .74–.9 — so a tight mask shears the bottom off "J", "g", "y",
+   "p" in "Vintage", "Juice Point", "morning.", "flavour". The mask is padded
+   by a bottom-safe amount and pulled back with an equal negative margin, so
+   layout is identical and the ink is never clipped. */
+.mega .ln,.hero__title .ln,.quote .ln,.foot__word .ln{
+  display:block;overflow:hidden;
+  padding-bottom:.26em;margin-bottom:-.26em;
+}
+.mega .ln>span,.hero__title .ln>span,.quote .ln>span,.foot__word .ln>span{display:block}
+
+/* ---------- nav ---------- */
+.nav{
+  position:fixed;inset:0 0 auto 0;z-index:60;
+  display:flex;align-items:center;justify-content:space-between;gap:24px;
+  padding:18px var(--gut);
+  color:var(--ivory);
+  transition:transform .6s var(--ease),background .4s ease;
+}
+.nav::before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(to bottom,rgba(13,21,18,.66),rgba(13,21,18,0));
+  transition:opacity .4s ease;
+}
+.nav.is-solid{background:rgba(13,21,18,.92);backdrop-filter:blur(14px)}
+.nav.is-solid::before{opacity:0}
+.nav__mark{display:flex;align-items:center;gap:11px;font-family:var(--serif);font-size:1.02rem;letter-spacing:.18em;text-transform:uppercase}
+.nav__mark svg{width:28px;height:28px;color:currentColor;flex:none}
+.nav__links{display:flex;gap:clamp(14px,2.2vw,34px);font-size:.68rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase}
+.nav__links a{position:relative;padding-bottom:3px}
+.nav__links a::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:1px;background:currentColor;transform:scaleX(0);transform-origin:right;transition:transform .5s var(--ease)}
+.nav__links a:hover::after{transform:scaleX(1);transform-origin:left}
+.nav__cta{font-size:.64rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;border:1px solid currentColor;border-radius:100px;padding:8px 16px;transition:background .4s,color .4s}
+.nav__cta:hover{background:var(--ivory);color:var(--ink)}
+.scroll-progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:70;pointer-events:none}
+.scroll-progress i{display:block;height:100%;background:var(--brass);transform:scaleX(0);transform-origin:left}
+
+/* ---------- hero ---------- */
+.hero{
+  position:relative;min-height:100svh;isolation:isolate;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:clamp(84px,11vh,128px) var(--gut) clamp(22px,3vh,40px);
+  overflow:hidden;
+}
+.hero__media{position:absolute;inset:0;z-index:0;overflow:hidden}
+.hero__media img{width:100%;height:118%;object-fit:cover;object-position:52% 30%;will-change:transform}
+.hero__media::after{
+  content:"";position:absolute;inset:0;z-index:1;
+  background:
+    linear-gradient(to top,rgba(13,21,18,.96) 0%,rgba(13,21,18,.55) 38%,rgba(13,21,18,.05) 68%,rgba(13,21,18,.62) 100%),
+    radial-gradient(130% 80% at 74% 26%,transparent 34%,rgba(13,21,18,.72) 100%);
+}
+.hero__grain{
+  position:absolute;inset:0;z-index:2;pointer-events:none;opacity:.14;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='.6'/></svg>");
+}
+.hero__top,.hero__mid,.hero__foot{position:relative;z-index:3}
+.hero__top{display:flex;align-items:baseline;justify-content:space-between;gap:20px}
+.hero__since{font-size:.62rem;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--stone)}
+.hero__title{
+  font-family:var(--serif);font-weight:600;
+  font-size:clamp(3.4rem,26vw,26rem);
+  line-height:.82;letter-spacing:-.03em;
+  color:var(--ivory);
+  margin-bottom:clamp(10px,1.8vh,22px);
+}
+.hero__title .ln{will-change:transform}
+.hero__lede{
+  max-width:44ch;font-size:clamp(.95rem,1.3vw,1.2rem);line-height:1.6;color:var(--stone);
+}
+.hero__lede em{font-family:var(--serif);font-style:italic;font-size:1.32em;color:var(--ivory);letter-spacing:.01em}
+.hero__foot{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;border-top:1px solid var(--hair);padding-top:clamp(12px,2vh,20px)}
+.hero__meta{font-size:.6rem;font-weight:700;letter-spacing:.26em;text-transform:uppercase;color:var(--stone);text-align:right}
+.hero__meta i{font-style:normal;margin:0 .7em;opacity:.45}
+.cue{display:flex;align-items:center;gap:12px;font-size:.6rem;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--brass-l)}
+.cue svg{width:11px;height:40px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;animation:cue 2.6s var(--ease) infinite}
+@keyframes cue{0%,100%{transform:translateY(-4px);opacity:.42}45%{transform:translateY(5px);opacity:1}70%{opacity:.6}}
+
+/* ---------- marquee ---------- */
+.marquee{
+  background:var(--ink-2);border-block:1px solid var(--hair);
+  padding:clamp(14px,2.2vh,26px) 0;overflow:hidden;
+}
+.marquee__track{display:flex;align-items:center;gap:clamp(18px,2.6vw,42px);width:max-content;will-change:transform}
+.marquee__track span{font-family:var(--serif);font-size:clamp(1.4rem,3.2vw,3rem);letter-spacing:.02em;color:var(--stone);white-space:nowrap}
+.marquee__track b{color:var(--terra);font-weight:400;font-size:clamp(1rem,1.8vw,1.6rem)}
+
+/* ---------- statement (terracotta) ---------- */
+.statement{
+  position:relative;
+  padding:clamp(72px,14vh,170px) var(--gut) clamp(48px,8vh,96px);
+  display:flex;flex-direction:column;gap:clamp(40px,8vh,90px);
+}
+.statement__text{
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(1.9rem,7.6vw,7.4rem);
+  line-height:1.0;letter-spacing:-.018em;
+  max-width:20em;color:var(--ink);
+  text-wrap:pretty;
+}
+.statement__text .w{display:inline-block;white-space:pre}
+.statement__foot{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(24px,4vw,64px);align-items:end}
+.facts{display:flex;flex-wrap:wrap;gap:clamp(20px,3vw,54px);border-top:1px solid rgba(13,21,18,.32);padding-top:clamp(14px,2.2vh,24px)}
+.facts li{display:flex;flex-direction:column;gap:2px}
+.facts b{font-family:var(--serif);font-size:clamp(2rem,3.6vw,3.4rem);font-weight:600;line-height:.9}
+.facts span{font-size:.6rem;font-weight:700;letter-spacing:.24em;text-transform:uppercase;opacity:.72}
+.statement__fig{overflow:hidden;aspect-ratio:16/11}
+.statement__fig img{width:100%;height:112%;object-fit:cover;will-change:transform}
+
+/* ---------- board: pinned horizontal ---------- */
+.board{position:relative}
+.board__pin{
+  height:100svh;display:flex;flex-direction:column;
+  padding:clamp(58px,8vh,96px) 0 clamp(14px,2.2vh,24px);
+  overflow:hidden;
+}
+/* the heading gets a fixed slice of the viewport and the rail gets the rest,
+   so neither can push the other off screen */
+.board__head{flex:0 0 auto;padding-inline:var(--gut)}
+.board__head .kicker{margin-bottom:clamp(8px,1.2vh,16px)}
+.board__head .mega{font-size:clamp(2rem,min(9.4vw,13.5vh),9.4rem)}
+.board__rail{
+  display:flex;align-items:stretch;gap:clamp(10px,1.4vw,22px);
+  padding:clamp(10px,2vh,26px) var(--gut) 0;
+  flex:1 1 auto;min-height:0;will-change:transform;
+}
+.card{
+  position:relative;flex:0 0 auto;
+  width:clamp(210px,24vw,360px);
+  display:flex;flex-direction:column;
+  padding:clamp(14px,1.8vw,26px);
+  border:1px solid var(--hair);
+  background:rgba(247,241,227,.03);
+  overflow:hidden;
+}
+.card--slab{background:var(--terra);color:var(--ink);border-color:transparent}
+.card--photo{padding:0;border:0;width:clamp(240px,28vw,430px)}
+.card--photo img{width:100%;height:100%;object-fit:cover}
+.card--end{background:var(--brass);color:var(--ink);border-color:transparent;justify-content:space-between}
+.card__n{font-size:.6rem;font-weight:700;letter-spacing:.24em;color:var(--brass)}
+.card--slab .card__n,.card--end .kicker{color:rgba(13,21,18,.6)}
+.card h3{
+  font-family:var(--serif);font-weight:600;line-height:.9;
+  font-size:clamp(1.6rem,min(3.6vw,7vh),3.6rem);
+  letter-spacing:-.02em;margin-top:auto;
+}
+.card__sub{font-size:.58rem;font-weight:700;letter-spacing:.26em;text-transform:uppercase;color:var(--brass);margin-top:.7em}
+.card--slab .card__sub{color:rgba(13,21,18,.62)}
+.card__copy{font-size:clamp(.74rem,1.6vh,.84rem);line-height:1.5;color:var(--stone);margin-top:.85em;max-width:30ch}
+.card--slab .card__copy{color:rgba(13,21,18,.78)}
+.card__price{
+  font-family:var(--serif);font-size:clamp(1.4rem,2.1vw,2rem);
+  color:var(--brass-l);margin-top:auto;padding-top:1em;
+  border-top:1px solid var(--hair);font-variant-numeric:tabular-nums;
+}
+.card--slab .card__price{color:var(--ink);border-color:rgba(13,21,18,.24)}
+.giant-link{
+  display:block;font-family:var(--serif);font-weight:600;line-height:.86;
+  /* the three words are separate lines so the SVGs stay out of the text run */
+  font-size:clamp(1.5rem,min(3vw,6vh),3rem);letter-spacing:-.02em;color:var(--ink);
+}
+.giant-link .ln{display:block}
+.giant-link svg{width:1.1em;height:.5em;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;margin-top:.3em;transition:transform .45s var(--ease)}
+.giant-link:hover svg{transform:translateX(12px)}
+.board__foot{
+  flex:none;display:flex;align-items:center;justify-content:space-between;
+  padding:clamp(10px,1.6vh,18px) var(--gut) 0;margin-top:auto;
+  font-size:.6rem;font-weight:700;letter-spacing:.26em;text-transform:uppercase;color:var(--stone);
+}
+.board__hint{display:flex;align-items:center;gap:10px;color:var(--brass-l)}
+.board__hint svg{width:30px;height:12px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;animation:nudge 2.4s var(--ease) infinite}
+@keyframes nudge{0%,100%{transform:translateX(0);opacity:.5}50%{transform:translateX(8px);opacity:1}}
+
+/* ---------- flavour switcher ---------- */
+.flavour{position:relative;background:var(--roselle);color:var(--ivory);transition:background .9s var(--ease)}
+.flavour__stage{
+  position:relative;min-height:100svh;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:clamp(88px,13vh,150px) var(--gut) clamp(96px,14vh,140px);
+  overflow:hidden;
+}
+.flavour__word{
+  font-family:var(--serif);font-weight:600;line-height:.8;letter-spacing:-.03em;
+  /* longest name is "Vintage Angel": 19vw overflowed it at every width */
+  font-size:clamp(2.6rem,14.5vw,14rem);
+  position:relative;z-index:2;will-change:transform;
+  overflow-wrap:anywhere;
+}
+.flavour__eng{
+  font-size:.66rem;font-weight:700;letter-spacing:.34em;text-transform:uppercase;
+  opacity:.8;margin-top:clamp(10px,1.6vh,18px);position:relative;z-index:2;
+}
+.flavour__note{max-width:34ch;margin-top:clamp(16px,2.6vh,26px);font-size:clamp(.88rem,1.2vw,1.05rem);opacity:.88;position:relative;z-index:2}
+.flavour__price{
+  position:absolute;right:var(--gut);top:clamp(88px,13vh,150px);
+  font-family:var(--serif);font-size:clamp(1.6rem,3vw,3rem);z-index:2;
+}
+.flavour__media{
+  position:absolute;right:clamp(-4%,-2vw,0%);bottom:clamp(-6%,-4vh,0%);
+  width:min(46vw,620px);aspect-ratio:4/5;z-index:1;
+  clip-path:inset(0 0 0 0);
+}
+.flavour__media img{width:100%;height:100%;object-fit:cover;mix-blend-mode:luminosity;opacity:.85}
+.flavour__dots{
+  position:absolute;left:var(--gut);bottom:clamp(28px,5vh,54px);z-index:3;
+  display:flex;gap:10px;
+}
+.flavour__dots button{
+  width:30px;height:30px;display:grid;place-items:center;background:none;border:0;cursor:pointer;padding:0;
+}
+.flavour__dots i{
+  display:block;width:11px;height:11px;border-radius:50%;
+  background:var(--dot);outline:1px solid rgba(247,241,227,.5);outline-offset:3px;
+  transition:transform .4s var(--ease),outline-color .4s;
+}
+.flavour__dots button:hover i{transform:scale(1.35)}
+.flavour__dots button.is-live i{transform:scale(1.5);outline-color:var(--ivory)}
+
+/* ---------- range ---------- */
+.range{overflow:hidden}
+.range__track{display:flex;height:100svh;align-items:stretch;will-change:transform}
+.panel{
+  flex:0 0 auto;height:100%;display:flex;flex-direction:column;justify-content:center;
+  padding:clamp(72px,10vh,120px) clamp(22px,4vw,64px);
+}
+.panel--lead,.panel--kicker{width:min(86vw,720px);gap:clamp(16px,2.6vh,28px)}
+.panel--lead{padding-left:var(--gut);border-right:1px solid var(--hair)}
+.panel--kicker{padding-right:var(--gut);background:var(--ink-2);border-left:1px solid var(--hair)}
+.panel__copy{max-width:34ch;color:var(--stone);font-size:clamp(.9rem,1.15vw,1rem)}
+.panel--shot{width:min(78vw,760px);padding:0 clamp(6px,.8vw,14px);align-items:center;position:relative}
+.panel--shot img{width:100%;height:min(76svh,800px);object-fit:cover}
+.panel__cap{
+  position:absolute;left:clamp(18px,2.4vw,38px);bottom:clamp(30px,6vh,74px);
+  display:flex;align-items:center;gap:12px;
+  background:rgba(13,21,18,.7);backdrop-filter:blur(10px);
+  border:1px solid var(--hair);border-radius:100px;padding:8px 18px 8px 12px;
+  font-size:.62rem;font-weight:700;letter-spacing:.24em;text-transform:uppercase;
+}
+.panel__cap b{color:var(--brass)}
+.link-arrow{
+  display:inline-flex;align-items:center;gap:12px;align-self:flex-start;
+  font-size:.64rem;font-weight:700;letter-spacing:.26em;text-transform:uppercase;
+  padding-bottom:6px;border-bottom:1px solid var(--brass);transition:gap .4s var(--ease),color .4s;
+}
+.link-arrow svg{width:24px;height:12px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.link-arrow:hover{gap:20px;color:var(--brass-l)}
+
+/* ---------- the pulse (terracotta field) ----------
+   A hard cut to terra between the range and the brass quote: the numbers
+   a customer actually wants, set as a ledger rather than a card grid. */
+.pulse{
+  padding:clamp(64px,11vh,140px) var(--gut);
+  position:relative;overflow:hidden;
+}
+.pulse__in{max-width:1500px;margin-inline:auto}
+.pulse__h{
+  font-family:var(--serif);font-weight:600;line-height:1.02;letter-spacing:-.024em;
+  font-size:clamp(1.6rem,3.5vw,3.1rem);
+  color:var(--ink);max-width:22em;margin-top:clamp(14px,2.4vh,26px);
+  text-wrap:balance;
+}
+.pulse__stats{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:0;margin-top:clamp(34px,6vh,72px);border-top:1px solid rgba(13,21,18,.34);
+}
+.pulse__stat{
+  padding:clamp(16px,2.6vh,26px) clamp(12px,2vw,30px) clamp(18px,3vh,30px) 0;
+  border-bottom:1px solid rgba(13,21,18,.34);
+  display:flex;flex-direction:column-reverse;justify-content:flex-end;gap:6px;
+}
+.pulse__stat+.pulse__stat{padding-left:clamp(12px,2vw,30px);border-left:1px solid rgba(13,21,18,.2)}
+.pulse__stat dt{
+  font-size:.56rem;font-weight:700;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--ink);opacity:.66;
+}
+.pulse__stat dd{
+  font-family:var(--serif);font-weight:600;line-height:.86;
+  font-size:clamp(2.1rem,5.4vw,5rem);letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;color:var(--ink);
+  display:flex;align-items:baseline;gap:.34em;
+}
+.pulse__stat dd i{
+  font-family:var(--sans);font-style:normal;font-weight:700;
+  font-size:.58rem;letter-spacing:.24em;text-transform:uppercase;opacity:.62;
+}
+.pulse__note{
+  margin-top:clamp(20px,3.4vh,34px);max-width:52ch;
+  font-size:.82rem;line-height:1.6;color:var(--ink);opacity:.74;
+}
+
+/* ---------- quote (brass field) ----------
+   The line is set in two long lines that fill the field. At 8.4vw the
+   same words used only 44% of the width and 69% of the height, which read
+   as centred text on a big empty rectangle. Size now takes the smaller of
+   the width fit and the height fit, so it fills both. */
+.quote{
+  display:grid;place-items:center;min-height:92svh;
+  padding:clamp(72px,12vh,150px) var(--gut);
+}
+.quote blockquote{width:100%;max-width:min(1500px,100%)}
+.quote p{
+  font-family:var(--serif);font-weight:600;line-height:.9;letter-spacing:-.022em;
+  /* js/quote.js sets the size: it is measured against the field, so an
+     edited sentence is composed too. 3.2rem is the pre-JS floor. */
+  font-size:3.2rem;
+}
+.quote cite{
+  display:block;margin-top:clamp(20px,3.4vh,38px);
+  font-style:normal;font-size:.64rem;font-weight:700;letter-spacing:.34em;text-transform:uppercase;opacity:.68;
+}
+
+/* ---------- visit ---------- */
+.visit{
+  padding:clamp(72px,13vh,150px) var(--gut) clamp(48px,8vh,96px);
+  display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(30px,5vw,80px);
+}
+.visit__head .kicker{margin-bottom:clamp(12px,2vh,24px)}
+.visit__copy{align-self:end;color:var(--stone);max-width:34ch;font-size:clamp(.9rem,1.1vw,1rem)}
+.visit__meta{
+  grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);
+  border-top:1px solid var(--hair);
+}
+.visit__meta>div{padding:clamp(14px,2.2vh,22px) 18px clamp(14px,2.2vh,22px) 0;border-bottom:1px solid var(--hair)}
+.visit__meta>div+div{padding-left:18px;border-left:1px solid var(--hair)}
+.visit__meta dt{font-size:.56rem;font-weight:700;letter-spacing:.26em;text-transform:uppercase;color:var(--brass);margin-bottom:.6em}
+.visit__meta dd{font-family:var(--serif);font-size:clamp(1.05rem,1.7vw,1.5rem);line-height:1.2}
+.visit__meta dd.pending{color:var(--stone);opacity:.7}
+.visit__fine{grid-column:1/-1;font-size:.7rem;color:var(--stone);opacity:.66;max-width:76ch}
+
+/* ---------- footer ---------- */
+.foot{padding:clamp(48px,8vh,90px) var(--gut) clamp(24px,3vh,40px);border-top:1px solid var(--hair);overflow:hidden}
+.foot__word{
+  font-family:var(--serif);font-weight:600;line-height:.86;letter-spacing:-.03em;
+  /* "Juice Point" measures 4.00em at 600 weight, so 21vw filled 96% of the
+     viewport and slid under the right gutter; 20vw leaves the same margin
+     the other sections use. */
+  font-size:clamp(2.8rem,20vw,20rem);color:var(--ivory);
+}
+/* four-column footer: the wordmark closes the page, then the practical
+   detail — where, how to order, and what the place is */
+.foot__cols{
+  display:grid;grid-template-columns:1.2fr 1fr 1fr .9fr;gap:clamp(20px,3vw,48px);
+  margin-top:clamp(30px,5vh,60px);padding-top:clamp(18px,2.6vh,28px);
+  border-top:1px solid var(--hair);
+}
+.foot__col{display:flex;flex-direction:column;gap:6px;min-width:0}
+.foot__label{
+  font-size:.56rem;font-weight:700;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--brass);margin-bottom:6px;
+}
+.foot__col p{font-size:.86rem;line-height:1.5;color:var(--stone)}
+.foot__col a{color:var(--ivory);position:relative;display:inline-block;padding-bottom:2px}
+.foot__col a::after{
+  content:"";position:absolute;left:0;bottom:0;width:100%;height:1px;background:currentColor;
+  transform:scaleX(0);transform-origin:right;transition:transform .5s var(--ease);
+}
+.foot__col a:hover{color:var(--brass-l)}
+.foot__col a:hover::after{transform:scaleX(1);transform-origin:left}
+.foot__tel{font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.foot__legal{
+  font-family:var(--serif);font-size:clamp(1rem,1.5vw,1.35rem);line-height:1.25;
+  color:var(--ivory);align-self:end;
+}
+.foot__row{
+  display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:10px 24px;
+  margin-top:clamp(26px,4vh,48px);padding-top:16px;border-top:1px solid var(--hair);
+  font-size:.58rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--stone);
+}
+.foot__fine{opacity:.66;letter-spacing:.14em;text-transform:none;font-weight:400;font-size:.66rem}
+
+/* ---------- focus ----------
+   The site is mostly ink and brass on black; the default browser ring is
+   nearly invisible on terra. One brass ring, everywhere, keyboard only. */
+:where(a,button,input,textarea,select,summary,[tabindex]):focus-visible{
+  outline:2px solid var(--brass-l);
+  outline-offset:3px;
+  border-radius:2px;
+}
+/* on the light fields the brass ring disappears into the colour */
+[data-theme="brass"] :focus-visible,
+[data-theme="terra"] :focus-visible,
+[data-theme="ivory"] :focus-visible{
+  outline-color:var(--ink);
+}
+.skip:focus-visible{outline-offset:6px}
+
+/* ---------- pre-state (only before/without motion) ---------- */
+.js .mega .ln>span,.js .hero__title .ln>span,.js .quote p .ln>span,.js .foot__word .ln>span{will-change:transform}
+.js .statement__text .w{opacity:.16}
+.js .card{opacity:0;transform:translateY(28px)}
+.js .statement__fig img,.js .panel--shot img{will-change:transform}
+
+
+/* Short laptops cannot give the pinned board both a heading and a card rail.
+   Below that, drop the pin entirely and let it flow as a column. */
+@media (min-width:961px) and (max-height:700px){
+  .board__pin{height:auto;padding-bottom:clamp(32px,6vh,64px)}
+  .board__head .mega{font-size:clamp(2rem,7vw,6rem)}
+  .board__rail{overflow-x:auto;overflow-y:hidden;padding-bottom:8px;scrollbar-width:none}
+  .board__rail::-webkit-scrollbar{display:none}
+  .card{min-height:320px}
+  .board__hint{display:none}
+}
+
+/* ---------- responsive ---------- */
+@media (max-width:960px){
+  .nav__links{display:none}
+  .statement__foot{grid-template-columns:1fr}
+  .board__pin{height:auto;padding-bottom:clamp(32px,5vh,56px)}
+  .board__rail{
+    flex-direction:column;transform:none!important;
+    padding-top:clamp(18px,3vh,32px);gap:14px;
+  }
+  .card{width:auto!important;min-height:210px}
+  .card--photo{min-height:300px}
+  .range__track{display:grid;height:auto}
+  .panel{width:auto!important;height:auto;padding:clamp(40px,7vh,64px) var(--gut);border:0!important}
+  .panel--shot{padding:0}
+  .panel--shot img{height:min(70svh,560px)}
+  .flavour__media{width:74vw;opacity:.32}
+  .flavour__word{font-size:clamp(3.4rem,17vw,7rem)}
+  .visit{grid-template-columns:1fr}
+  .visit__copy{align-self:start}
+  .visit__meta{grid-template-columns:1fr 1fr}
+  .visit__meta>div+div{padding-left:0;border-left:0}
+}
+@media (max-width:960px){
+  .foot__cols{grid-template-columns:1fr 1fr}
+  .foot__legal{align-self:start;grid-column:1/-1}
+}
+@media (max-width:960px){
+  .pulse__stats{grid-template-columns:1fr 1fr}
+  .pulse__stat:nth-child(3){border-left:0;padding-left:0}
+}
+@media (max-width:680px){
+  .hero__title{font-size:clamp(2.9rem,24vw,7rem)}
+  .pulse__stats{grid-template-columns:1fr}
+  .pulse__stat+.pulse__stat{border-left:0;padding-left:0}
+  .foot__cols{grid-template-columns:1fr}
+  .foot__row{flex-direction:column;align-items:flex-start}
+  .hero__meta{display:none}
+  .mega{font-size:clamp(2.6rem,13.5vw,4.6rem)}
+  .facts b{font-size:2rem}
+  .visit__meta{grid-template-columns:1fr}
+  .foot__row{flex-direction:column;gap:12px}
+}
+@media (prefers-reduced-motion:reduce){
+  .js .statement__text .w,.js .card,.js .mega .ln>span,.js .hero__title .ln>span{opacity:1!important;transform:none!important}
+  .cue svg,.board__hint svg{animation:none}
+}
+
+/* ============================================================
+   ADMIN — /admin.html
+   Same palette and faces as the site, laid out as a workbench:
+   a section list on the left, the live preview on the right.
+   Nothing here loads on index.html.
+   ============================================================ */
+.adm{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,42%);
+  min-height:100svh;background:var(--ink);color:var(--ivory);
+}
+.adm__bar{
+  grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:14px clamp(18px,3vw,34px);border-bottom:1px solid var(--hair);
+  position:sticky;top:0;z-index:40;background:rgba(13,21,18,.94);backdrop-filter:blur(12px);
+}
+.adm__mark{display:flex;align-items:center;gap:10px;font-family:var(--serif);letter-spacing:.16em;text-transform:uppercase;font-size:1rem}
+.adm__mark svg{width:24px;height:24px}
+.adm__state{font-size:.62rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--stone)}
+.adm__state b{color:var(--brass-l)}
+.adm__state.is-dirty b{color:var(--terra)}
+.adm__actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.adm__btn{
+  font-family:inherit;font-size:.62rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+  padding:9px 16px;border-radius:100px;border:1px solid var(--hair);
+  background:none;color:var(--ivory);cursor:pointer;transition:background .3s,color .3s,border-color .3s;
+}
+.adm__btn:hover{border-color:var(--brass);color:var(--brass-l)}
+.adm__btn--go{background:var(--brass);color:var(--ink);border-color:var(--brass)}
+.adm__btn--go:hover{background:var(--brass-l);color:var(--ink)}
+.adm__btn--quiet{opacity:.72}
+.adm__btn[disabled]{opacity:.35;cursor:not-allowed}
+
+.adm__side{
+  padding:clamp(18px,3vw,30px);border-right:1px solid var(--hair);
+  display:flex;flex-direction:column;gap:26px;min-width:0;
+}
+.adm__group>h2{
+  font-family:var(--serif);font-weight:600;font-size:1.5rem;line-height:1;
+  display:flex;align-items:baseline;gap:10px;margin-bottom:14px;
+}
+.adm__group>h2 span{font-family:var(--sans);font-size:.58rem;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--stone)}
+.adm__grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.adm__field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.adm__field--wide{grid-column:1/-1}
+.adm__field label{font-size:.58rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--stone)}
+.adm__field input,.adm__field textarea,.adm__field select{
+  font-family:var(--sans);font-size:.9rem;line-height:1.45;color:var(--ivory);
+  background:rgba(247,241,227,.05);border:1px solid var(--hair);border-radius:2px;
+  padding:9px 11px;width:100%;min-width:0;
+}
+.adm__field textarea{resize:vertical;min-height:76px}
+.adm__field input:focus-visible,.adm__field textarea:focus-visible,.adm__field select:focus-visible{
+  outline:2px solid var(--brass-l);outline-offset:1px;border-color:transparent;
+}
+.adm__field input[type=color]{height:38px;padding:3px 4px;cursor:pointer}
+.adm__field .hint{font-size:.62rem;color:var(--stone);opacity:.72;letter-spacing:.02em;text-transform:none;font-weight:400}
+
+/* repeating rows: board cards and flavours */
+.adm__row{
+  border:1px solid var(--hair);background:rgba(247,241,227,.03);
+  padding:14px;display:flex;flex-direction:column;gap:12px;
+}
+.adm__rowhd{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.adm__rowhd strong{font-family:var(--serif);font-size:1.15rem;font-weight:600;letter-spacing:.01em}
+.adm__rowbtns{display:flex;gap:4px}
+.adm__icon{
+  width:28px;height:28px;display:grid;place-items:center;background:none;border:1px solid var(--hair);
+  border-radius:2px;color:var(--stone);cursor:pointer;font-size:.8rem;line-height:1;
+  transition:color .25s,border-color .25s,background .25s;
+}
+.adm__icon:hover{color:var(--ivory);border-color:var(--brass)}
+.adm__icon[disabled]{opacity:.3;cursor:not-allowed}
+.adm__icon--kill:hover{color:var(--ivory);background:var(--roselle);border-color:var(--roselle)}
+
+/* live preview */
+.adm__preview{
+  padding:clamp(18px,3vw,30px);display:flex;flex-direction:column;gap:14px;
+  position:sticky;top:57px;align-self:start;max-height:calc(100svh - 57px);
+}
+.adm__preview h2{font-family:var(--serif);font-weight:600;font-size:1.5rem;line-height:1}
+.adm__preview p{font-size:.66rem;color:var(--stone);letter-spacing:.02em}
+.adm__frame{
+  flex:1;min-height:0;border:1px solid var(--hair);border-radius:2px;overflow:hidden;background:var(--ink-2);
+}
+.adm__frame iframe{width:100%;height:100%;min-height:420px;border:0;display:block}
+.adm__note{
+  font-size:.62rem;line-height:1.5;color:var(--stone);
+  border-left:2px solid var(--brass);padding-left:10px;
+}
+@media (max-width:1080px){
+  .adm{grid-template-columns:1fr}
+  .adm__side{border-right:0;border-bottom:1px solid var(--hair)}
+  .adm__preview{position:static;max-height:none}
+  .adm__frame iframe{min-height:520px}
+}

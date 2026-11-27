@@ -1,3 +1,9 @@
-# Generated download bundle — rebuild with:
+# Large generated download bundle. Kept OUT of Git on purpose.
+#
+# Deployment note: files listed here are not in the repository, so they are
+# NOT served by the Vercel deployment either. The brand-kit page therefore
+# offers the individual files (which are committed) instead of this ZIP.
+#
+# Rebuild locally with:
 #   zip -q -r vintage-brand-assets.zip assets flow-inputs fonts *.html *.css *.js *.md *.txt *.json
 vintage-brand-assets.zip

@@ -2,6 +2,10 @@
 
 A complete concept redesign for the juice business in the supplied Google Maps / menu photos. It keeps the recognisable **Vintage**, cup and black/gold equity while making the system calmer, more consistent and more premium for Dar es Salaam.
 
+## Live deployment
+
+`https://vintage-juice-point-site.vercel.app` — Vercel project `vintage-juice-point-site`, root directory `vintage-brand`, deployed from `arena/e8ab14d7-roadsafety-dar`.
+
 ## Preview
 
 From this folder:
@@ -12,18 +16,25 @@ python3 -m http.server 8000 --bind 0.0.0.0
 
 Then open:
 
-- `http://localhost:8000/index.html` — landing page
+- `http://localhost:8000/index.html` — landing page (needs the motion JS; serve over HTTP, not `file://`)
 - `http://localhost:8000/menu.html` — full printable menu
 - `http://localhost:8000/brand-kit.html` — full brand presentation
+
+### Photography
+
+The hero, disc and range images are real composites, not pasted cut-outs: the brass-rimmed disc in `assets/img/hero-sign.jpg` and `assets/img/disc-sign.jpg` carries the wordmark rendered vectorially into the sign, and every bottle in `assets/img/range-labelled.jpg` has the cup monogram laid into its label at the measured disc size. Source frames are in `assets/v2/`.
 
 ## Main files
 
 | File | What it is |
 |---|---|
-| `index.html` | Responsive landing page with hero, story, menu tabs, packaging and visit section. |
+| `index.html` | Scroll-driven landing page (GSAP + ScrollTrigger + SplitText). Pinned menu board, horizontal range, word-by-word manifesto, parallax photography. |
+| `css/style.css` | The v2 motion design system for the landing page: full-bleed layout, brass/terracotta tokens, self-hosted type, reduced-motion fallbacks. |
+| `js/main.js` | The motion layer — hero timeline, marquee, pinned sections, horizontal scroll, reveals. Vendored GSAP lives in `vendor/gsap/`, no CDN. |
 | `menu.html` | Full print-friendly menu with every blend from the reference photo. |
 | `brand-kit.html` | Visual brand guidelines, assets, colour/type, menu, packaging, Maps cleanup and Flow prompts. |
-| `styles.css` | Shared design system, self-hosted fonts, print stylesheet. |
+| `styles.css` | Shared design system for `menu.html` / `brand-kit.html` plus the print stylesheet. |
+| `legacy-index.html`, `legacy-styles.css` | The first static landing page, kept for reference. Not linked from the site. |
 | `app.js` | Menu category tabs, copy-prompt buttons, footer year. |
 | `BRAND_GUIDELINES.md` | Written strategy, naming, voice, palette, typography, usage rules. |
 | `GOOGLE_BUSINESS_PROFILE.md` | Exact cleanup checklist for the Maps listing. |
@@ -33,7 +44,7 @@ Then open:
 | `assets/` | Logos, SVG sources, PNG exports, pattern, label, menu board, photography. |
 | `fonts/` | Cormorant Garamond + Manrope WOFF2 files (self-hosted, no CDN). |
 | `flow-inputs/` | Ten ready-to-upload reference and style frames for Google Flow. |
-| `vintage-brand-assets.zip` | Everything above in one ~7 MB download (build artifact, ignored by Git). Rebuild with the `zip` command in `.gitignore`. |
+| `vintage-brand-assets.zip` | Optional local bundle (~7 MB), ignored by Git so it is not published. Rebuild with the `zip` command in `.gitignore`. |
 
 ## Finished, composited assets
 

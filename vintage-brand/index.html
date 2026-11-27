@@ -1,238 +1,269 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Vintage Juice Point — a premium fresh juice point in Dar es Salaam, Tanzania. Concept brand redesign." />
-  <title>Vintage Juice Point — Dar es Salaam</title>
-  <link rel="icon" href="assets/logo-mark.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vintage Juice Point — Dar es Salaam</title>
+<meta name="description" content="Vintage Juice Point. Asili safi, ladha ya kisasa. Freshly blended Tanzanian fruit, pressed daily in Dar es Salaam." />
+<meta name="theme-color" content="#0D1512" />
+<link rel="icon" href="assets/logo/mark.svg" type="image/svg+xml" />
+<link rel="preload" href="fonts/cormorant-garamond-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="fonts/manrope-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="assets/img/hero-sign.jpg" as="image" fetchpriority="high" />
+<link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
+<a class="skip" href="#menu">Skip to menu</a>
 
-<header class="site-header">
-  <div class="container">
-    <a href="index.html" aria-label="Vintage Juice Point home">
-      <img class="brand-logo" src="assets/logo-primary-on-ink.png" alt="Vintage Juice Point" />
-    </a>
-    <nav class="site-nav" aria-label="Main navigation">
-      <a href="index.html" class="active">Home</a>
-      <a href="#menu">Menu</a>
-      <a href="#story">Story</a>
-      <a href="#social">Social</a>
-      <a href="#visit">Visit</a>
-      <a href="brand-kit.html">Brand kit</a>
-      <a class="nav-cta" href="GOOGLE_FLOW_PROMPTS.md">Flow prompts</a>
-    </nav>
-  </div>
+<!-- ══════════ chrome ══════════ -->
+<header class="nav" id="nav">
+  <a class="nav__mark" href="#top" aria-label="Vintage Juice Point, top">
+    <svg viewBox="0 0 600 600" aria-hidden="true"><use href="assets/logo/mark.svg#mark" /></svg>
+    <span>Vintage</span>
+  </a>
+  <nav class="nav__links" aria-label="Sections">
+    <a href="#menu">Menu</a>
+    <a href="#flavour">Flavours</a>
+    <a href="#range">Range</a>
+    <a href="#numbers">Numbers</a>
+    <a href="#visit">Visit</a>
+  </nav>
+  <a class="nav__cta" href="menu.html">Full list</a>
 </header>
+<div class="scroll-progress" aria-hidden="true"><i></i></div>
 
-<main>
-  <section class="hero">
-    <div class="container hero-inner">
-      <div class="hero-kicker">Dar es Salaam · Tanzania</div>
-      <h1>Asili safi.<br /><em>Ladha</em> ya kisasa.</h1>
-      <p class="hero-sub">Clean origin. Modern taste.</p>
-      <p class="hero-copy">Freshly blended local fruit, signature mixes and takeaway cups — reimagined as a calm, premium everyday juice point with the character of the Swahili coast.</p>
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="#menu">View the menu</a>
-        <a class="btn btn-ghost" href="menu.html">Printable menu</a>
-      </div>
-      <div class="hero-meta">
-        <span>Takeaway</span>
-        <span>Card &amp; NFC payments</span>
-        <span>Good for kids</span>
-        <span>58F5+24 Dar es Salaam</span>
-      </div>
-      <p class="muted" style="font-size:.76rem;letter-spacing:.06em;margin-top:26px;max-width:60ch;">Concept redesign. Contact details and opening hours are editable placeholders — no verified phone, email, website or hours were supplied.</p>
+<main id="top">
+
+  <!-- ══════════ 01 · HERO ══════════ -->
+  <section class="hero" data-theme="ink">
+    <div class="hero__media"><img src="assets/img/hero-sign.jpg" alt="A hand holds a bottle of roselle juice in front of the Vintage Juice Point brass-rimmed sign on a terracotta wall" /></div>
+    <div class="hero__grain" aria-hidden="true"></div>
+
+    <div class="hero__top">
+      <p class="kicker" data-c="hero.kicker">Dar es Salaam<i aria-hidden="true">·</i>Tanzania</p>
+      <p class="hero__since" data-c="hero.since">Est. the coast</p>
+    </div>
+
+    <div class="hero__mid">
+      <h1 class="hero__title" data-spread>
+        <span class="ln" data-c="hero.titleA">Asili</span>
+        <span class="ln" data-c="hero.titleB">safi.</span>
+      </h1>
+      <p class="hero__lede">
+        <em data-c="hero.ledeEm">Ladha ya kisasa.</em><br />
+        <span data-c="hero.lede">Clean origin, modern taste — pressed the same morning, poured over a brass counter.</span>
+      </p>
+    </div>
+
+    <div class="hero__foot">
+      <a class="cue" href="#menu"><span>Scroll</span><svg viewBox="0 0 12 40" aria-hidden="true"><path d="M6 0v34M1 29l5 6 5-6" /></svg></a>
+      <p class="hero__meta" data-c="hero.meta">Takeaway<i>·</i>Card &amp; NFC<i>·</i>Good for kids</p>
     </div>
   </section>
 
-  <div class="fruit-strip" aria-label="Fruit used at Vintage">
-    <div class="container">
-      <span>Rozela</span><span>Ukwaju</span><span>Embe</span><span>Nanasi</span><span>Parachichi</span><span>Passion</span><span>Ubuyu</span><span>Iliki</span><span>Tikiti maji</span><span>Zabibu</span>
+  <!-- ══════════ 02 · MARQUEE ══════════ -->
+  <section class="marquee" aria-label="Fruit we work with">
+    <div class="marquee__track" data-marquee>
+      <span>Rozela</span><b>/</b><span>Ukwaju</span><b>/</b><span>Embe</span><b>/</b><span>Nanasi</span><b>/</b><span>Parachichi</span><b>/</b><span>Passion</span><b>/</b><span>Ubuyu</span><b>/</b><span>Iliki</span><b>/</b><span>Tikiti maji</span><b>/</b><span>Zabibu</span><b>/</b><span aria-hidden="true">Rozela</span><b aria-hidden="true">/</b><span aria-hidden="true">Ukwaju</span><b aria-hidden="true">/</b><span aria-hidden="true">Embe</span><b aria-hidden="true">/</b><span aria-hidden="true">Nanasi</span><b aria-hidden="true">/</b><span aria-hidden="true">Parachichi</span><b aria-hidden="true">/</b><span aria-hidden="true">Passion</span><b aria-hidden="true">/</b><span aria-hidden="true">Ubuyu</span><b aria-hidden="true">/</b><span aria-hidden="true">Iliki</span><b aria-hidden="true">/</b><span aria-hidden="true">Tikiti maji</span><b aria-hidden="true">/</b><span aria-hidden="true">Zabibu</span><b aria-hidden="true">/</b>
     </div>
-  </div>
+  </section>
 
-  <section class="section section-soft" id="story">
-    <div class="container grid-2">
-      <div class="image-frame image-tall">
-        <img src="assets/storefront.jpg" alt="Premium Vintage juice counter concept with dark plaster, brass edge and coastal light" />
+  <!-- ══════════ 03 · STATEMENT (terracotta field) ══════════ -->
+  <section class="statement" data-theme="terra">
+    <p class="kicker kicker--ink">01 — The point</p>
+    <h2 class="statement__text" data-words data-statement>
+      We do not invent flavour. We take what grows an hour out of the city, press it the same morning, and pour it over a brass counter on a street that smells of rain and diesel.
+    </h2>
+    <div class="statement__foot">
+      <ul class="facts">
+        <li><b>06</b><span>days a week</span></li>
+        <li><b>22</b><span>blends on the board</span></li>
+        <li><b>1,000</b><span>TZS from</span></li>
+      </ul>
+      <figure class="statement__fig">
+        <img src="assets/img/pour-close.jpg" alt="Mango juice poured from a glass carafe into a tumbler on a brass tray" loading="lazy" />
+      </figure>
+    </div>
+  </section>
+
+  <!-- ══════════ 04 · BOARD — pinned horizontal menu ══════════ -->
+  <section class="board" id="menu" data-theme="ink">
+    <div class="board__pin">
+      <div class="board__head">
+        <p class="kicker">02 — The board</p>
+        <h2 class="mega" data-spread>
+          <span class="ln">Fresh,</span>
+          <span class="ln">from</span>
+          <span class="ln">the</span>
+          <span class="ln">morning.</span>
+        </h2>
       </div>
-      <div>
-        <div class="eyebrow">The new direction</div>
-        <h2 class="serif" style="font-size:clamp(2.4rem,4.4vw,4.2rem);line-height:1;margin:12px 0 20px;">Premium, but still Dar es Salaam.</h2>
-        <p class="lede">We kept what people already recognise — the Vintage name, the cup, black and gold, local fruit — and removed the visual noise. The result is quieter, warmer and easier to read at a counter, on a bottle, or on a phone.</p>
-        <div class="grid-2" style="gap:24px;margin-top:34px;">
-          <div class="value-card">
-            <div class="num">01</div>
-            <h3>One identity</h3>
-            <p>VINTAGE · JUICE POINT as the master brand; Vintage Experience kept as the existing Google listing and campaign line.</p>
-          </div>
-          <div class="value-card">
-            <div class="num">02</div>
-            <h3>One menu system</h3>
-            <p>Category, blend, ingredients, price. No cursive script, no equals signs, no clipart fruit crowding the board.</p>
-          </div>
-          <div class="value-card">
-            <div class="num">03</div>
-            <h3>Local material language</h3>
-            <p>Charcoal plaster, brushed brass, terracotta and soft Swahili-coast geometry — not a generic imported luxury look.</p>
-          </div>
-          <div class="value-card">
-            <div class="num">04</div>
-            <h3>Real fruit, real light</h3>
-            <p>Roselle, tamarind, mango, passion fruit and avocado photographed as still life in golden-hour coastal light.</p>
-          </div>
+
+      <div class="board__rail" data-rail>
+        <!-- Cards are rendered from content (js/content.js) so the admin panel
+             can edit them. Layout is unchanged: slab card first, a photo card
+             spliced in mid-rail, brass menu link last. -->
+      </div>
+
+      <footer class="board__foot"><span>Prices in TZS</span><span class="board__hint">Keep scrolling<svg viewBox="0 0 34 12" aria-hidden="true"><path d="M0 6h30M25 1l5 5-5 5" /></svg></span></footer>
+    </div>
+  </section>
+
+  <!-- ══════════ 05 · FLAVOUR SWITCHER (colour fields) ══════════ -->
+  <section class="flavour" id="flavour" data-flavour>
+    <div class="flavour__stage">
+      <p class="flavour__kicker kicker" data-flavour-kicker>03 — The flavours</p>
+      <h2 class="flavour__word" data-flavour-word aria-live="polite">Rozela</h2>
+      <p class="flavour__eng" data-flavour-eng>Roselle</p>
+      <p class="flavour__note" data-flavour-note>Sour cherry-deep, steeped from dried calyces the same morning. Poured cold, never sweetened.</p>
+      <span class="flavour__price" data-flavour-price>1,000</span>
+
+      <div class="flavour__media">
+        <img data-flavour-img src="assets/img/cups-terracotta.jpg" alt="Layered takeaway cups of fresh juice on a brass counter" loading="lazy" />
+      </div>
+
+      <ol class="flavour__dots" data-flavour-list>
+        <!-- one dot per flavour, rendered from content by js/render.js -->
+      </ol>
+    </div>
+  </section>
+
+  <!-- ══════════ 06 · RANGE (horizontal photos) ══════════ -->
+  <section class="range" id="range" data-theme="ink">
+    <div class="range__track" data-range-track>
+      <article class="panel panel--lead">
+        <p class="kicker">04 — The range</p>
+        <h2 class="mega mega--mid" data-spread><span class="ln">Three</span><span class="ln">ways</span><span class="ln">to</span><span class="ln">take it.</span></h2>
+        <p class="panel__copy">Bottled for the road, poured over ice at the counter, or layered in a Movie Box cup for the walk home.</p>
+      </article>
+      <article class="panel panel--shot">
+        <img src="assets/img/range-labelled.jpg" alt="Five bottles of cold-pressed juice with Vintage Juice Point labels on a terracotta wall" loading="lazy" />
+        <p class="panel__cap"><b>01</b> The bottle</p>
+      </article>
+      <article class="panel panel--shot">
+        <img src="assets/img/cups-terracotta.jpg" alt="Three takeaway cups of layered juice, one held by hand, on a brass counter" loading="lazy" />
+        <p class="panel__cap"><b>02</b> The Movie Box</p>
+      </article>
+      <article class="panel panel--shot">
+        <img src="assets/img/counter-dusk.jpg" alt="The Vintage juice counter at dusk with warm bulbs, brass counter and terracotta walls" loading="lazy" />
+        <p class="panel__cap"><b>03</b> The counter</p>
+      </article>
+      <article class="panel panel--kicker">
+        <p class="kicker">Every day</p>
+        <h2 class="mega mega--mid" data-spread><span class="ln">Ask</span><span class="ln">for the</span><span class="ln">seasonal.</span></h2>
+        <p class="panel__copy">What is ripe decides half the board. Tell the counter what you like and they will build it.</p>
+        <a class="link-arrow" href="menu.html">Read the menu <svg viewBox="0 0 24 12" aria-hidden="true"><path d="M0 6h22M17 1l5 5-5 5" /></svg></a>
+      </article>
+    </div>
+  </section>
+
+  <!-- ══════════ 06b · THE PULSE — terracotta field, live counters ══════════ -->
+  <section class="pulse" id="numbers" data-theme="terra" aria-labelledby="pulse-h">
+    <div class="pulse__in">
+      <p class="kicker kicker--ink">04b — The point, in numbers</p>
+      <h2 class="pulse__h" id="pulse-h" data-c="numbers.title">
+        Everything you need to know before you walk up to the brass.
+      </h2>
+
+      <dl class="pulse__stats">
+        <div class="pulse__stat">
+          <dt>Blends on the board</dt>
+          <dd><span data-count="22" data-c="numbers.blends">22</span><i>today</i></dd>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section section-dark" id="menu">
-    <div class="container">
-      <div class="section-head center">
-        <div class="eyebrow">Freshly blended</div>
-        <h2>The menu, rewritten.</h2>
-        <p class="lede" style="margin:0 auto;">Prices below were transcribed from the original menu photo. Confirm every value before publishing. All prices are in Tanzanian shillings.</p>
-      </div>
-
-      <div class="menu-toolbar">
-        <div class="menu-tabs" role="tablist" aria-label="Menu categories">
-          <button class="tab-btn" data-menu-tab="fresh">Fresh juice</button>
-          <button class="tab-btn" data-menu-tab="signature">Vintage signature</button>
-          <button class="tab-btn" data-menu-tab="movie">Movie box</button>
+        <div class="pulse__stat">
+          <dt>From</dt>
+          <dd><span data-count="1000" data-c="numbers.from">1,000</span><i>TZS</i></dd>
         </div>
-        <div class="price-note">Prices in TSH · Ask about seasonal fruit</div>
-      </div>
-
-      <div class="menu-panel active" data-menu-panel="fresh">
-        <div class="menu-item"><div><h3>Rozela <span class="muted" style="font-size:.7em;font-family:var(--sans);">/ Roselle</span></h3><div class="ingredients">Single-note fresh blend</div></div><div class="price">1,000</div></div>
-        <div class="menu-item"><div><h3>Ukwaju <span class="muted" style="font-size:.7em;font-family:var(--sans);">/ Tamarind</span></h3><div class="ingredients">Single-note fresh blend</div></div><div class="price">1,000</div></div>
-        <div class="menu-item"><div><h3>Embe <span class="muted" style="font-size:.7em;font-family:var(--sans);">/ Mango</span></h3><div class="ingredients">Single-note fresh blend</div></div><div class="price">1,000</div></div>
-        <div class="menu-item"><div><h3>Nanasi <span class="muted" style="font-size:.7em;font-family:var(--sans);">/ Pineapple</span></h3><div class="ingredients">Single-note fresh blend</div></div><div class="price">1,000</div></div>
-        <div class="menu-item"><div><h3>Parachichi + Tangawizi</h3><div class="ingredients">Avocado · ginger</div></div><div class="price">1,000</div></div>
-        <div class="menu-item"><div><h3>Bungo</h3><div class="ingredients">Single-note fresh blend</div></div><div class="price">2,000</div></div>
-      </div>
-
-      <div class="menu-panel" data-menu-panel="signature" hidden>
-        <div class="menu-item"><div><h3>Vintage Nado</h3><div class="ingredients">Parachichi · nanasi · embe · passion</div></div><div class="price">2,000</div></div>
-        <div class="menu-item"><div><h3>Nado Rich</h3><div class="ingredients">Parachichi · ndizi · tende · embe · yogurt</div></div><div class="price">4,000</div></div>
-        <div class="menu-item"><div><h3>Vintage Diatta</h3><div class="ingredients">Carrot · nanasi · ndizi</div></div><div class="price">2,000</div></div>
-        <div class="menu-item"><div><h3>Diatta Plus</h3><div class="ingredients">Zabibu · apple/pears · nanasi · passion</div></div><div class="price">4,000</div></div>
-        <div class="menu-item"><div><h3>Vintage Bonzy Plus</h3><div class="ingredients">Ukwaju · nanasi · passion · tangawizi</div></div><div class="price">2,000</div></div>
-        <div class="menu-item"><div><h3>Bonzy Spice</h3><div class="ingredients">Rozela · ukwaju · ubuyu · iliki</div></div><div class="price">3,000</div></div>
-        <div class="menu-item"><div><h3>Vintage Gamers</h3><div class="ingredients">Tikiti maji · nanasi · embe · passion · mint</div></div><div class="price">2,000</div></div>
-        <div class="menu-item"><div><h3>Gamers Plus</h3><div class="ingredients">Nanasi · parachichi · embe · passion · tikiti maji · mint</div></div><div class="price">3,000</div></div>
-        <div class="menu-item"><div><h3>Vintage Tropical</h3><div class="ingredients">Tikiti maji · nanasi · apple/pears · mint</div></div><div class="price">4,000</div></div>
-        <div class="menu-item"><div><h3>Tropical Light</h3><div class="ingredients">Zabibu · tikiti · mint</div></div><div class="price">3,000</div></div>
-        <div class="menu-item"><div><h3>Guava Sunset</h3><div class="ingredients">Pera · nanasi · passion · orange</div></div><div class="price">3,000</div></div>
-        <div class="menu-item"><div><h3>Vintage Angel</h3><div class="ingredients">Rozela · tangawizi · ndimu · ubuyu · ukwaju</div></div><div class="price">3,000</div></div>
-        <div class="menu-item"><div><h3>Aloe Calm</h3><div class="ingredients">Ubuyu · ukwaju · aloe vera</div></div><div class="price">2,000</div></div>
-      </div>
-
-      <div class="menu-panel" data-menu-panel="movie" hidden>
-        <div class="menu-item"><div><h3>Mango Milk</h3><div class="ingredients">Embe · nanasi · maziwa</div></div><div class="price">2,000</div></div>
-        <div class="menu-item"><div><h3>Movie Box Deluxe</h3><div class="ingredients">Bungo · nanasi · passion · mint · seasonal fruit / yogurt blend</div></div><div class="price">3,000–5,000</div></div>
-        <div class="menu-item"><div><h3>Custom blend</h3><div class="ingredients">Ask at the counter for seasonal fruit and your own combination</div></div><div class="price">By request</div></div>
-      </div>
-
-      <div style="margin-top:38px;text-align:center;">
-        <a class="btn btn-primary" href="menu.html">Open full printable menu</a>
-        <a class="btn btn-ghost" href="assets/menu-board.png">Download menu board</a>
-      </div>
-    </div>
-  </section>
-
-  <section class="section section-soft" id="social">
-    <div class="container">
-      <div class="section-head">
-        <div class="eyebrow">Social system</div>
-        <h2 class="serif" style="font-size:clamp(2.4rem,4.4vw,4.2rem);line-height:1;">Three formats, one identity.</h2>
-        <p class="lede" style="margin-top:16px;">Post, story and Google cover are already typeset with the real fonts. Replace the contact placeholders once, and they are ready to publish.</p>
-      </div>
-      <div class="grid-3" style="align-items:start;">
-        <figure style="margin:0;">
-          <div class="image-frame fit-contain"><img src="assets/social-post-branded.jpg" alt="Vintage Juice Point Instagram post with roselle juice" /></div>
-          <p class="caption">Instagram post · 1080 × 1080</p>
-        </figure>
-        <figure style="margin:0;">
-          <div class="image-frame fit-contain"><img src="assets/social-story-branded.jpg" alt="Vintage Juice Point vertical story frame with three juices" /></div>
-          <p class="caption">Story / WhatsApp status · 1080 × 1920</p>
-        </figure>
-        <figure style="margin:0;">
-          <div class="image-frame fit-contain"><img src="assets/gbp-cover-branded.jpg" alt="Vintage Juice Point Google Business Profile cover" /></div>
-          <p class="caption">Google Business Profile cover · 1600 × 900</p>
-        </figure>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="packaging">
-    <div class="container grid-2">
-      <div>
-        <div class="eyebrow">Packaging system</div>
-        <h2 class="serif" style="font-size:clamp(2.4rem,4.4vw,4.2rem);line-height:1;margin:12px 0 20px;">One bottle. One label. One shelf presence.</h2>
-        <p class="lede">Clear vessels let the juice colour do the work. A matte black cap, one round brass-ringed label and a thin seal strip replace the mixed bottles, mixed caps and sticker collage in the old photos.</p>
-        <p class="muted" style="font-size:.86rem;margin-top:22px;">The composite shows the real <code>label-round.svg</code> artwork applied to the generated packaging set. Use it as art direction for the printer; the printer still needs a proper dieline.</p>
-        <div class="tag-row">
-          <span class="tag">Matte black cap</span>
-          <span class="tag">Brass foil label</span>
-          <span class="tag">Clear PET / glass</span>
-          <span class="tag">No script type</span>
+        <div class="pulse__stat">
+          <dt>Pressed</dt>
+          <dd><span data-count="6" data-c="numbers.mornings">6</span><i>mornings a week</i></dd>
         </div>
-      </div>
-      <div class="image-frame image-tall">
-        <img src="assets/packaging-labelled.jpg" alt="Vintage Juice Point bottle, smoothie cup and dessert tub with round black and brass labels" />
-      </div>
-    </div>
-  </section>
-
-  <section class="section section-dark" id="visit">
-    <div class="container visit-grid">
-      <div>
-        <div class="eyebrow">Visit</div>
-        <h2 class="serif" style="font-size:clamp(2.4rem,4.4vw,4.2rem);line-height:1;margin:12px 0 20px;">The Vintage Experience.</h2>
-        <p class="lede">Keep the existing Google listing name while the owner confirms the trading name. Replace every highlighted placeholder below before this page goes live.</p>
-        <ul class="info-list" style="margin-top:30px;">
-          <li><strong>Google listing</strong><span>Vintage Experience</span></li>
-          <li><strong>Visual brand</strong><span>VINTAGE · JUICE POINT</span></li>
-          <li><strong>Plus code</strong><span>58F5+24 Dar es Salaam</span></li>
-          <li><strong>Phone / WhatsApp</strong><span class="placeholder">+255 XXX XXX XXX</span></li>
-          <li><strong>Email</strong><span class="placeholder">hello@vintage.co.tz</span></li>
-          <li><strong>Instagram</strong><span class="placeholder">@vintagejuicepoint</span></li>
-          <li><strong>Hours</strong><span class="placeholder">Add opening hours before publishing</span></li>
-          <li><strong>Website / menu URL</strong><span class="placeholder">Add verified website / menu URL</span></li>
-        </ul>
-        <div class="tag-row">
-          <span class="tag">Takeaway</span><span class="tag">Casual</span><span class="tag">Trendy</span><span class="tag">Solo dining</span><span class="tag">Groups</span><span class="tag">Good for kids</span><span class="tag">Cards</span><span class="tag">NFC</span>
+        <div class="pulse__stat">
+          <dt>Blend time</dt>
+          <dd><span data-count="90" data-suffix="s" data-c="numbers.seconds">90</span><i>at the counter</i></dd>
         </div>
-      </div>
-      <div class="image-frame image-wide">
-        <img src="assets/social-rose.jpg" alt="Hand holding a roselle juice against a terracotta wall with Swahili-coast shadow" />
-      </div>
+      </dl>
+
+      <p class="pulse__note" data-c="numbers.note">
+        Fruit is bought that morning, so the board changes with what is ripe.
+        Every price on this site was transcribed from the counter board.
+      </p>
     </div>
   </section>
 
-  <section class="section section-soft">
-    <div class="container-narrow" style="text-align:center;">
-      <div class="eyebrow">Next step</div>
-      <h2 class="serif" style="font-size:clamp(2.4rem,4.4vw,4rem);line-height:1;margin:12px 0 18px;">Make the film in Google Flow.</h2>
-      <p class="lede" style="margin:0 auto 28px;">The prompt pack includes a 30-second master prompt, six scene prompts, a style anchor and a negative prompt. Upload the frames in <code>flow-inputs/</code>, generate 8-second clips, then add the real logo and tagline in post.</p>
-      <a class="btn btn-dark" href="GOOGLE_FLOW_PROMPTS.md">Open Flow prompts</a>
-      <a class="btn btn-primary" href="brand-kit.html">View full brand kit</a>
-    </div>
+  <!-- ══════════ 07 · QUOTE (brass field) ══════════ -->
+  <section class="quote" data-theme="brass">
+    <blockquote>
+      <!-- composed by js/quote.js; the rows are rebuilt to fill the field, so
+           this must not carry data-spread (headlines would reveal stale rows) -->
+      <p class="quote__text">
+        <span class="ln">“Cold, clean, and honest</span>
+        <span class="ln"> about where it came from.”</span>
+      </p>
+      <cite class="quote__cite">— <span data-c="quote.cite">the house line</span></cite>
+    </blockquote>
   </section>
+
+  <!-- ══════════ 08 · VISIT ══════════ -->
+  <section class="visit" id="visit" data-theme="ink">
+    <div class="visit__head">
+      <p class="kicker">05 — Visit</p>
+      <h2 class="mega" data-spread><span class="ln">Find</span><span class="ln">the disc</span><span class="ln">on the wall.</span></h2>
+    </div>
+    <p class="visit__copy">A juice point, not a café. Stand at the brass, watch it pressed, take it with you.</p>
+    <dl class="visit__meta">
+      <div><dt>Where</dt><dd data-c="visit.where">58F5+24, Dar es Salaam</dd></div>
+      <div><dt>Hours</dt><dd class="pending" data-placeholder data-c="visit.hours">Add opening hours</dd></div>
+      <div><dt>Phone</dt><dd class="pending" data-placeholder data-c="visit.phone">+255 XXX XXX XXX</dd></div>
+      <div><dt>Pay</dt><dd data-c="visit.pay">Card · NFC · Cash</dd></div>
+      <div><dt>Good for</dt><dd data-c="visit.goodFor">Takeaway · Kids</dd></div>
+      <div><dt>Listing</dt><dd data-c="visit.listing">Vintage Experience</dd></div>
+    </dl>
+    <p class="visit__fine" data-c="visit.fine">Concept redesign. Hours, phone and email are placeholders — no verified details were supplied by the business.</p>
+  </section>
+
+  <footer class="foot" data-theme="ink">
+    <h2 class="foot__word" data-spread><span class="ln">Vintage</span><span class="ln">Juice Point</span></h2>
+    <div class="foot__cols">
+      <div class="foot__col">
+        <p class="foot__label">Find us</p>
+        <p><span data-c="visit.where">58F5+24, Dar es Salaam</span></p>
+        <p class="pending" data-placeholder data-c="visit.hours">Add opening hours</p>
+      </div>
+      <div class="foot__col">
+        <p class="foot__label">Order</p>
+        <p><span class="foot__tel pending" data-placeholder data-c="visit.phone">+255 XXX XXX XXX</span></p>
+        <p><a href="menu.html">Full menu</a></p>
+      </div>
+      <div class="foot__col">
+        <p class="foot__label">The point</p>
+        <p><a href="menu.html">Menu</a></p>
+        <p><a href="brand-kit.html">Brand kit</a></p>
+        <p><a href="GOOGLE_FLOW_PROMPTS.md">Flow prompts</a></p>
+      </div>
+      <p class="foot__legal">Asili safi.<br />Ladha ya kisasa.</p>
+    </div>
+    <div class="foot__row">
+      <p>© <span data-year>2026</span> Vintage Juice Point · Dar es Salaam</p>
+      <p class="foot__fine">Concept redesign · details are placeholders until supplied by the business</p>
+      <p>Takeaway · Card &amp; NFC</p>
+    </div>
+  </footer>
+
 </main>
 
-<footer class="site-footer">
-  <div class="container">
-    <img src="assets/logo-primary-on-ink.png" alt="Vintage Juice Point" />
-    <p>Concept redesign · <span data-year>2026</span> · Dar es Salaam · <a href="BRAND_GUIDELINES.md">Guidelines</a> · <a href="GOOGLE_BUSINESS_PROFILE.md">Maps cleanup</a></p>
-    <p>Replace all contact placeholders before publishing.</p>
-  </div>
-</footer>
-
-<script src="app.js"></script>
+<script>
+  setTimeout(function () {
+    if (!window.__vjpMotion) {
+      document.documentElement.classList.remove('js');
+      document.querySelectorAll('[data-reveal],.w,.card,.mega .ln,.hero__title .ln').forEach(function (el) {
+        el.style.opacity = '1'; el.style.transform = 'none';
+      });
+    }
+  }, 1800);
+</script>
+<!-- Published content from admin.html. Optional: absent, the site uses js/content.js defaults. -->
+<script src="js/content-data.js"></script>
+<script type="module" src="js/main.js"></script>
 </body>
 </html>

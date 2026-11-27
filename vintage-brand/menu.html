@@ -36,40 +36,9 @@
       <p class="muted" style="margin-top:18px;font-size:.86rem;">All prices in Tanzanian shillings (TSH). Prices and ingredient lists were transcribed from the reference menu photo — confirm with the owner before printing.</p>
     </div>
 
-    <div class="print-columns">
-      <section class="print-category">
-        <h2>Fresh Juice</h2>
-        <div class="print-item"><div><h3>Rozela / Roselle</h3><div class="ingredients">Single-note fresh blend</div></div><div class="price">1,000</div></div>
-        <div class="print-item"><div><h3>Ukwaju / Tamarind</h3><div class="ingredients">Single-note fresh blend</div></div><div class="price">1,000</div></div>
-        <div class="print-item"><div><h3>Embe / Mango</h3><div class="ingredients">Single-note fresh blend</div></div><div class="price">1,000</div></div>
-        <div class="print-item"><div><h3>Nanasi / Pineapple</h3><div class="ingredients">Single-note fresh blend</div></div><div class="price">1,000</div></div>
-        <div class="print-item"><div><h3>Parachichi + Tangawizi</h3><div class="ingredients">Avocado · ginger</div></div><div class="price">1,000</div></div>
-        <div class="print-item"><div><h3>Bungo</h3><div class="ingredients">Single-note fresh blend</div></div><div class="price">2,000</div></div>
-      </section>
-
-      <section class="print-category">
-        <h2>Vintage Signature</h2>
-        <div class="print-item"><div><h3>Vintage Nado</h3><div class="ingredients">Parachichi · nanasi · embe · passion</div></div><div class="price">2,000</div></div>
-        <div class="print-item"><div><h3>Nado Rich</h3><div class="ingredients">Parachichi · ndizi · tende · embe · yogurt</div></div><div class="price">4,000</div></div>
-        <div class="print-item"><div><h3>Vintage Diatta</h3><div class="ingredients">Carrot · nanasi · ndizi</div></div><div class="price">2,000</div></div>
-        <div class="print-item"><div><h3>Diatta Plus</h3><div class="ingredients">Zabibu · apple/pears · nanasi · passion</div></div><div class="price">4,000</div></div>
-        <div class="print-item"><div><h3>Vintage Bonzy Plus</h3><div class="ingredients">Ukwaju · nanasi · passion · tangawizi</div></div><div class="price">2,000</div></div>
-        <div class="print-item"><div><h3>Bonzy Spice</h3><div class="ingredients">Rozela · ukwaju · ubuyu · iliki</div></div><div class="price">3,000</div></div>
-        <div class="print-item"><div><h3>Vintage Gamers</h3><div class="ingredients">Tikiti maji · nanasi · embe · passion · mint</div></div><div class="price">2,000</div></div>
-        <div class="print-item"><div><h3>Gamers Plus</h3><div class="ingredients">Nanasi · parachichi · embe · passion · tikiti maji · mint</div></div><div class="price">3,000</div></div>
-        <div class="print-item"><div><h3>Vintage Tropical</h3><div class="ingredients">Tikiti maji · nanasi · apple/pears · mint</div></div><div class="price">4,000</div></div>
-        <div class="print-item"><div><h3>Tropical Light</h3><div class="ingredients">Zabibu · tikiti · mint</div></div><div class="price">3,000</div></div>
-        <div class="print-item"><div><h3>Guava Sunset</h3><div class="ingredients">Pera · nanasi · passion · orange</div></div><div class="price">3,000</div></div>
-        <div class="print-item"><div><h3>Vintage Angel</h3><div class="ingredients">Rozela · tangawizi · ndimu · ubuyu · ukwaju</div></div><div class="price">3,000</div></div>
-        <div class="print-item"><div><h3>Aloe Calm</h3><div class="ingredients">Ubuyu · ukwaju · aloe vera</div></div><div class="price">2,000</div></div>
-      </section>
-
-      <section class="print-category">
-        <h2>Vintage Movie Box</h2>
-        <div class="print-item"><div><h3>Mango Milk</h3><div class="ingredients">Embe · nanasi · maziwa</div></div><div class="price">2,000</div></div>
-        <div class="print-item"><div><h3>Movie Box Deluxe</h3><div class="ingredients">Bungo · nanasi · passion · mint · seasonal fruit / yogurt blend</div></div><div class="price">3,000–5,000</div></div>
-        <div class="print-item"><div><h3>Custom blend</h3><div class="ingredients">Ask at the counter for seasonal fruit and your own combination</div></div><div class="price">By request</div></div>
-      </section>
+    <div class="print-columns" id="menu-cats">
+      <!-- Categories and prices are rendered from content (js/content.js) so the
+           admin panel can edit them. Print styles are unchanged. -->
     </div>
 
     <div class="print-footer">
@@ -89,6 +58,7 @@
   </div>
 </footer>
 
-<script src="app.js"></script>
+<script src="js/content-data.js"></script>
+<script type="module" src="js/menu.js"></script>
 </body>
 </html>

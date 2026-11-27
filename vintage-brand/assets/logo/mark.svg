@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
+  <symbol id="mark" viewBox="0 0 600 600">
+    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="300" cy="300" r="238" stroke-width="9"/>
+      <circle cx="300" cy="300" r="212" stroke-width="2.6" opacity="0.7"/>
+      <path d="M215 240 L385 240 L363 405 Q359 425 339 425 L261 425 Q241 425 237 405 Z" stroke-width="13"/>
+      <path d="M196 240 L404 240" stroke-width="13"/>
+      <path d="M350 232 L385 112 L422 112" stroke-width="13"/>
+      <circle cx="300" cy="62" r="6" fill="currentColor" stroke="none"/>
+      <circle cx="300" cy="538" r="6" fill="currentColor" stroke="none"/>
+      <circle cx="62" cy="300" r="6" fill="currentColor" stroke="none"/>
+      <circle cx="538" cy="300" r="6" fill="currentColor" stroke="none"/>
+    </g>
+  </symbol>
+</svg>

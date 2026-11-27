@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Content — Vintage Juice Point</title>
+<meta name="theme-color" content="#0D1512" />
+<link rel="icon" href="assets/logo/mark.svg" type="image/svg+xml" />
+<link rel="preload" href="fonts/cormorant-garamond-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="fonts/manrope-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="adm">
+
+  <header class="adm__bar">
+    <a class="adm__mark" href="index.html" aria-label="Vintage Juice Point, back to the site">
+      <svg viewBox="0 0 600 600" aria-hidden="true"><use href="assets/logo/mark.svg#mark" /></svg>
+      <span>Content desk</span>
+    </a>
+    <p class="adm__state" id="state" role="status">Saved on this device</p>
+    <div class="adm__actions">
+      <a class="adm__btn" href="index.html" target="_blank" rel="noopener">Open site ↗</a>
+      <button class="adm__btn" type="button" id="undo">Undo</button>
+      <button class="adm__btn adm__btn--quiet" type="button" id="reset">Reset all</button>
+      <button class="adm__btn adm__btn--go" type="button" id="publish">Publish…</button>
+    </div>
+  </header>
+
+  <main class="adm__side">
+
+    <!-- ── hero ─────────────────────────────────────────── -->
+    <section class="adm__group">
+      <h2>Hero <span>opening screen</span></h2>
+      <div class="adm__grid">
+        <div class="adm__field">
+          <label for="hero-kicker">Kicker</label>
+          <input id="hero-kicker" data-path="hero.kicker" />
+        </div>
+        <div class="adm__field">
+          <label for="hero-since">Top right</label>
+          <input id="hero-since" data-path="hero.since" />
+        </div>
+        <div class="adm__field">
+          <label for="hero-titleA">Headline, line 1</label>
+          <input id="hero-titleA" data-path="hero.titleA" />
+        </div>
+        <div class="adm__field">
+          <label for="hero-titleB">Headline, line 2</label>
+          <input id="hero-titleB" data-path="hero.titleB" />
+        </div>
+        <div class="adm__field">
+          <label for="hero-ledeEm">Italic line</label>
+          <input id="hero-ledeEm" data-path="hero.ledeEm" />
+        </div>
+        <div class="adm__field">
+          <label for="hero-meta">Footer strip</label>
+          <input id="hero-meta" data-path="hero.meta" />
+        </div>
+        <div class="adm__field adm__field--wide">
+          <label for="hero-lede">Lede</label>
+          <textarea id="hero-lede" data-path="hero.lede"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── quote ────────────────────────────────────────── -->
+    <section class="adm__group">
+      <h2>The house line <span>brass quote section</span></h2>
+      <div class="adm__grid">
+        <div class="adm__field adm__field--wide">
+          <label for="quote-text">Sentence</label>
+          <textarea id="quote-text" data-path="quote.text"></textarea>
+          <p class="hint">Quote marks are added automatically. The type recomposes to fill the field, so any length works.</p>
+        </div>
+        <div class="adm__field">
+          <label for="quote-cite">Attribution</label>
+          <input id="quote-cite" data-path="quote.cite" />
+        </div>
+      </div>
+    </section>
+
+    <!-- ── numbers ──────────────────────────────────────── -->
+    <section class="adm__group">
+      <h2>The numbers <span>terracotta ledger</span></h2>
+      <div class="adm__grid">
+        <div class="adm__field adm__field--wide">
+          <label for="num-title">Heading</label>
+          <input id="num-title" data-path="numbers.title" />
+        </div>
+        <div class="adm__field"><label for="num-blends">Blends on the board</label><input id="num-blends" data-path="numbers.blends" type="number" min="0" step="1" /></div>
+        <div class="adm__field"><label for="num-from">Price from (TZS)</label><input id="num-from" data-path="numbers.from" type="number" min="0" step="1" /></div>
+        <div class="adm__field"><label for="num-mornings">Mornings a week</label><input id="num-mornings" data-path="numbers.mornings" type="number" min="0" max="7" step="1" /></div>
+        <div class="adm__field"><label for="num-seconds">Blend time (seconds)</label><input id="num-seconds" data-path="numbers.seconds" type="number" min="0" step="1" /></div>
+        <div class="adm__field adm__field--wide">
+          <label for="num-note">Note under the ledger</label>
+          <textarea id="num-note" data-path="numbers.note"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── board ────────────────────────────────────────── -->
+    <section class="adm__group">
+      <h2>Board <span>pinned menu cards</span></h2>
+      <p class="hint" id="cards-hint" style="margin:-8px 0 12px"></p>
+      <div class="adm__grid" id="cards"></div>
+      <div class="adm__actions" style="margin-top:12px">
+        <button class="adm__btn" type="button" id="add-card">+ Add card</button>
+      </div>
+    </section>
+
+    <!-- ── flavours ─────────────────────────────────────── -->
+    <section class="adm__group">
+      <h2>Flavours <span>colour switcher</span></h2>
+      <div class="adm__grid" id="flavours"></div>
+      <div class="adm__actions" style="margin-top:12px">
+        <button class="adm__btn" type="button" id="add-flavour">+ Add flavour</button>
+      </div>
+    </section>
+
+    <!-- ── full menu ────────────────────────────────────── -->
+    <section class="adm__group">
+      <h2>Full menu <span>menu.html prices</span></h2>
+      <p class="hint" style="margin:-8px 0 12px">
+        These are the 21 blends on the printable menu. Board cards above are the
+        five that get the big treatment; keep prices consistent between the two.
+      </p>
+      <div class="adm__grid" id="menu"></div>
+    </section>
+
+    <!-- ── visit ────────────────────────────────────────── -->
+    <section class="adm__group">
+      <h2>Visit <span>contact details</span></h2>
+      <div class="adm__grid">
+        <div class="adm__field"><label for="visit-where">Where</label><input id="visit-where" data-path="visit.where" /></div>
+        <div class="adm__field"><label for="visit-hours">Hours</label><input id="visit-hours" data-path="visit.hours" /></div>
+        <div class="adm__field"><label for="visit-phone">Phone</label><input id="visit-phone" data-path="visit.phone" /></div>
+        <div class="adm__field"><label for="visit-pay">Pay</label><input id="visit-pay" data-path="visit.pay" /></div>
+        <div class="adm__field"><label for="visit-goodFor">Good for</label><input id="visit-goodFor" data-path="visit.goodFor" /></div>
+        <div class="adm__field"><label for="visit-listing">Listing</label><input id="visit-listing" data-path="visit.listing" /></div>
+        <div class="adm__field adm__field--wide">
+          <label for="visit-fine">Fine print</label>
+          <textarea id="visit-fine" data-path="visit.fine"></textarea>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <aside class="adm__preview">
+    <h2>Live preview</h2>
+    <p>Refreshes as you type. The real page reloads from the same saved content.</p>
+    <div class="adm__frame"><iframe id="preview" title="Site preview" src="index.html"></iframe></div>
+    <p class="adm__note">
+      Edits are stored in this browser, so they show on this device only.
+      <strong>Publish</strong> copies a finished <code>js/content-data.js</code> to your clipboard —
+      commit it and the site ships with your content for every visitor.
+    </p>
+  </aside>
+
+</div>
+
+<script type="module" src="js/admin.js"></script>
+</body>
+</html>
