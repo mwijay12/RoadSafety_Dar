@@ -223,12 +223,17 @@ function pulse() {
       return;
     }
     const state = { n: 0 };
-    el.textContent = '0' + suffix;
+    // The shipped number stays in the DOM until the field is actually
+    // reached: zeroing it on load left "0" for crawlers, for reduced-data
+    // browsers, and for anyone who lands on the page and never scrolls.
     gsap.to(state, {
       n: target,
       duration: 1.5,
       ease: 'power2.out',
       scrollTrigger: { trigger: section, start: 'top 76%', once: true },
+      onStart() {
+        el.textContent = '0' + suffix;
+      },
       onUpdate() {
         el.textContent = Math.round(state.n).toLocaleString('en-US') + suffix;
       },
