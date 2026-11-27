@@ -179,7 +179,7 @@ ul,ol{list-style:none}
 }
 /* the heading gets a fixed slice of the viewport and the rail gets the rest,
    so neither can push the other off screen */
-.board__head{flex:0 0 auto;padding-inline:var(--gut);max-width:min(100%,34em)}
+.board__head{flex:0 0 auto;padding-inline:var(--gut)}
 .board__head .kicker{margin-bottom:clamp(8px,1.2vh,16px)}
 .board__head .mega{font-size:clamp(2rem,min(9.4vw,13.5vh),9.4rem)}
 .board__rail{
@@ -366,7 +366,6 @@ ul,ol{list-style:none}
    Below that, drop the pin entirely and let it flow as a column. */
 @media (min-width:961px) and (max-height:700px){
   .board__pin{height:auto;padding-bottom:clamp(32px,6vh,64px)}
-  .board__head{max-width:none}
   .board__head .mega{font-size:clamp(2rem,7vw,6rem)}
   .board__rail{overflow-x:auto;overflow-y:hidden;padding-bottom:8px;scrollbar-width:none}
   .board__rail::-webkit-scrollbar{display:none}
