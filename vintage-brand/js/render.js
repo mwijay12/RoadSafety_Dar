@@ -97,11 +97,22 @@ export function fields(content) {
     let value = content;
     for (const key of path) value = value && value[key];
     if (typeof value !== 'string') return;
-    // Hero kicker/meta carry a decorative <i> separator; keep it, replace text.
+    // Hero kicker/meta carry a decorative <i> separator inside the string
+    // ("Dar es Salaam · Tanzania"): rebuild it as text + <i> + text so the
+    // dot is never lost, and it always matches the saved copy.
     const italics = node.querySelector('i');
-    if (italics && node.childElementCount === 1) {
+    if (italics) {
+      const dot = italics.textContent || '·';
+      const [head, ...rest] = value.split(dot);
       node.textContent = '';
-      node.appendChild(document.createTextNode(value));
+      node.appendChild(document.createTextNode(head.trim()));
+      if (rest.length) {
+        const mark = document.createElement('i');
+        mark.setAttribute('aria-hidden', 'true');
+        mark.textContent = dot;
+        node.appendChild(mark);
+        node.appendChild(document.createTextNode(rest.join(dot).trim()));
+      }
     } else {
       node.textContent = value;
     }

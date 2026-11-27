@@ -159,9 +159,11 @@
   <!-- ══════════ 07 · QUOTE (brass field) ══════════ -->
   <section class="quote" data-theme="brass">
     <blockquote>
-      <p class="quote__text" data-spread>
+      <!-- composed by js/quote.js; the rows are rebuilt to fill the field, so
+           this must not carry data-spread (headlines would reveal stale rows) -->
+      <p class="quote__text">
         <span class="ln" data-c="quote.a">“Cold, clean, and honest</span>
-        <span class="ln" data-c="quote.b">about where it came from.”</span>
+        <span class="ln" data-c="quote.b"> about where it came from.”</span>
       </p>
       <cite class="quote__cite">— <span data-c="quote.cite">the house line</span></cite>
     </blockquote>

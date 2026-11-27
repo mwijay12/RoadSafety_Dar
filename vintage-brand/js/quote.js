@@ -55,6 +55,23 @@ function partition(em, n, space = 0.26) {
 }
 
 /**
+ * One masked row: .ln (block, clipped) > span (the thing that moves) with a
+ * real trailing space inside the span. The line boxes are block level, so
+ * without that space screen readers, search engines and copy/paste read the
+ * sentence as one run-on word ("aboutwhere"). The space has to live inside
+ * the span, not after it — a text node between two blocks gets trimmed.
+ */
+function writeRow(parent, text, trailingSpace) {
+  const ln = document.createElement('span');
+  ln.className = 'ln';
+  const inner = document.createElement('span');
+  inner.textContent = text;
+  if (trailingSpace) inner.appendChild(document.createTextNode(' '));
+  ln.appendChild(inner);
+  parent.appendChild(ln);
+}
+
+/**
  * Compose the field. Returns { lines, size, fill } or null when the box
  * cannot be measured (hidden tab, no layout).
  */
@@ -75,13 +92,9 @@ export function fitQuote(p, text, decor = ['“', '”']) {
   if (!(usable > 0) || !(room > 0)) {
     p.textContent = '';
     p.style.fontSize = '';
-    [list.slice(0, Math.ceil(list.length / 2)).join(' '), list.slice(Math.ceil(list.length / 2)).join(' ')]
-      .forEach((row) => {
-        const ln = document.createElement('span');
-        ln.className = 'ln';
-        ln.textContent = row;
-        p.appendChild(ln);
-      });
+    const half = Math.ceil(list.length / 2);
+    writeRow(p, `${decor[0]}${list.slice(0, half).join(' ')}`, true);
+    writeRow(p, `${list.slice(half).join(' ')}${decor[1]}`, false);
     p.setAttribute('aria-label', `${decor[0]}${list.join(' ')}${decor[1]}`);
     return null;
   }
@@ -111,15 +124,9 @@ export function fitQuote(p, text, decor = ['“', '”']) {
   p.textContent = '';
   p.style.fontSize = `${Math.round(best.size)}px`;
   best.groups.forEach(([i, j], li) => {
-    const ln = document.createElement('span');
-    ln.className = 'ln';
     const head = li === 0 ? decor[0] : '';
     const tail = li === best.groups.length - 1 ? decor[1] : '';
-    ln.textContent = head + list.slice(i, j).join(' ') + tail;
-    // A real space after every row but the last. Rows are block level, so
-    // without it screen readers and copy/paste read a run-on word.
-    if (li < best.groups.length - 1) ln.appendChild(document.createTextNode(' '));
-    p.appendChild(ln);
+    writeRow(p, head + list.slice(i, j).join(' ') + tail, li < best.groups.length - 1);
   });
   if (!p.hasAttribute('aria-label')) p.setAttribute('aria-label', `${decor[0]}${list.join(' ')}${decor[1]}`);
   return { lines: best.n, size: Math.round(best.size), fill: +best.fill.toFixed(2) };
