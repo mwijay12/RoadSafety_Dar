@@ -162,7 +162,9 @@ function board() {
 
   const mm = gsap.matchMedia();
 
-  mm.add('(min-width: 961px)', () => {
+  // pin only where there is room for a heading *and* a card rail; short
+  // laptops get a plain collapsing column instead (see the max-height rule)
+  mm.add('(min-width: 961px) and (min-height: 701px)', () => {
     const distance = () => Math.max(0, rail.scrollWidth - rail.clientWidth);
 
     const slide = gsap.to(rail, {
@@ -193,7 +195,7 @@ function board() {
     { y: 34, opacity: 0 },
     {
       y: 0, opacity: 1, duration: 0.85, stagger: 0.07, ease: E.out,
-      scrollTrigger: { trigger: '.board__rail', start: 'top 92%', once: true },
+      scrollTrigger: { trigger: '.board', start: 'top 88%', once: true },
     });
 }
 

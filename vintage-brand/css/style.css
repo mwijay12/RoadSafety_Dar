@@ -174,39 +174,42 @@ ul,ol{list-style:none}
 .board{position:relative}
 .board__pin{
   height:100svh;display:flex;flex-direction:column;
-  padding:clamp(66px,9vh,110px) 0 clamp(16px,2.6vh,28px);
+  padding:clamp(58px,8vh,96px) 0 clamp(14px,2.2vh,24px);
   overflow:hidden;
 }
-.board__head{padding-inline:var(--gut);flex:none}
-.board__head .kicker{margin-bottom:clamp(10px,1.6vh,20px)}
+/* the heading gets a fixed slice of the viewport and the rail gets the rest,
+   so neither can push the other off screen */
+.board__head{flex:0 0 auto;padding-inline:var(--gut);max-width:min(100%,34em)}
+.board__head .kicker{margin-bottom:clamp(8px,1.2vh,16px)}
+.board__head .mega{font-size:clamp(2rem,min(9.4vw,13.5vh),9.4rem)}
 .board__rail{
   display:flex;align-items:stretch;gap:clamp(10px,1.4vw,22px);
-  padding:clamp(16px,3vh,38px) var(--gut) 0;
-  flex:1;min-height:0;will-change:transform;
+  padding:clamp(10px,2vh,26px) var(--gut) 0;
+  flex:1 1 auto;min-height:0;will-change:transform;
 }
 .card{
   position:relative;flex:0 0 auto;
-  width:clamp(232px,26vw,400px);
+  width:clamp(210px,24vw,360px);
   display:flex;flex-direction:column;
-  padding:clamp(18px,2.2vw,30px);
+  padding:clamp(14px,1.8vw,26px);
   border:1px solid var(--hair);
   background:rgba(247,241,227,.03);
   overflow:hidden;
 }
 .card--slab{background:var(--terra);color:var(--ink);border-color:transparent}
-.card--photo{padding:0;border:0;width:clamp(260px,30vw,460px)}
+.card--photo{padding:0;border:0;width:clamp(240px,28vw,430px)}
 .card--photo img{width:100%;height:100%;object-fit:cover}
 .card--end{background:var(--brass);color:var(--ink);border-color:transparent;justify-content:space-between}
 .card__n{font-size:.6rem;font-weight:700;letter-spacing:.24em;color:var(--brass)}
 .card--slab .card__n,.card--end .kicker{color:rgba(13,21,18,.6)}
 .card h3{
   font-family:var(--serif);font-weight:600;line-height:.9;
-  font-size:clamp(2.2rem,4.6vw,4.4rem);
+  font-size:clamp(1.6rem,min(3.6vw,7vh),3.6rem);
   letter-spacing:-.02em;margin-top:auto;
 }
 .card__sub{font-size:.58rem;font-weight:700;letter-spacing:.26em;text-transform:uppercase;color:var(--brass);margin-top:.7em}
 .card--slab .card__sub{color:rgba(13,21,18,.62)}
-.card__copy{font-size:.84rem;line-height:1.55;color:var(--stone);margin-top:1em;max-width:30ch}
+.card__copy{font-size:clamp(.74rem,1.6vh,.84rem);line-height:1.5;color:var(--stone);margin-top:.85em;max-width:30ch}
 .card--slab .card__copy{color:rgba(13,21,18,.78)}
 .card__price{
   font-family:var(--serif);font-size:clamp(1.4rem,2.1vw,2rem);
@@ -217,7 +220,7 @@ ul,ol{list-style:none}
 .giant-link{
   display:block;font-family:var(--serif);font-weight:600;line-height:.86;
   /* the three words are separate lines so the SVGs stay out of the text run */
-  font-size:clamp(2rem,3.6vw,3.4rem);letter-spacing:-.02em;color:var(--ink);
+  font-size:clamp(1.5rem,min(3vw,6vh),3rem);letter-spacing:-.02em;color:var(--ink);
 }
 .giant-link .ln{display:block}
 .giant-link svg{width:1.1em;height:.5em;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;margin-top:.3em;transition:transform .45s var(--ease)}
@@ -357,6 +360,19 @@ ul,ol{list-style:none}
 .js .statement__text .w{opacity:.16}
 .js .card{opacity:0;transform:translateY(28px)}
 .js .statement__fig img,.js .panel--shot img{will-change:transform}
+
+
+/* Short laptops cannot give the pinned board both a heading and a card rail.
+   Below that, drop the pin entirely and let it flow as a column. */
+@media (min-width:961px) and (max-height:700px){
+  .board__pin{height:auto;padding-bottom:clamp(32px,6vh,64px)}
+  .board__head{max-width:none}
+  .board__head .mega{font-size:clamp(2rem,7vw,6rem)}
+  .board__rail{overflow-x:auto;overflow-y:hidden;padding-bottom:8px;scrollbar-width:none}
+  .board__rail::-webkit-scrollbar{display:none}
+  .card{min-height:320px}
+  .board__hint{display:none}
+}
 
 /* ---------- responsive ---------- */
 @media (max-width:960px){
