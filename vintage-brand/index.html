@@ -25,6 +25,7 @@
     <a href="#menu">Menu</a>
     <a href="#flavour">Flavours</a>
     <a href="#range">Range</a>
+    <a href="#numbers">Numbers</a>
     <a href="#visit">Visit</a>
   </nav>
   <a class="nav__cta" href="menu.html">Full list</a>
@@ -156,14 +157,48 @@
     </div>
   </section>
 
+  <!-- ══════════ 06b · THE PULSE — terracotta field, live counters ══════════ -->
+  <section class="pulse" id="numbers" data-theme="terra" aria-labelledby="pulse-h">
+    <div class="pulse__in">
+      <p class="kicker kicker--ink">04b — The point, in numbers</p>
+      <h2 class="pulse__h" id="pulse-h" data-c="numbers.title">
+        Everything you need to know before you walk up to the brass.
+      </h2>
+
+      <dl class="pulse__stats">
+        <div class="pulse__stat">
+          <dt>Blends on the board</dt>
+          <dd><span data-count="22" data-c="numbers.blends">22</span><i>today</i></dd>
+        </div>
+        <div class="pulse__stat">
+          <dt>From</dt>
+          <dd><span data-count="1000" data-c="numbers.from">1,000</span><i>TZS</i></dd>
+        </div>
+        <div class="pulse__stat">
+          <dt>Pressed</dt>
+          <dd><span data-count="6" data-c="numbers.mornings">6</span><i>mornings a week</i></dd>
+        </div>
+        <div class="pulse__stat">
+          <dt>Blend time</dt>
+          <dd><span data-count="90" data-suffix="s" data-c="numbers.seconds">90</span><i>at the counter</i></dd>
+        </div>
+      </dl>
+
+      <p class="pulse__note" data-c="numbers.note">
+        Fruit is bought that morning, so the board changes with what is ripe.
+        Every price on this site was transcribed from the counter board.
+      </p>
+    </div>
+  </section>
+
   <!-- ══════════ 07 · QUOTE (brass field) ══════════ -->
   <section class="quote" data-theme="brass">
     <blockquote>
       <!-- composed by js/quote.js; the rows are rebuilt to fill the field, so
            this must not carry data-spread (headlines would reveal stale rows) -->
       <p class="quote__text">
-        <span class="ln" data-c="quote.a">“Cold, clean, and honest</span>
-        <span class="ln" data-c="quote.b"> about where it came from.”</span>
+        <span class="ln">“Cold, clean, and honest</span>
+        <span class="ln"> about where it came from.”</span>
       </p>
       <cite class="quote__cite">— <span data-c="quote.cite">the house line</span></cite>
     </blockquote>
@@ -189,14 +224,29 @@
 
   <footer class="foot" data-theme="ink">
     <h2 class="foot__word" data-spread><span class="ln">Vintage</span><span class="ln">Juice Point</span></h2>
+    <div class="foot__cols">
+      <div class="foot__col">
+        <p class="foot__label">Find us</p>
+        <p><span data-c="visit.where">58F5+24, Dar es Salaam</span></p>
+        <p class="pending" data-placeholder data-c="visit.hours">Add opening hours</p>
+      </div>
+      <div class="foot__col">
+        <p class="foot__label">Order</p>
+        <p><span class="foot__tel pending" data-placeholder data-c="visit.phone">+255 XXX XXX XXX</span></p>
+        <p><a href="menu.html">Full menu</a></p>
+      </div>
+      <div class="foot__col">
+        <p class="foot__label">The point</p>
+        <p><a href="menu.html">Menu</a></p>
+        <p><a href="brand-kit.html">Brand kit</a></p>
+        <p><a href="GOOGLE_FLOW_PROMPTS.md">Flow prompts</a></p>
+      </div>
+      <p class="foot__legal">Asili safi.<br />Ladha ya kisasa.</p>
+    </div>
     <div class="foot__row">
-      <nav class="foot__links" aria-label="Footer">
-        <a href="menu.html">Menu</a>
-        <a href="brand-kit.html">Brand kit</a>
-        <a href="GOOGLE_FLOW_PROMPTS.md">Flow prompts</a>
-      </nav>
-      <p class="foot__addr">Dar es Salaam · Tanzania</p>
-      <p class="foot__legal">Asili safi. Ladha ya kisasa.</p>
+      <p>© <span data-year>2026</span> Vintage Juice Point · Dar es Salaam</p>
+      <p class="foot__fine">Concept redesign · details are placeholders until supplied by the business</p>
+      <p>Takeaway · Card &amp; NFC</p>
     </div>
   </footer>
 

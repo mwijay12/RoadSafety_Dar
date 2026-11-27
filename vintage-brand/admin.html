@@ -81,6 +81,25 @@
       </div>
     </section>
 
+    <!-- ── numbers ──────────────────────────────────────── -->
+    <section class="adm__group">
+      <h2>The numbers <span>terracotta ledger</span></h2>
+      <div class="adm__grid">
+        <div class="adm__field adm__field--wide">
+          <label for="num-title">Heading</label>
+          <input id="num-title" data-path="numbers.title" />
+        </div>
+        <div class="adm__field"><label for="num-blends">Blends on the board</label><input id="num-blends" data-path="numbers.blends" type="number" min="0" step="1" /></div>
+        <div class="adm__field"><label for="num-from">Price from (TZS)</label><input id="num-from" data-path="numbers.from" type="number" min="0" step="1" /></div>
+        <div class="adm__field"><label for="num-mornings">Mornings a week</label><input id="num-mornings" data-path="numbers.mornings" type="number" min="0" max="7" step="1" /></div>
+        <div class="adm__field"><label for="num-seconds">Blend time (seconds)</label><input id="num-seconds" data-path="numbers.seconds" type="number" min="0" step="1" /></div>
+        <div class="adm__field adm__field--wide">
+          <label for="num-note">Note under the ledger</label>
+          <textarea id="num-note" data-path="numbers.note"></textarea>
+        </div>
+      </div>
+    </section>
+
     <!-- ── board ────────────────────────────────────────── -->
     <section class="adm__group">
       <h2>Board <span>pinned menu cards</span></h2>

@@ -69,7 +69,9 @@ function bindField(el) {
   };
   el.value = get() ?? '';
   el.addEventListener('input', () => {
-    set(el.value);
+    // type=number fields belong in the content as numbers, or normalise()
+    // treats "30" as a string and resets it to the shipped value
+    set(el.type === 'number' ? Number(el.value) : el.value);
     queueSave();
   });
 }

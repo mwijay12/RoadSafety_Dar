@@ -84,7 +84,7 @@ export function fitQuote(p, text, decor = ['“', '”']) {
   const cs = getComputedStyle(field);
   const usable = Math.min(
     field.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight),
-    1500,
+    1520,
   );
   const room = field.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 96;
   // Not measurable (hidden tab, jsdom, first paint): still write the copy in
@@ -112,7 +112,7 @@ export function fitQuote(p, text, decor = ['“', '”']) {
     if (!groups) continue;
     const rowEm = groups.map(([i, j]) => em.slice(i, j).reduce((a, b) => a + b, 0) + space * (j - i - 1));
     const widest = Math.max(...rowEm);
-    const size = Math.min((usable * 0.97) / widest, room / (lineHeight * n));
+    const size = Math.min((usable * 0.98) / widest, room / (lineHeight * n));
     // how much of the field the block covers, both ways
     const fillW = (widest * size) / usable;
     const fillH = (lineHeight * n * size) / room;

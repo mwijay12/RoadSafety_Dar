@@ -27,6 +27,14 @@ export const DEFAULTS = {
     text: 'Cold, clean, and honest about where it came from.',
     cite: 'the house line',
   },
+  numbers: {
+    title: 'Everything you need to know before you walk up to the brass.',
+    blends: 22,
+    from: 1000,
+    mornings: 6,
+    seconds: 90,
+    note: 'Fruit is bought that morning, so the board changes with what is ripe. Every price on this site was transcribed from the counter board.',
+  },
   visit: {
     where: '58F5+24, Dar es Salaam',
     hours: 'Add opening hours',
@@ -197,6 +205,7 @@ export function normalise(raw) {
   const out = {
     hero: { ...DEFAULTS.hero, ...obj(r.hero) },
     quote: { ...DEFAULTS.quote, ...obj(r.quote) },
+    numbers: { ...DEFAULTS.numbers, ...obj(r.numbers) },
     visit: { ...DEFAULTS.visit, ...obj(r.visit) },
     cards: [],
     menu: [],
@@ -205,6 +214,10 @@ export function normalise(raw) {
   for (const k of Object.keys(DEFAULTS.hero)) out.hero[k] = str(out.hero[k], DEFAULTS.hero[k]);
   for (const k of Object.keys(DEFAULTS.quote)) out.quote[k] = str(out.quote[k], DEFAULTS.quote[k]);
   for (const k of Object.keys(DEFAULTS.visit)) out.visit[k] = str(out.visit[k], DEFAULTS.visit[k]);
+  for (const k of Object.keys(DEFAULTS.numbers)) {
+    if (k === 'title' || k === 'note') out.numbers[k] = str(out.numbers[k], DEFAULTS.numbers[k]);
+    else out.numbers[k] = Number.isFinite(+out.numbers[k]) ? Math.max(0, Math.round(+out.numbers[k])) : DEFAULTS.numbers[k];
+  }
 
   (Array.isArray(r.cards) ? r.cards : DEFAULTS.cards).forEach((c, i) => {
     const d = DEFAULTS.cards[i] || DEFAULTS.cards[0];

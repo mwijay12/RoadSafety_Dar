@@ -69,8 +69,17 @@ ul,ol{list-style:none}
   display:block;
 }
 .mega--mid{font-size:clamp(2.4rem,10.5vw,10rem)}
-.mega .ln,.hero__title .ln,.quote p .ln,.foot__word .ln{display:block;overflow:hidden}
-.mega .ln>span,.hero__title .ln>span,.quote p .ln>span,.foot__word .ln>span{display:block}
+/* The masked reveal (translateY 112% → 0) needs overflow:hidden, but
+   Cormorant descends 0.28em below the baseline while these headings run at
+   line-height .74–.9 — so a tight mask shears the bottom off "J", "g", "y",
+   "p" in "Vintage", "Juice Point", "morning.", "flavour". The mask is padded
+   by a bottom-safe amount and pulled back with an equal negative margin, so
+   layout is identical and the ink is never clipped. */
+.mega .ln,.hero__title .ln,.quote .ln,.foot__word .ln{
+  display:block;overflow:hidden;
+  padding-bottom:.26em;margin-bottom:-.26em;
+}
+.mega .ln>span,.hero__title .ln>span,.quote .ln>span,.foot__word .ln>span{display:block}
 
 /* ---------- nav ---------- */
 .nav{
@@ -123,7 +132,7 @@ ul,ol{list-style:none}
 .hero__title{
   font-family:var(--serif);font-weight:600;
   font-size:clamp(3.4rem,26vw,26rem);
-  line-height:.74;letter-spacing:-.03em;
+  line-height:.82;letter-spacing:-.03em;
   color:var(--ivory);
   margin-bottom:clamp(10px,1.8vh,22px);
 }
@@ -308,6 +317,49 @@ ul,ol{list-style:none}
 .link-arrow svg{width:24px;height:12px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .link-arrow:hover{gap:20px;color:var(--brass-l)}
 
+/* ---------- the pulse (terracotta field) ----------
+   A hard cut to terra between the range and the brass quote: the numbers
+   a customer actually wants, set as a ledger rather than a card grid. */
+.pulse{
+  padding:clamp(64px,11vh,140px) var(--gut);
+  position:relative;overflow:hidden;
+}
+.pulse__in{max-width:1500px;margin-inline:auto}
+.pulse__h{
+  font-family:var(--serif);font-weight:600;line-height:1.02;letter-spacing:-.024em;
+  font-size:clamp(1.6rem,3.5vw,3.1rem);
+  color:var(--ink);max-width:22em;margin-top:clamp(14px,2.4vh,26px);
+  text-wrap:balance;
+}
+.pulse__stats{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:0;margin-top:clamp(34px,6vh,72px);border-top:1px solid rgba(13,21,18,.34);
+}
+.pulse__stat{
+  padding:clamp(16px,2.6vh,26px) clamp(12px,2vw,30px) clamp(18px,3vh,30px) 0;
+  border-bottom:1px solid rgba(13,21,18,.34);
+  display:flex;flex-direction:column-reverse;justify-content:flex-end;gap:6px;
+}
+.pulse__stat+.pulse__stat{padding-left:clamp(12px,2vw,30px);border-left:1px solid rgba(13,21,18,.2)}
+.pulse__stat dt{
+  font-size:.56rem;font-weight:700;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--ink);opacity:.66;
+}
+.pulse__stat dd{
+  font-family:var(--serif);font-weight:600;line-height:.86;
+  font-size:clamp(2.1rem,5.4vw,5rem);letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;color:var(--ink);
+  display:flex;align-items:baseline;gap:.34em;
+}
+.pulse__stat dd i{
+  font-family:var(--sans);font-style:normal;font-weight:700;
+  font-size:.58rem;letter-spacing:.24em;text-transform:uppercase;opacity:.62;
+}
+.pulse__note{
+  margin-top:clamp(20px,3.4vh,34px);max-width:52ch;
+  font-size:.82rem;line-height:1.6;color:var(--ink);opacity:.74;
+}
+
 /* ---------- quote (brass field) ----------
    The line is set in two long lines that fill the field. At 8.4vw the
    same words used only 44% of the width and 69% of the height, which read
@@ -350,16 +402,59 @@ ul,ol{list-style:none}
 /* ---------- footer ---------- */
 .foot{padding:clamp(48px,8vh,90px) var(--gut) clamp(24px,3vh,40px);border-top:1px solid var(--hair);overflow:hidden}
 .foot__word{
-  font-family:var(--serif);font-weight:600;line-height:.8;letter-spacing:-.03em;
-  font-size:clamp(3rem,21vw,22rem);color:var(--ivory);
+  font-family:var(--serif);font-weight:600;line-height:.86;letter-spacing:-.03em;
+  /* "Juice Point" measures 4.00em at 600 weight, so 21vw filled 96% of the
+     viewport and slid under the right gutter; 20vw leaves the same margin
+     the other sections use. */
+  font-size:clamp(2.8rem,20vw,20rem);color:var(--ivory);
+}
+/* four-column footer: the wordmark closes the page, then the practical
+   detail — where, how to order, and what the place is */
+.foot__cols{
+  display:grid;grid-template-columns:1.2fr 1fr 1fr .9fr;gap:clamp(20px,3vw,48px);
+  margin-top:clamp(30px,5vh,60px);padding-top:clamp(18px,2.6vh,28px);
+  border-top:1px solid var(--hair);
+}
+.foot__col{display:flex;flex-direction:column;gap:6px;min-width:0}
+.foot__label{
+  font-size:.56rem;font-weight:700;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--brass);margin-bottom:6px;
+}
+.foot__col p{font-size:.86rem;line-height:1.5;color:var(--stone)}
+.foot__col a{color:var(--ivory);position:relative;display:inline-block;padding-bottom:2px}
+.foot__col a::after{
+  content:"";position:absolute;left:0;bottom:0;width:100%;height:1px;background:currentColor;
+  transform:scaleX(0);transform-origin:right;transition:transform .5s var(--ease);
+}
+.foot__col a:hover{color:var(--brass-l)}
+.foot__col a:hover::after{transform:scaleX(1);transform-origin:left}
+.foot__tel{font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.foot__legal{
+  font-family:var(--serif);font-size:clamp(1rem,1.5vw,1.35rem);line-height:1.25;
+  color:var(--ivory);align-self:end;
 }
 .foot__row{
-  display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:16px;
-  margin-top:clamp(28px,5vh,56px);padding-top:18px;border-top:1px solid var(--hair);
-  font-size:.62rem;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--stone);
+  display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:10px 24px;
+  margin-top:clamp(26px,4vh,48px);padding-top:16px;border-top:1px solid var(--hair);
+  font-size:.58rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--stone);
 }
-.foot__links{display:flex;gap:clamp(14px,2vw,30px)}
-.foot__links a:hover{color:var(--brass-l)}
+.foot__fine{opacity:.66;letter-spacing:.14em;text-transform:none;font-weight:400;font-size:.66rem}
+
+/* ---------- focus ----------
+   The site is mostly ink and brass on black; the default browser ring is
+   nearly invisible on terra. One brass ring, everywhere, keyboard only. */
+:where(a,button,input,textarea,select,summary,[tabindex]):focus-visible{
+  outline:2px solid var(--brass-l);
+  outline-offset:3px;
+  border-radius:2px;
+}
+/* on the light fields the brass ring disappears into the colour */
+[data-theme="brass"] :focus-visible,
+[data-theme="terra"] :focus-visible,
+[data-theme="ivory"] :focus-visible{
+  outline-color:var(--ink);
+}
+.skip:focus-visible{outline-offset:6px}
 
 /* ---------- pre-state (only before/without motion) ---------- */
 .js .mega .ln>span,.js .hero__title .ln>span,.js .quote p .ln>span,.js .foot__word .ln>span{will-change:transform}
@@ -401,8 +496,20 @@ ul,ol{list-style:none}
   .visit__meta{grid-template-columns:1fr 1fr}
   .visit__meta>div+div{padding-left:0;border-left:0}
 }
+@media (max-width:960px){
+  .foot__cols{grid-template-columns:1fr 1fr}
+  .foot__legal{align-self:start;grid-column:1/-1}
+}
+@media (max-width:960px){
+  .pulse__stats{grid-template-columns:1fr 1fr}
+  .pulse__stat:nth-child(3){border-left:0;padding-left:0}
+}
 @media (max-width:680px){
   .hero__title{font-size:clamp(2.9rem,24vw,7rem)}
+  .pulse__stats{grid-template-columns:1fr}
+  .pulse__stat+.pulse__stat{border-left:0;padding-left:0}
+  .foot__cols{grid-template-columns:1fr}
+  .foot__row{flex-direction:column;align-items:flex-start}
   .hero__meta{display:none}
   .mega{font-size:clamp(2.6rem,13.5vw,4.6rem)}
   .facts b{font-size:2rem}

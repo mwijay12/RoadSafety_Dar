@@ -96,6 +96,12 @@ export function fields(content) {
     const path = node.dataset.c.split('.');
     let value = content;
     for (const key of path) value = value && value[key];
+    if (typeof value === 'number') {
+      // counters: the live number and the animation target must agree
+      node.textContent = value.toLocaleString('en-US') + (node.dataset.suffix || '');
+      node.dataset.count = String(value);
+      return;
+    }
     if (typeof value !== 'string') return;
     // Hero kicker/meta carry a decorative <i> separator inside the string
     // ("Dar es Salaam · Tanzania"): rebuild it as text + <i> + text so the
@@ -128,6 +134,13 @@ export function renderAll(content) {
   board(content);
   flavourDots(content);
   fields(content);
+  year();
+}
+
+/** Footer year, so the page does not claim 2026 forever. */
+export function year() {
+  const el = document.querySelector('[data-year]');
+  if (el) el.textContent = String(new Date().getFullYear());
 }
 
 /** Render now if the visitor is on the site, no-op on chrome-less pages. */

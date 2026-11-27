@@ -207,6 +207,55 @@ function board() {
 }
 
 /* ============================================================
+   05b · THE PULSE — numbers count up once, when the field arrives
+   ============================================================ */
+function pulse() {
+  const section = document.querySelector('.pulse');
+  if (!section) return;
+  const numbers = gsap.utils.toArray('.pulse [data-count]');
+  if (!numbers.length) return;
+
+  numbers.forEach((el) => {
+    const target = Number(el.dataset.count) || 0;
+    const suffix = el.dataset.suffix || '';
+    if (reduced) {
+      el.textContent = target.toLocaleString('en-US') + suffix;
+      return;
+    }
+    const state = { n: 0 };
+    el.textContent = '0' + suffix;
+    gsap.to(state, {
+      n: target,
+      duration: 1.5,
+      ease: 'power2.out',
+      scrollTrigger: { trigger: section, start: 'top 76%', once: true },
+      onUpdate() {
+        el.textContent = Math.round(state.n).toLocaleString('en-US') + suffix;
+      },
+      onComplete() {
+        el.textContent = target.toLocaleString('en-US') + suffix;
+      },
+      // a background tab throttles rAF; never leave a truncated number behind
+      onInterrupt() {
+        el.textContent = target.toLocaleString('en-US') + suffix;
+      },
+    });
+  });
+
+  // the lede rides up with the field, so the cut does not feel static
+  if (!reduced) {
+    gsap.from('.pulse__h, .pulse__note', {
+      y: 30, opacity: 0, duration: 1.1, stagger: 0.12, ease: E.out,
+      scrollTrigger: { trigger: section, start: 'top 72%', once: true },
+    });
+    gsap.from('.pulse__stat', {
+      y: 26, opacity: 0, duration: 0.9, stagger: 0.08, ease: E.expo,
+      scrollTrigger: { trigger: '.pulse__stats', start: 'top 86%', once: true },
+    });
+  }
+}
+
+/* ============================================================
    06 · FLAVOUR SWITCHER — colour field, word, note and price swap
    ============================================================ */
 const FLAVOURS = CONTENT.flavours; // editable in /admin.html
@@ -372,6 +421,7 @@ function boot() {
   board();
   flavour();
   range();
+  pulse();
   chrome();
 
   window.addEventListener('load', () => ScrollTrigger.refresh());
