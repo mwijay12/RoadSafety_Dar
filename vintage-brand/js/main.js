@@ -6,8 +6,15 @@
 import { gsap } from '../vendor/gsap/gsap-core.js';
 import { CSSPlugin } from '../vendor/gsap/CSSPlugin.js';
 import { ScrollTrigger } from '../vendor/gsap/ScrollTrigger.js';
+import { init as renderContent } from './render.js';
+import { load } from './content.js';
+import { quote } from './quote.js';
 
 gsap.registerPlugin(CSSPlugin, ScrollTrigger);
+
+/* Cards and editable copy must exist before ScrollTrigger measures the rail
+   or the pinned board, so this runs first, at module scope. */
+const CONTENT = renderContent() || load();
 
 const root = document.documentElement;
 root.classList.add('js');
@@ -202,20 +209,7 @@ function board() {
 /* ============================================================
    06 · FLAVOUR SWITCHER — colour field, word, note and price swap
    ============================================================ */
-const FLAVOURS = [
-  { name: 'Rozela', eng: 'Roselle', field: '#6E1B2E', ink: 'ivory', price: '1,000',
-    note: 'Sour cherry-deep, steeped from dried calyces the same morning. Poured cold, never sweetened.' },
-  { name: 'Ukwaju', eng: 'Tamarind', field: '#B85C38', ink: 'ink', price: '1,000',
-    note: 'Sticky, brown-sugar tart. The one that makes you close one eye.' },
-  { name: 'Embe', eng: 'Mango', field: '#E9A23B', ink: 'ink', price: '1,000',
-    note: 'Thick as custard in season, loosened with a little lime so it drinks.' },
-  { name: 'Nanasi', eng: 'Pineapple', field: '#E7C77A', ink: 'ink', price: '1,000',
-    note: 'Sharp, sunny, pressed with the core for the bite it carries.' },
-  { name: 'Parachichi', eng: 'Avocado', field: '#8FA65B', ink: 'ink', price: '1,000',
-    note: 'Green and buttery, whipped with a little ginger so it stays savoury.' },
-  { name: 'Vintage Angel', eng: 'Coast blend', field: '#C9A45B', ink: 'ink', price: '3,000',
-    note: 'Rozela, tangawizi, ndimu, ubuyu, ukwaju. Sour, warm, cold all at once.' },
-];
+const FLAVOURS = CONTENT.flavours; // editable in /admin.html
 
 function flavour() {
   const stage = document.querySelector('[data-flavour]');
@@ -372,6 +366,7 @@ function boot() {
   }
   hero();
   marquee();
+  quote(CONTENT); // compose the field first: headlines() reveals its rows
   headlines();
   statement();
   board();

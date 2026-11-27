@@ -39,24 +39,24 @@
     <div class="hero__grain" aria-hidden="true"></div>
 
     <div class="hero__top">
-      <p class="kicker">Dar es Salaam<i aria-hidden="true">·</i>Tanzania</p>
-      <p class="hero__since">Est. the coast</p>
+      <p class="kicker" data-c="hero.kicker">Dar es Salaam<i aria-hidden="true">·</i>Tanzania</p>
+      <p class="hero__since" data-c="hero.since">Est. the coast</p>
     </div>
 
     <div class="hero__mid">
       <h1 class="hero__title" data-spread>
-        <span class="ln">Asili</span>
-        <span class="ln">safi.</span>
+        <span class="ln" data-c="hero.titleA">Asili</span>
+        <span class="ln" data-c="hero.titleB">safi.</span>
       </h1>
       <p class="hero__lede">
-        <em>Ladha ya kisasa.</em><br />
-        Clean origin, modern taste — pressed the same morning, poured over a brass counter.
+        <em data-c="hero.ledeEm">Ladha ya kisasa.</em><br />
+        <span data-c="hero.lede">Clean origin, modern taste — pressed the same morning, poured over a brass counter.</span>
       </p>
     </div>
 
     <div class="hero__foot">
       <a class="cue" href="#menu"><span>Scroll</span><svg viewBox="0 0 12 40" aria-hidden="true"><path d="M6 0v34M1 29l5 6 5-6" /></svg></a>
-      <p class="hero__meta">Takeaway<i>·</i>Card &amp; NFC<i>·</i>Good for kids</p>
+      <p class="hero__meta" data-c="hero.meta">Takeaway<i>·</i>Card &amp; NFC<i>·</i>Good for kids</p>
     </div>
   </section>
 
@@ -99,48 +99,9 @@
       </div>
 
       <div class="board__rail" data-rail>
-        <article class="card card--slab">
-          <span class="card__n">01</span>
-          <h3>Rozela</h3>
-          <p class="card__sub">Roselle</p>
-          <p class="card__copy">Deep crimson, steeped not sweetened. The one people come back for.</p>
-          <span class="card__price">1,000</span>
-        </article>
-        <article class="card">
-          <span class="card__n">02</span>
-          <h3>Embe</h3>
-          <p class="card__sub">Mango</p>
-          <p class="card__copy">Thick as custard in season, loosened with a little lime.</p>
-          <span class="card__price">1,000</span>
-        </article>
-        <article class="card">
-          <span class="card__n">03</span>
-          <h3>Nado</h3>
-          <p class="card__sub">House signature</p>
-          <p class="card__copy">Parachichi, nanasi, embe, passion. Avocado gives it the body.</p>
-          <span class="card__price">2,000</span>
-        </article>
-        <article class="card card--photo">
-          <img src="assets/img/range-labelled.jpg" alt="Five bottles of cold-pressed juice with Vintage Juice Point labels against a terracotta wall" loading="lazy" />
-        </article>
-        <article class="card">
-          <span class="card__n">04</span>
-          <h3>Angel</h3>
-          <p class="card__sub">Coast blend</p>
-          <p class="card__copy">Rozela, tangawizi, ndimu, ubuyu, ukwaju. Sour, warm, cold all at once.</p>
-          <span class="card__price">3,000</span>
-        </article>
-        <article class="card">
-          <span class="card__n">05</span>
-          <h3>Nado Rich</h3>
-          <p class="card__sub">Meal in a glass</p>
-          <p class="card__copy">Parachichi, ndizi, tende, embe, yogurt. Breakfast for people in a hurry.</p>
-          <span class="card__price">4,000</span>
-        </article>
-        <article class="card card--end">
-          <p class="kicker">All 22 blends</p>
-          <a class="giant-link" href="menu.html" aria-label="Read the full menu"><span class="ln">Read </span><span class="ln">the </span><span class="ln">menu</span><svg viewBox="0 0 40 24" aria-hidden="true"><path d="M0 12h36M28 4l8 8-8 8" /></svg></a>
-        </article>
+        <!-- Cards are rendered from content (js/content.js) so the admin panel
+             can edit them. Layout is unchanged: slab card first, a photo card
+             spliced in mid-rail, brass menu link last. -->
       </div>
 
       <footer class="board__foot"><span>Prices in TZS</span><span class="board__hint">Keep scrolling<svg viewBox="0 0 34 12" aria-hidden="true"><path d="M0 6h30M25 1l5 5-5 5" /></svg></span></footer>
@@ -161,12 +122,7 @@
       </div>
 
       <ol class="flavour__dots" data-flavour-list>
-        <li><button type="button" data-go="0" class="is-live" aria-label="Rozela"><i style="--dot:#6E1B2E"></i></button></li>
-        <li><button type="button" data-go="1" aria-label="Ukwaju"><i style="--dot:#B85C38"></i></button></li>
-        <li><button type="button" data-go="2" aria-label="Embe"><i style="--dot:#E9A23B"></i></button></li>
-        <li><button type="button" data-go="3" aria-label="Nanasi"><i style="--dot:#E7C77A"></i></button></li>
-        <li><button type="button" data-go="4" aria-label="Parachichi"><i style="--dot:#8FA65B"></i></button></li>
-        <li><button type="button" data-go="5" aria-label="Angel"><i style="--dot:#C9A45B"></i></button></li>
+        <!-- one dot per flavour, rendered from content by js/render.js -->
       </ol>
     </div>
   </section>
@@ -203,8 +159,11 @@
   <!-- ══════════ 07 · QUOTE (brass field) ══════════ -->
   <section class="quote" data-theme="brass">
     <blockquote>
-      <p data-spread><span class="ln">“Cold,</span><span class="ln">clean,</span><span class="ln">and honest</span><span class="ln">about where</span><span class="ln">it came from.”</span></p>
-      <cite>— the house line</cite>
+      <p class="quote__text" data-spread>
+        <span class="ln" data-c="quote.a">“Cold, clean, and honest</span>
+        <span class="ln" data-c="quote.b">about where it came from.”</span>
+      </p>
+      <cite class="quote__cite">— <span data-c="quote.cite">the house line</span></cite>
     </blockquote>
   </section>
 
@@ -216,14 +175,14 @@
     </div>
     <p class="visit__copy">A juice point, not a café. Stand at the brass, watch it pressed, take it with you.</p>
     <dl class="visit__meta">
-      <div><dt>Where</dt><dd>58F5+24, Dar es Salaam</dd></div>
-      <div><dt>Hours</dt><dd class="pending">Add opening hours</dd></div>
-      <div><dt>Phone</dt><dd class="pending">+255 XXX XXX XXX</dd></div>
-      <div><dt>Pay</dt><dd>Card · NFC · Cash</dd></div>
-      <div><dt>Good for</dt><dd>Takeaway · Kids</dd></div>
-      <div><dt>Listing</dt><dd>Vintage Experience</dd></div>
+      <div><dt>Where</dt><dd data-c="visit.where">58F5+24, Dar es Salaam</dd></div>
+      <div><dt>Hours</dt><dd class="pending" data-placeholder data-c="visit.hours">Add opening hours</dd></div>
+      <div><dt>Phone</dt><dd class="pending" data-placeholder data-c="visit.phone">+255 XXX XXX XXX</dd></div>
+      <div><dt>Pay</dt><dd data-c="visit.pay">Card · NFC · Cash</dd></div>
+      <div><dt>Good for</dt><dd data-c="visit.goodFor">Takeaway · Kids</dd></div>
+      <div><dt>Listing</dt><dd data-c="visit.listing">Vintage Experience</dd></div>
     </dl>
-    <p class="visit__fine">Concept redesign. Hours, phone and email are placeholders — no verified details were supplied by the business.</p>
+    <p class="visit__fine" data-c="visit.fine">Concept redesign. Hours, phone and email are placeholders — no verified details were supplied by the business.</p>
   </section>
 
   <footer class="foot" data-theme="ink">
@@ -251,6 +210,8 @@
     }
   }, 1800);
 </script>
+<!-- Published content from admin.html. Optional: absent, the site uses js/content.js defaults. -->
+<script src="js/content-data.js"></script>
 <script type="module" src="js/main.js"></script>
 </body>
 </html>

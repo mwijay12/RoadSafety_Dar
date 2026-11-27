@@ -308,18 +308,24 @@ ul,ol{list-style:none}
 .link-arrow svg{width:24px;height:12px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .link-arrow:hover{gap:20px;color:var(--brass-l)}
 
-/* ---------- quote (brass field) ---------- */
+/* ---------- quote (brass field) ----------
+   The line is set in two long lines that fill the field. At 8.4vw the
+   same words used only 44% of the width and 69% of the height, which read
+   as centred text on a big empty rectangle. Size now takes the smaller of
+   the width fit and the height fit, so it fills both. */
 .quote{
   display:grid;place-items:center;min-height:92svh;
   padding:clamp(72px,12vh,150px) var(--gut);
 }
-.quote blockquote{max-width:min(1200px,94vw)}
+.quote blockquote{width:100%;max-width:min(1500px,100%)}
 .quote p{
-  font-family:var(--serif);font-weight:600;line-height:.94;letter-spacing:-.02em;
-  font-size:clamp(2rem,8.4vw,8rem);
+  font-family:var(--serif);font-weight:600;line-height:.9;letter-spacing:-.022em;
+  /* js/quote.js sets the size: it is measured against the field, so an
+     edited sentence is composed too. 3.2rem is the pre-JS floor. */
+  font-size:3.2rem;
 }
 .quote cite{
-  display:block;margin-top:clamp(18px,3vh,32px);
+  display:block;margin-top:clamp(20px,3.4vh,38px);
   font-style:normal;font-size:.64rem;font-weight:700;letter-spacing:.34em;text-transform:uppercase;opacity:.68;
 }
 
@@ -406,4 +412,100 @@ ul,ol{list-style:none}
 @media (prefers-reduced-motion:reduce){
   .js .statement__text .w,.js .card,.js .mega .ln>span,.js .hero__title .ln>span{opacity:1!important;transform:none!important}
   .cue svg,.board__hint svg{animation:none}
+}
+
+/* ============================================================
+   ADMIN — /admin.html
+   Same palette and faces as the site, laid out as a workbench:
+   a section list on the left, the live preview on the right.
+   Nothing here loads on index.html.
+   ============================================================ */
+.adm{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,42%);
+  min-height:100svh;background:var(--ink);color:var(--ivory);
+}
+.adm__bar{
+  grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:14px clamp(18px,3vw,34px);border-bottom:1px solid var(--hair);
+  position:sticky;top:0;z-index:40;background:rgba(13,21,18,.94);backdrop-filter:blur(12px);
+}
+.adm__mark{display:flex;align-items:center;gap:10px;font-family:var(--serif);letter-spacing:.16em;text-transform:uppercase;font-size:1rem}
+.adm__mark svg{width:24px;height:24px}
+.adm__state{font-size:.62rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--stone)}
+.adm__state b{color:var(--brass-l)}
+.adm__state.is-dirty b{color:var(--terra)}
+.adm__actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.adm__btn{
+  font-family:inherit;font-size:.62rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+  padding:9px 16px;border-radius:100px;border:1px solid var(--hair);
+  background:none;color:var(--ivory);cursor:pointer;transition:background .3s,color .3s,border-color .3s;
+}
+.adm__btn:hover{border-color:var(--brass);color:var(--brass-l)}
+.adm__btn--go{background:var(--brass);color:var(--ink);border-color:var(--brass)}
+.adm__btn--go:hover{background:var(--brass-l);color:var(--ink)}
+.adm__btn--quiet{opacity:.72}
+.adm__btn[disabled]{opacity:.35;cursor:not-allowed}
+
+.adm__side{
+  padding:clamp(18px,3vw,30px);border-right:1px solid var(--hair);
+  display:flex;flex-direction:column;gap:26px;min-width:0;
+}
+.adm__group>h2{
+  font-family:var(--serif);font-weight:600;font-size:1.5rem;line-height:1;
+  display:flex;align-items:baseline;gap:10px;margin-bottom:14px;
+}
+.adm__group>h2 span{font-family:var(--sans);font-size:.58rem;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--stone)}
+.adm__grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.adm__field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.adm__field--wide{grid-column:1/-1}
+.adm__field label{font-size:.58rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--stone)}
+.adm__field input,.adm__field textarea,.adm__field select{
+  font-family:var(--sans);font-size:.9rem;line-height:1.45;color:var(--ivory);
+  background:rgba(247,241,227,.05);border:1px solid var(--hair);border-radius:2px;
+  padding:9px 11px;width:100%;min-width:0;
+}
+.adm__field textarea{resize:vertical;min-height:76px}
+.adm__field input:focus-visible,.adm__field textarea:focus-visible,.adm__field select:focus-visible{
+  outline:2px solid var(--brass-l);outline-offset:1px;border-color:transparent;
+}
+.adm__field input[type=color]{height:38px;padding:3px 4px;cursor:pointer}
+.adm__field .hint{font-size:.62rem;color:var(--stone);opacity:.72;letter-spacing:.02em;text-transform:none;font-weight:400}
+
+/* repeating rows: board cards and flavours */
+.adm__row{
+  border:1px solid var(--hair);background:rgba(247,241,227,.03);
+  padding:14px;display:flex;flex-direction:column;gap:12px;
+}
+.adm__rowhd{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.adm__rowhd strong{font-family:var(--serif);font-size:1.15rem;font-weight:600;letter-spacing:.01em}
+.adm__rowbtns{display:flex;gap:4px}
+.adm__icon{
+  width:28px;height:28px;display:grid;place-items:center;background:none;border:1px solid var(--hair);
+  border-radius:2px;color:var(--stone);cursor:pointer;font-size:.8rem;line-height:1;
+  transition:color .25s,border-color .25s,background .25s;
+}
+.adm__icon:hover{color:var(--ivory);border-color:var(--brass)}
+.adm__icon[disabled]{opacity:.3;cursor:not-allowed}
+.adm__icon--kill:hover{color:var(--ivory);background:var(--roselle);border-color:var(--roselle)}
+
+/* live preview */
+.adm__preview{
+  padding:clamp(18px,3vw,30px);display:flex;flex-direction:column;gap:14px;
+  position:sticky;top:57px;align-self:start;max-height:calc(100svh - 57px);
+}
+.adm__preview h2{font-family:var(--serif);font-weight:600;font-size:1.5rem;line-height:1}
+.adm__preview p{font-size:.66rem;color:var(--stone);letter-spacing:.02em}
+.adm__frame{
+  flex:1;min-height:0;border:1px solid var(--hair);border-radius:2px;overflow:hidden;background:var(--ink-2);
+}
+.adm__frame iframe{width:100%;height:100%;min-height:420px;border:0;display:block}
+.adm__note{
+  font-size:.62rem;line-height:1.5;color:var(--stone);
+  border-left:2px solid var(--brass);padding-left:10px;
+}
+@media (max-width:1080px){
+  .adm{grid-template-columns:1fr}
+  .adm__side{border-right:0;border-bottom:1px solid var(--hair)}
+  .adm__preview{position:static;max-height:none}
+  .adm__frame iframe{min-height:520px}
 }
